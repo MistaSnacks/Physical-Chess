@@ -1,0 +1,48 @@
+---
+// Gallery.astro — unstyled grid of <figure>s built from media.js photo keys.
+// Each direction's theme.css owns the actual grid/tile/hover look via the
+// `.gallery`, `.gallery__item`, `.gallery__figure`, `.gallery__img`,
+// `.gallery__caption` class hooks and the `data-gallery-index` attribute.
+//
+// Props:
+//   photos     — array of PHOTOS keys from data/media.js
+//   width      — fill-crop width per image (default 800)
+//   height     — fill-crop height per image (default 600)
+//   eager      — how many of the first images to load eagerly (default 0)
+
+import { PHOTOS, wix } from '../data/media.js';
+
+interface Props {
+  photos: string[];
+  width?: number;
+  height?: number;
+  eager?: number;
+  class?: string;
+}
+
+const { photos, width = 800, height = 600, eager = 0, class: className } = Astro.props;
+---
+
+<ul class:list={['gallery', className]} data-gallery data-count={photos.length}>
+  {
+    photos.map((key, index) => {
+      const photo = PHOTOS[key];
+      if (!photo) return null;
+      return (
+        <li class="gallery__item" data-gallery-index={index}>
+          <figure class="gallery__figure">
+            <img
+              class="gallery__img"
+              src={wix(key, width, height)}
+              alt={photo.caption}
+              loading={index < eager ? 'eager' : 'lazy'}
+              width={width}
+              height={height}
+            />
+            <figcaption class="gallery__caption">{photo.caption}</figcaption>
+          </figure>
+        </li>
+      );
+    })
+  }
+</ul>

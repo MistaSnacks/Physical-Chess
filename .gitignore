@@ -1,0 +1,15 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# deploy
+.vercel/
+
+# macOS
+.DS_Store
+
+# logs
+npm-debug.log*

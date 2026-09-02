@@ -1,0 +1,74 @@
+---
+// YouTube.astro — privacy-enhanced YouTube embed wrapper.
+// Zero visual opinion: a single <div class="yt-embed"> containing an
+// <iframe>. Each direction sizes/frames it via theme.css.
+//
+// Props:
+//   id        — the YouTube video id (see data/media.js `yt()`)
+//   title     — accessible iframe title (required)
+//   autoplay  — boolean, default false (only for background/hero use)
+//   muted     — boolean, default false (YouTube requires muted for autoplay)
+//   loop      — boolean, default false
+//   controls  — boolean, default true
+
+interface Props {
+  id: string;
+  title: string;
+  autoplay?: boolean;
+  muted?: boolean;
+  loop?: boolean;
+  controls?: boolean;
+  class?: string;
+}
+
+const {
+  id,
+  title,
+  autoplay = false,
+  muted = false,
+  loop = false,
+  controls = true,
+  class: className,
+} = Astro.props;
+
+const params = new URLSearchParams({
+  rel: '0',
+  modestbranding: '1',
+});
+if (autoplay) params.set('autoplay', '1');
+if (muted) params.set('mute', '1');
+if (loop) {
+  params.set('loop', '1');
+  // YouTube requires `playlist` = the same id for single-video looping.
+  params.set('playlist', id);
+}
+if (!controls) params.set('controls', '0');
+
+const src = `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
+---
+
+<div class:list={['yt-embed', className]} data-yt-embed data-video-id={id}>
+  <iframe
+    src={src}
+    title={title}
+    loading="lazy"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+  ></iframe>
+  <p class="yt-embed__credit sr-only">Video: SoChlo Productions</p>
+</div>
+
+<style>
+  .yt-embed {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+  .yt-embed iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>

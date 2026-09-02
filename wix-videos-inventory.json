@@ -1,0 +1,113 @@
+{
+  "source": "Wix Media Manager, site 93f9dffd-79fb-4bea-94fa-810eef3397fe (physicalchess.org), listed 2026-09-02",
+  "note": "All files are public. Use the 720p mp4 for inline <video> (muted autoplay loop hero, or click-to-play with poster). Posters are 1280x720 or 1920x1080 jpgs on static.wixstatic.com.",
+  "videos": [
+    {
+      "key": "videoProject1",
+      "title": "Video Project 1 (2026 program video, 8:39)",
+      "id": "473014_d2a74a236692481582693d7b21567b4c",
+      "mp4_720": "https://video.wixstatic.com/video/473014_d2a74a236692481582693d7b21567b4c/720p/mp4/file.mp4",
+      "mp4_480": "https://video.wixstatic.com/video/473014_d2a74a236692481582693d7b21567b4c/480p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_d2a74a236692481582693d7b21567b4cf002.jpg",
+      "posters": ["473014_d2a74a236692481582693d7b21567b4cf000.jpg", "473014_d2a74a236692481582693d7b21567b4cf001.jpg", "473014_d2a74a236692481582693d7b21567b4cf002.jpg", "473014_d2a74a236692481582693d7b21567b4cf003.jpg"],
+      "seconds": 520,
+      "use": "Home hero background loop (muted) for any direction; it is the newest video on the site and its poster f000 is the current Wix home banner"
+    },
+    {
+      "key": "aulao2024Lapa",
+      "title": "Aulão 2024 – 300 Anos Lapa (10:29, 1080p)",
+      "id": "473014_3d2557ff2a8241c689d11c9d0a74e96b",
+      "mp4_1080": "https://video.wixstatic.com/video/473014_3d2557ff2a8241c689d11c9d0a74e96b/1080p/mp4/file.mp4",
+      "mp4_720": "https://video.wixstatic.com/video/473014_3d2557ff2a8241c689d11c9d0a74e96b/720p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_3d2557ff2a8241c689d11c9d0a74e96bf002.jpg",
+      "seconds": 630,
+      "use": "Movements lesson video (a real class / aulão)"
+    },
+    {
+      "key": "clip20240909a",
+      "title": "Class clip 2024-09-09 (0:23, 1080p)",
+      "id": "473014_75f9c019b0994e9a8e25b0c9580b9660",
+      "mp4_720": "https://video.wixstatic.com/video/473014_75f9c019b0994e9a8e25b0c9580b9660/720p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_75f9c019b0994e9a8e25b0c9580b9660f002.jpg",
+      "seconds": 23,
+      "use": "Short drill demo (Movements drill card) or dashboard 'latest from the roda' loop"
+    },
+    {
+      "key": "clip20240909b",
+      "title": "Class clip 2024-09-09 (0:20, 1080p)",
+      "id": "473014_74516344498246d88b72274de6e7e878",
+      "mp4_720": "https://video.wixstatic.com/video/473014_74516344498246d88b72274de6e7e878/720p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_74516344498246d88b72274de6e7e878f002.jpg",
+      "seconds": 20,
+      "use": "Short drill demo"
+    },
+    {
+      "key": "copacabana2019",
+      "title": "ABADÁ Capoeira Copacabana 2019 Aulão (6:18)",
+      "id": "473014_3b12f1e32ea94b3bb673164cbf6849a0",
+      "mp4_720": "https://video.wixstatic.com/video/473014_3b12f1e32ea94b3bb673164cbf6849a0/720p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_3b12f1e32ea94b3bb673164cbf6849a0f002.jpg",
+      "seconds": 378,
+      "use": "Culture / ABADÁ-Capoeira lesson (Brazil footage)"
+    },
+    {
+      "key": "nycSiteVideo",
+      "title": "NYC Video for Site (2:33, 2019)",
+      "id": "473014_9cb3597a58954482954bc96bfeb7b0df",
+      "mp4_720": "https://video.wixstatic.com/video/473014_9cb3597a58954482954bc96bfeb7b0df/720p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_9cb3597a58954482954bc96bfeb7b0dff002.jpg",
+      "seconds": 153,
+      "use": "Alternate home hero / About the program"
+    },
+    {
+      "key": "whatsapp2018a",
+      "title": "Kids clip 2018 (portrait 480x848, 0:33)",
+      "id": "473014_476d6a6bf0954bee999b323062f35301",
+      "mp4_480": "https://video.wixstatic.com/video/473014_476d6a6bf0954bee999b323062f35301/480p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_476d6a6bf0954bee999b323062f35301f002.jpg",
+      "seconds": 33,
+      "use": "Mobile-only portrait clip"
+    },
+    {
+      "key": "whatsapp2018b",
+      "title": "Kids clip 2018 (848x480, 0:35)",
+      "id": "473014_01ff9a5acead408eb4354140b540a822",
+      "mp4_480": "https://video.wixstatic.com/video/473014_01ff9a5acead408eb4354140b540a822/480p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_01ff9a5acead408eb4354140b540a822f002.jpg",
+      "seconds": 35
+    },
+    {
+      "key": "whatsapp2018c",
+      "title": "Kids clip 2018 (848x480, 0:15)",
+      "id": "473014_0724006255494ba8833d9f64aab6ccbc",
+      "mp4_480": "https://video.wixstatic.com/video/473014_0724006255494ba8833d9f64aab6ccbc/480p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_0724006255494ba8833d9f64aab6ccbcf002.jpg",
+      "seconds": 15
+    },
+    {
+      "key": "whatsapp2018d",
+      "title": "Kids clip 2018 (640x352, 0:50)",
+      "id": "473014_5058f3055da5461c9f87137ae5e46d6f",
+      "mp4_360": "https://video.wixstatic.com/video/473014_5058f3055da5461c9f87137ae5e46d6f/360p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_5058f3055da5461c9f87137ae5e46d6ff002.jpg",
+      "seconds": 50
+    },
+    {
+      "key": "whatsapp2018e",
+      "title": "Kids clip 2018 (640x352, 0:33)",
+      "id": "473014_f11484b882ea4c1a896b386169055834",
+      "mp4_360": "https://video.wixstatic.com/video/473014_f11484b882ea4c1a896b386169055834/360p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_f11484b882ea4c1a896b386169055834f002.jpg",
+      "seconds": 33
+    },
+    {
+      "key": "whatsapp2018f",
+      "title": "Kids clip 2018 (640x352, 0:38)",
+      "id": "473014_9240218a99c1472da743e86a3122b7eb",
+      "mp4_360": "https://video.wixstatic.com/video/473014_9240218a99c1472da743e86a3122b7eb/360p/mp4/file.mp4",
+      "poster": "https://static.wixstatic.com/media/473014_9240218a99c1472da743e86a3122b7ebf002.jpg",
+      "seconds": 38
+    }
+  ],
+  "youtube_sochlo": "See SPEC.md §4.2 for the 10 SoChlo Productions YouTube videos (Batizado 2024/2025/2026, ACE compilation, school aulãos)."
+}

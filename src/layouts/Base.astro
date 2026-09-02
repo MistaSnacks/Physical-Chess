@@ -1,0 +1,44 @@
+---
+// Base.astro — shared <html> shell for every route.
+// Accepts a `direction` prop ('sticker' | 'quest' | 'comics' | 'chess' | undefined
+// for the neutral chooser) and stamps it as a class on <body> so each
+// direction's theme.css can scope its selectors, e.g. body.direction-sticker.
+import '../styles/base.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  direction?: 'sticker' | 'quest' | 'comics' | 'chess';
+}
+
+const {
+  title,
+  description = 'Physical Chess — a kids capoeira learning app by ACE / Abadá Capoeira Brooklyn.',
+  direction,
+} = Astro.props;
+
+const bodyClass = direction ? `direction-${direction}` : 'direction-none';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400..700&family=Nunito:wght@400..900&family=Lilita+One&family=Bangers&family=Rubik+Mono+One&display=swap"
+    />
+
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <slot />
+  </body>
+</html>

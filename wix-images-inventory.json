@@ -1,0 +1,75 @@
+{
+  "source": "Wix Media Manager, site 93f9dffd-79fb-4bea-94fa-810eef3397fe (physicalchess.org), listed via mcp__wix__CallWixSiteAPI on 2026-09-02",
+  "note": "Not exhaustive: root media-root folder has more history beyond what was paged (stopped after ~99 root images across 5 pages); folders Audios, Videos_Games, Rodas_Jogos, Virtual Trainings, Story Time, Stable Demos returned 0 images or were skipped (audio/video-only). Folders fully listed: Mestrandos, Batizado Media, Cords (partial - swatch icons only, not used), Bichos, Shirts & Globes.",
+  "folders": [
+    {"id": "media-root", "displayName": "(root)"},
+    {"id": "a0ce400b6fa14b81a7357ba08bbb1b83", "displayName": "Mestrandos"},
+    {"id": "f822bf8fa52443ecba79bc436d6074d1", "displayName": "Audios"},
+    {"id": "96393a34671942a5a0ee85ea3a666b27", "displayName": "Shirts & Globes"},
+    {"id": "1cb46a064db6410d93811487a6bd977f", "displayName": "Videos_Games"},
+    {"id": "825ebd0d81eb472998fba9f954102bf6", "displayName": "Virtual Trainings"},
+    {"id": "e5b74af68d86461a9e0d71b54db4750e", "displayName": "Story Time"},
+    {"id": "1417d79def8b405bac2b50d7253d1ed8", "displayName": "Bichos"},
+    {"id": "1eeec1b2128f4c4fa608066f49edd9fd", "displayName": "Cords"},
+    {"id": "99fb626da3a442fbb1485631d9b8c922", "displayName": "Stable Demos"},
+    {"id": "02c2f9357ead4f23b9ee9b18b8884259", "displayName": "Rodas_Jogos"},
+    {"id": "af64de72238b42bbb5853242d61d98f2", "displayName": "Batizado Media"}
+  ],
+  "curated": {
+    "teachers": [
+      {"displayName": "Mestre Pernilongo", "url": "https://static.wixstatic.com/media/473014_3401328370b04f2bb2dd99c78eea11df~mv2.webp", "width": 1599, "height": 951},
+      {"displayName": "Mestra Marcia Berimbau", "url": "https://static.wixstatic.com/media/473014_49fa715f9fef4bc7826032cf796b9a4a~mv2.jpg", "width": 682, "height": 540},
+      {"displayName": "Mestra Edna Lima", "url": "https://static.wixstatic.com/media/473014_45bd6c2e77aa4c8c9c2a989d8c9aeed2~mv2.jpg", "width": 843, "height": 843},
+      {"displayName": "Mestre Cobra", "url": "https://static.wixstatic.com/media/473014_a2f584a24fd04c5d91f21d957e8437a2~mv2.jpg", "width": 1947, "height": 2048},
+      {"displayName": "Mestranda Yara", "url": "https://static.wixstatic.com/media/473014_c856e8d81639422181a4e300b888dc7c~mv2.jpg", "width": 2150, "height": 1932, "parentFolderId": "a0ce400b6fa14b81a7357ba08bbb1b83"}
+    ],
+    "classPhotos": [
+      {"displayName": "IMG-20221205-WA0051.jpg", "url": "https://static.wixstatic.com/media/473014_c0441dae4e6b4bd0a7e3c87a4824ade1~mv2.jpg", "width": 2048, "height": 1365, "createdDate": "2022-12-06T03:08:30.000Z"},
+      {"displayName": "IMG-20221205-WA0052.jpg", "url": "https://static.wixstatic.com/media/473014_3036ea2e3558496abb923747d75727c4~mv2.jpg", "width": 2048, "height": 1365, "createdDate": "2022-12-06T03:08:28.000Z"},
+      {"displayName": "IMG-20220522-WA0033.jpg", "url": "https://static.wixstatic.com/media/473014_cfe9cc346e6f4b989e92fe308137118f~mv2.jpg", "width": 2048, "height": 1536, "createdDate": "2022-06-13T13:58:56.000Z"},
+      {"displayName": "IMG-20220521-WA0017.jpg", "url": "https://static.wixstatic.com/media/473014_9e5a1330d0be4986909180f1eac6e520~mv2.jpg", "width": 1024, "height": 768, "createdDate": "2022-06-13T13:50:03.000Z"},
+      {"displayName": "IMG-20211228-WA0005.jpg", "url": "https://static.wixstatic.com/media/473014_4ee3bb8d5e8344369339ae9028135ee0~mv2.jpg", "width": 1500, "height": 1125, "createdDate": "2022-01-09T02:05:11.000Z"},
+      {"displayName": "IMG-20210916-WA0002.jpg", "url": "https://static.wixstatic.com/media/473014_97d2906f6a6a4af3acbda06ba29a5242~mv2.jpg", "width": 1500, "height": 1000, "createdDate": "2022-01-09T02:05:11.000Z"}
+    ],
+    "maps": [
+      {"displayName": "African Continent Map.jpg", "url": "https://static.wixstatic.com/media/473014_70e542516a634a4db324f55e9784a2e4~mv2.jpg", "width": 612, "height": 581},
+      {"displayName": "Map-of-the-26-Brazilian-states-and-the-Federal-District-of-Brasilia.png", "url": "https://static.wixstatic.com/media/473014_20ba21813d594db1b6ccf7a8c11f28d5~mv2.png", "width": 850, "height": 747},
+      {"displayName": "slave_trade_1650-1860.jpg", "url": "https://static.wixstatic.com/media/473014_a0e32a6d788344818aa1af797cae2550~mv2.jpg", "width": 600, "height": 351}
+    ],
+    "culture": [
+      {"displayName": "Samba de roda image.png", "url": "https://static.wixstatic.com/media/473014_b73982b79fdf40b3b68e9e651c64000f~mv2.png", "width": 713, "height": 541},
+      {"displayName": "Cabaça.webp (berimbau gourd)", "url": "https://static.wixstatic.com/media/473014_b6c3295274d74f7b93aef831ab28a77a~mv2.png", "width": 800, "height": 885},
+      {"displayName": "Jongo Picture.jpg", "url": "https://static.wixstatic.com/media/473014_3555c27f184c4f23975d947fea81c52f~mv2.jpg", "width": 720, "height": 370},
+      {"displayName": "puxada-de-rede.jpg", "url": "https://static.wixstatic.com/media/473014_8403db09c1294fc794bb06ee2eb0defb~mv2.jpg", "width": 520, "height": 344}
+    ],
+    "animals": [
+      {"displayName": "giraffe in a plain.jpg", "url": "https://static.wixstatic.com/media/473014_9f86b0dfb312459e864653e587bf92a7~mv2.jpg", "width": 1024, "height": 1024},
+      {"displayName": "realistic gorilla walking in a rainforest.jpg", "url": "https://static.wixstatic.com/media/473014_fa3fa8963c634b4a987ce37e8eafc360~mv2.jpg", "width": 1024, "height": 1024},
+      {"displayName": "Normal lizard in a rainforest.jpg", "url": "https://static.wixstatic.com/media/473014_661d64d7929d48358bf0b21d18cc6422~mv2.jpg", "width": 1024, "height": 1024},
+      {"displayName": "poisonous frog.jpg", "url": "https://static.wixstatic.com/media/473014_2280c0f7a5d24872b8da01e34650bb93~mv2.jpg", "width": 1024, "height": 1024},
+      {"displayName": "snake.jpg", "url": "https://static.wixstatic.com/media/473014_cabaaf2d5c4c4eb8a9ffe1197a2f9794~mv2.jpg", "width": 2560, "height": 1441},
+      {"displayName": "real armadillo in a rainforest.jpg", "url": "https://static.wixstatic.com/media/473014_0912160dd46c424aaaeae5ee5581b2f1~mv2.jpg", "width": 801, "height": 679}
+    ],
+    "misc": [
+      {"displayName": "Screenshot (5)_edited.jpg", "reason": "screenshot"},
+      {"displayName": "Red Neurons Background.jpg", "reason": "unrelated stock background"},
+      {"displayName": "Screenshot_20220613-095220_edited.jpg", "reason": "screenshot"},
+      {"displayName": "Screenshot_20220108-212614.png", "reason": "screenshot, tiny (215w)"},
+      {"displayName": "Screenshot (105).png", "reason": "screenshot"},
+      {"displayName": "JDB Puzzle.png", "reason": "shop/puzzle product art"},
+      {"displayName": "ABADÁ-zinho 1 (blue cover).jpeg", "reason": "workbook cover illustration"},
+      {"displayName": "ABADÁ-zinho 2 (green cover).jpeg", "reason": "workbook cover illustration"},
+      {"displayName": "Mitts for Shop.webp", "reason": "shop product"},
+      {"displayName": "Condensed Kids WorkBook Cover.png", "reason": "workbook cover illustration"},
+      {"displayName": "Body Diagram from Kids Book.png", "reason": "workbook illustration"},
+      {"displayName": "Cuia Cut Out_edited.png", "reason": "icon cutout, tiny"},
+      {"displayName": "The ACE logo no background.png", "reason": "logo"},
+      {"displayName": "logo_abadá.gif", "reason": "logo"},
+      {"displayName": "GLOBO_LOGO*.jpg/.png", "reason": "logo art, Shirts & Globes folder"},
+      {"displayName": "shirt *.jpg/.png (Shirts & Globes folder)", "reason": "merch flat-lays"},
+      {"displayName": "ABADÁ - Capoeira Batizado 2023 Flyer (Parents).png", "reason": "flyer"},
+      {"displayName": "Bichos folder (rainforest stock set beyond the 6 curated animals)", "reason": "duplicate/extra AI stock animal photos"},
+      {"displayName": "Cords folder (corda swatch icons, 144x241 and smaller)", "reason": "tiny rank-color swatches; SPEC §4.3 already gives exact hex values, not needed as photos"}
+    ]
+  }
+}

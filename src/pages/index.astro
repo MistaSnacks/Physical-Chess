@@ -1,0 +1,183 @@
+---
+// Chooser — one neutral screen listing the four design directions so the
+// client can compare them side by side. Deliberately un-opinionated
+// (white / ink / Nunito) so it favors none of the four looks.
+import Base from '../layouts/Base.astro';
+
+const DIRECTIONS = [
+  {
+    id: 'sticker',
+    name: 'Sticker Roda',
+    register: 'Ink borders, offset shadows, tilted stickers, confetti.',
+    href: '/sticker',
+    dashboard: '/sticker/dashboard',
+  },
+  {
+    id: 'quest',
+    name: 'Roda Quest',
+    register: 'Tropical-night adventure map, XP, boss quiz, mascot.',
+    href: '/quest',
+    dashboard: '/quest/dashboard',
+  },
+  {
+    id: 'comics',
+    name: 'Axé Comics',
+    register: 'Chrome-yellow comic book, halftone, starbursts, speech bubbles.',
+    href: '/comics',
+    dashboard: '/comics/dashboard',
+  },
+  {
+    id: 'chess',
+    name: 'Grandmaster Roda',
+    register: 'Checkerboard arena, piece promotions, chess clock.',
+    href: '/chess',
+    dashboard: '/chess/dashboard',
+  },
+];
+---
+
+<Base title="Physical Chess — Showcase" direction={undefined}>
+  <header class="chooser-header wrap">
+    <p class="chooser-eyebrow">Physical Chess</p>
+    <h1 class="chooser-title">Four ways to run the roda.</h1>
+    <p class="chooser-sub">
+      Same five screens, same real photos and video, four completely different visual worlds.
+      Pick a direction below to open it, or preview its dashboard right here.
+    </p>
+  </header>
+
+  <main class="chooser-grid wrap">
+    {
+      DIRECTIONS.map((dir) => (
+        <article class="tile">
+          <a class="tile__thumb-link" href={dir.href} aria-label={`Open ${dir.name}`}>
+            <div class="tile__thumb">
+              <iframe
+                class="tile__iframe"
+                src={dir.dashboard}
+                title={`${dir.name} dashboard preview`}
+                loading="lazy"
+                scrolling="no"
+                tabindex="-1"
+              />
+            </div>
+          </a>
+          <div class="tile__body">
+            <h2 class="tile__name">{dir.name}</h2>
+            <p class="tile__register">{dir.register}</p>
+            <a class="tile__open" href={dir.href}>
+              Open {dir.name} →
+            </a>
+          </div>
+        </article>
+      ))
+    }
+  </main>
+
+  <footer class="chooser-footer wrap">
+    <p>Physical Chess is a project of ACE / Abadá Capoeira Brooklyn. Showcase build only.</p>
+  </footer>
+</Base>
+
+<style>
+  .chooser-header {
+    padding-block: 64px 32px;
+    max-width: 760px;
+  }
+  .chooser-eyebrow {
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: #4a6b8a;
+    margin-bottom: 8px;
+  }
+  .chooser-title {
+    font-family: 'Fredoka', 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: clamp(32px, 5vw, 48px);
+    color: #14324f;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  .chooser-sub {
+    font-size: 17px;
+    color: #4a6b8a;
+    line-height: 1.6;
+  }
+
+  .chooser-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    padding-block: 16px 64px;
+  }
+  @media (max-width: 900px) {
+    .chooser-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .tile {
+    border: 1px solid #dfe7ee;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tile__thumb-link {
+    display: block;
+  }
+  .tile__thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #f4faff;
+  }
+  .tile__iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 400%;
+    height: 400%;
+    border: 0;
+    transform: scale(0.25);
+    transform-origin: top left;
+    pointer-events: none;
+  }
+
+  .tile__body {
+    padding: 24px;
+  }
+  .tile__name {
+    font-family: 'Fredoka', 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: #14324f;
+    margin-bottom: 8px;
+  }
+  .tile__register {
+    font-size: 15px;
+    color: #4a6b8a;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .tile__open {
+    display: inline-block;
+    font-weight: 800;
+    color: #1f7fd1;
+  }
+  .tile__open:hover {
+    text-decoration: underline;
+  }
+
+  .chooser-footer {
+    padding-block: 24px 48px;
+    font-size: 13px;
+    color: #8098ac;
+    border-top: 1px solid #dfe7ee;
+  }
+</style>

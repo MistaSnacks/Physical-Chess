@@ -1,0 +1,81 @@
+---
+// Countdown.astro — renders days/hours/minutes to a target date and ticks
+// client-side. Unstyled: `.countdown`, `.countdown__unit`,
+// `.countdown__value`, `.countdown__label` class hooks only.
+//
+// Props:
+//   target   — ISO date string (see data/batizado.js BATIZADO_DATE)
+//   label    — optional small label under/beside the countdown, e.g. "date TBC"
+//   dateTbc  — boolean; when true a "(date TBC)" note renders (SPEC §4.3)
+
+interface Props {
+  target: string;
+  label?: string;
+  dateTbc?: boolean;
+  class?: string;
+}
+
+const { target, label, dateTbc = false, class: className } = Astro.props;
+---
+
+<div class:list={['countdown', className]} data-countdown data-target={target}>
+  <div class="countdown__unit" data-unit="days">
+    <span class="countdown__value" data-countdown-value="days">00</span>
+    <span class="countdown__label">days</span>
+  </div>
+  <div class="countdown__unit" data-unit="hours">
+    <span class="countdown__value" data-countdown-value="hours">00</span>
+    <span class="countdown__label">hrs</span>
+  </div>
+  <div class="countdown__unit" data-unit="minutes">
+    <span class="countdown__value" data-countdown-value="minutes">00</span>
+    <span class="countdown__label">min</span>
+  </div>
+  <div class="countdown__unit" data-unit="seconds">
+    <span class="countdown__value" data-countdown-value="seconds">00</span>
+    <span class="countdown__label">sec</span>
+  </div>
+  {label && <p class="countdown__note">{label}</p>}
+  {dateTbc && !label && <p class="countdown__note">(date TBC)</p>}
+</div>
+
+<script>
+  function pad(n) {
+    return String(Math.max(0, n)).padStart(2, '0');
+  }
+
+  function tick(root) {
+    const target = root.getAttribute('data-target');
+    if (!target) return;
+    const targetMs = new Date(target).getTime();
+    const now = Date.now();
+    const diff = Math.max(0, targetMs - now);
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const set = (unit, value) => {
+      const el = root.querySelector(`[data-countdown-value="${unit}"]`);
+      if (el) el.textContent = pad(value);
+    };
+    set('days', days);
+    set('hours', hours);
+    set('minutes', minutes);
+    set('seconds', seconds);
+
+    root.dataset.expired = diff <= 0 ? 'true' : 'false';
+  }
+
+  function init() {
+    const roots = document.querySelectorAll('[data-countdown]');
+    roots.forEach((root) => {
+      tick(root);
+      setInterval(() => tick(root), 1000);
+    });
+  }
+
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>
