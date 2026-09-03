@@ -1,0 +1,100 @@
+---
+// index.astro — Home / "Enter the Arena". A giant PHYSICAL CHESS
+// wordmark over a bone/ink checker field, the real hero photo and
+// program video framed like position panels, age line + ACE contact as
+// a scoresheet, and the login / Batizado CTAs (SPEC §2 row 1).
+import Base from '../../layouts/Base.astro';
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../../directions/chess/Nav.astro';
+import Footer from '../../directions/chess/Footer.astro';
+import { HERO_CANDIDATES, wix, video } from '../../data/media.js';
+import { CONTACT, BATIZADO_DATE_TBC } from '../../data/batizado.js';
+import '../../directions/chess/tokens.css';
+import '../../directions/chess/theme.css';
+
+const heroPhoto = HERO_CANDIDATES[0];
+const promo = video('videoProject1');
+---
+
+<Base title="Physical Chess — Grandmaster Roda" direction="chess">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="home" />
+
+  <main>
+    <section class="chess-hero">
+      <div class="chess-hero__panel chess-fade-up">
+        <p class="chess-eyebrow">A capoeira LMS for ages 7–13 · ACE / Abadá Capoeira Brooklyn</p>
+        <h1 class="chess-hero__title">Physical Chess</h1>
+        <p class="chess-lede">
+          Every class is a move. Every corda is a promotion. Log in to keep playing the game you started in the
+          roda.
+        </p>
+        <p class="chess-hero__age">{CONTACT.ageLine}</p>
+
+        <div class="chess-frame chess-frame--square">
+          <img src={wix(heroPhoto, 900, 900)} alt="Kids capoeira workshop with Professor Coco" loading="eager" width="900" height="900" />
+        </div>
+
+        <div class="chess-hero__actions">
+          <a class="chess-btn" href="/chess/dashboard">
+            <span>Enter The Arena</span>
+            <svg class="chess-btn__arrow" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="#F3EEE4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+          <a class="chess-btn chess-btn--ink" href="/chess/batizado">Batizado 2026</a>
+        </div>
+      </div>
+
+      <div class="chess-hero__media chess-fade-up">
+        <div>
+          <div class="chess-frame chess-frame--square">
+            <video
+              src={promo.mp4}
+              poster={promo.poster}
+              muted
+              loop
+              autoplay
+              playsinline
+              controls
+              aria-label="Physical Chess 2026 program video"
+            ></video>
+          </div>
+          <p class="chess-media-credit">Video: SoChlo Productions</p>
+        </div>
+
+        <div class="chess-contact-sheet">
+          <div class="chess-contact-sheet__row">
+            <span class="chess-contact-sheet__label">Phone</span>
+            <a href="tel:9177768150">{CONTACT.phone}</a>
+          </div>
+          <div class="chess-contact-sheet__row">
+            <span class="chess-contact-sheet__label">Email</span>
+            <a href="mailto:info@the-ace.org">{CONTACT.email}</a>
+          </div>
+          <div class="chess-contact-sheet__row">
+            <span class="chess-contact-sheet__label">Ages</span>
+            <span>{CONTACT.ageLine}</span>
+          </div>
+          {
+            BATIZADO_DATE_TBC && (
+              <div class="chess-contact-sheet__row">
+                <span class="chess-contact-sheet__label">Batizado 2026</span>
+                <span>Date TBC</span>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+
+  <script>
+    import '../../directions/chess/motion.js';
+  </script>
+</Base>

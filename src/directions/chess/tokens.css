@@ -1,0 +1,39 @@
+/* ---------------------------------------------------------------------
+   tokens.css — Grandmaster Roda design tokens.
+   Values copied verbatim from Paper file 01M017JHZGTKX64S7G2TBPBBKH,
+   artboards XN-0 (board) / XO-0 (puzzle) / XP-0 (mobile puzzle).
+   --------------------------------------------------------------------- */
+
+body.direction-chess {
+  --chess-bone: #f3eee4;
+  --chess-white: #ffffff;
+  --chess-ink: #0f0f0f;
+  --chess-kingfisher: #1d5dff;
+  --chess-lime: #c6f547;
+  --chess-orange: #ff7a1a;
+  --chess-muted: #9a927f;
+  --chess-rule: #e4dccb;
+
+  --chess-font-display: 'Rubik Mono One', system-ui, sans-serif;
+  --chess-font-label: 'Nunito', system-ui, sans-serif;
+  --chess-font-body: 'Nunito', system-ui, sans-serif;
+
+  --chess-text-display-xl: 62px;
+  --chess-text-display-lg: 44px;
+  --chess-text-display-md: 28px;
+  --chess-text-display-sm: 20px;
+  --chess-text-label: 13px;
+  --chess-text-label-lg: 14px;
+  --chess-text-body: 16px;
+  --chess-text-body-lg: 18px;
+
+  --chess-border: 3px;
+  --chess-border-thick: 4px;
+  --chess-shadow-sm: 6px 6px 0 var(--chess-ink);
+  --chess-shadow-lg: 10px 10px 0 var(--chess-ink);
+
+  /* checkerboard square size — recomputed smaller on mobile */
+  --sq: 120px;
+
+  --chess-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -1,0 +1,317 @@
+---
+// dashboard.astro — "My Journey" / the board. Checkerboard floor running
+// off the right edge, module tiles standing on squares, knight-jump
+// arrow, lime legal-move dots, a promotion track and a scoresheet move
+// list built from real curriculum data (SPEC §2 row 2, direction brief
+// step 4).
+import Base from '../../layouts/Base.astro';
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../../directions/chess/Nav.astro';
+import Footer from '../../directions/chess/Footer.astro';
+import { MODULES, moduleProgress, nextUpLesson } from '../../data/curriculum.js';
+import { STUDENT } from '../../data/student.js';
+import { CORDAS, cordaIndex, BATIZADO_DATE } from '../../data/batizado.js';
+import { wix } from '../../data/media.js';
+import { pieceInner, lockSVG } from '../../directions/chess/pieces.js';
+import '../../directions/chess/tokens.css';
+import '../../directions/chess/theme.css';
+
+const nextUp = nextUpLesson();
+const currentModuleId = nextUp ? nextUp.module.id : null;
+
+// Route each module leads to when it's the "current" square.
+const MODULE_ROUTE = {
+  movements: '/chess/movements',
+  music: '/chess/music',
+  culture: '/chess/music',
+  graduation: '/chess/batizado',
+};
+
+// Fixed board coordinates for the four module tiles (col, row) on a
+// 6 x 6 floor. Chosen so the current tile and the most recently
+// finished module form a real knight's-move L (two over, one up), and
+// every tile stays clear of the board's clipped right edge.
+const TILE_POS = {
+  movements: { col: 2, row: 1 },
+  music: { col: 0, row: 2 },
+  culture: { col: 4, row: 0 },
+  graduation: { col: 3, row: 3 },
+};
+
+const GRID_COLS = 6;
+const GRID_ROWS = 6;
+const SQ = 120;
+
+function isDark(row, col) {
+  return (row + col) % 2 === 0;
+}
+
+const currentPos = currentModuleId ? TILE_POS[currentModuleId] : null;
+
+// Photo squares — light squares that occasionally hold a real photo.
+const photoSquares = [
+  { col: 0, row: 3, key: 'kidsWorkshopDay2' },
+  { col: 5, row: 2, key: 'classPhoto2022a' },
+  { col: 1, row: 4, key: 'heroWorkshop' },
+];
+const photoCoordSet = new Set(photoSquares.map((p) => `${p.col},${p.row}`));
+
+// Legal-move lime dots (decorative).
+const dots = [
+  { col: 5, row: 0 },
+  { col: 3, row: 4 },
+];
+
+const darkSquares = [];
+for (let row = 0; row < GRID_ROWS; row++) {
+  for (let col = 0; col < GRID_COLS; col++) {
+    const key = `${col},${row}`;
+    if (currentPos && currentPos.col === col && currentPos.row === row) continue;
+    if (photoCoordSet.has(key)) continue;
+    if (isDark(row, col)) darkSquares.push({ col, row });
+  }
+}
+
+const tiles = MODULES.map((mod) => {
+  const pos = TILE_POS[mod.id];
+  const progress = moduleProgress(mod);
+  const state = mod.locked ? 'locked' : mod.id === currentModuleId ? 'current' : 'done';
+  return { mod, pos, progress, state };
+});
+
+const doneTile = tiles.find((t) => t.state === 'done');
+const currentTile = tiles.find((t) => t.state === 'current');
+
+// Knight-jump arrow path, from the most recent done tile to the
+// current tile, drawn in the floor's local coordinate space.
+let arrowPath = null;
+if (doneTile && currentTile) {
+  const from = { x: doneTile.pos.col * SQ + SQ / 2, y: doneTile.pos.row * SQ + SQ / 2 };
+  const to = { x: currentTile.pos.col * SQ + SQ / 2, y: currentTile.pos.row * SQ + SQ / 2 };
+  const bendY = to.y;
+  arrowPath = {
+    d: `M${from.x} ${from.y} L${from.x} ${bendY + 30} Q${from.x} ${bendY} ${from.x + 30} ${bendY} L${to.x - 26} ${bendY}`,
+    arrow: `${to.x - 26},${bendY - 12} ${to.x + 4},${bendY} ${to.x - 26},${bendY + 12}`,
+  };
+}
+
+const promo = CORDAS.map((corda, i) => ({
+  ...corda,
+  isCurrent: corda.id === STUDENT.corda,
+  isNext: corda.id === STUDENT.nextCorda,
+}));
+
+// Scoresheet: the current (or first unlocked) module's lessons, in
+// real chess notation — decorative pairing only, the underlying data
+// (title, completion) is 100% real.
+const NOTATION = ['e4', 'Nf3', 'Bc4', 'O-O', 'Qxd5', 'Rfe1', 'c3', 'h3'];
+const scoresheetModule = nextUp ? nextUp.module : MODULES[0];
+const scoresheetProgress = moduleProgress(scoresheetModule);
+
+const batizadoDays = Math.max(
+  0,
+  Math.ceil((new Date(BATIZADO_DATE).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+);
+
+const ctaHref = currentModuleId ? MODULE_ROUTE[currentModuleId] : '/chess/movements';
+---
+
+<Base title="My Journey — Physical Chess" direction="chess">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="dashboard" />
+
+  <main class="chess-dashboard">
+    <div class="chess-dashboard__grid">
+      <div class="chess-dashboard__content">
+        <div class="chess-fade-up">
+          <p class="chess-eyebrow">
+            {STUDENT.firstName.toUpperCase()} · {scoresheetModule.title.toUpperCase()}, {scoresheetProgress.completed}
+            / {scoresheetProgress.total}
+          </p>
+          <h1 class="chess-h1">Your Move, {STUDENT.firstName}.</h1>
+          <p class="chess-lede">
+            Every lesson is a move. Every corda is a promotion. {scoresheetProgress.completed} moves in, the next
+            jump is open.
+          </p>
+        </div>
+
+        <div class="chess-promo-track chess-fade-up">
+          {
+            promo.map((c) => (
+              <div
+                class:list={[
+                  'chess-promo-track__item',
+                  c.isCurrent && 'chess-promo-track__item--current',
+                  c.isNext && 'chess-promo-track__item--next',
+                ]}
+              >
+                <div
+                  class="chess-promo-track__icon"
+                  set:html={`<svg width="${c.isNext ? 54 : 40}" height="${c.isNext ? 54 : 40}" viewBox="0 0 24 24" fill="${c.isCurrent || c.isNext ? '#F3EEE4' : '#0F0F0F'}">${pieceInner(c.pieceMapping)}</svg>`}
+                />
+                <div class="chess-promo-track__label">
+                  {c.label}
+                  {c.isNext ? ' · NEXT' : ''}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <div class="chess-scoresheet chess-fade-up">
+          <div class="chess-scoresheet__header">
+            <span class="chess-scoresheet__header-title">MOVE LIST</span>
+            <span class="chess-scoresheet__header-meta">
+              CORDA {STUDENT.corda.toUpperCase()} · {scoresheetProgress.completed} / {scoresheetProgress.total}
+            </span>
+          </div>
+          {
+            scoresheetModule.lessons.map((lesson, i) => {
+              const isCurrent = nextUp && nextUp.lesson.id === lesson.id;
+              const rowState = lesson.completed ? 'done' : isCurrent ? 'current' : 'queued';
+              return (
+                <div
+                  class:list={[
+                    'chess-scoresheet__row',
+                    rowState === 'current' && 'chess-scoresheet__row--current',
+                    rowState === 'queued' && 'chess-scoresheet__row--locked',
+                  ]}
+                >
+                  <span class="chess-scoresheet__num">{i + 1}.</span>
+                  <span class="chess-scoresheet__title">{lesson.title}</span>
+                  <span class="chess-scoresheet__notation">
+                    {rowState === 'done' && `${NOTATION[i % NOTATION.length]} ✓`}
+                    {rowState === 'current' && 'YOUR MOVE'}
+                    {rowState === 'queued' && 'QUEUED'}
+                  </span>
+                </div>
+              );
+            })
+          }
+        </div>
+
+        <div class="chess-cta-row chess-fade-up">
+          <a class="chess-btn" href={ctaHref}>
+            <span>Make Your Move</span>
+            <svg class="chess-btn__arrow" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="#F3EEE4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+          <p class="chess-cta-row__note">Batizado in {batizadoDays} days <span class="countdown__note">(date TBC)</span></p>
+        </div>
+      </div>
+
+      <div class="chess-dashboard__board-col">
+        <div
+          class="chess-floor"
+          style={`--sq:${SQ}px;width:calc(var(--sq) * ${GRID_COLS});height:calc(var(--sq) * ${GRID_ROWS})`}
+        >
+          {
+            darkSquares.map((s) => (
+              <div class="chess-floor__square" style={`--col:${s.col};--row:${s.row}`} data-row={s.row} data-col={s.col} />
+            ))
+          }
+
+          {
+            currentPos && (
+              <div
+                class="chess-floor__square chess-floor__square--lime"
+                style={`--col:${currentPos.col};--row:${currentPos.row}`}
+                data-row={currentPos.row}
+                data-col={currentPos.col}
+              />
+            )
+          }
+
+          {
+            photoSquares.map((p) => (
+              <div
+                class="chess-floor__square chess-floor__square--photo"
+                style={`--col:${p.col};--row:${p.row}`}
+                data-row={p.row}
+                data-col={p.col}
+              >
+                <img src={wix(p.key, 240, 240)} alt="" loading="lazy" width="120" height="120" />
+              </div>
+            ))
+          }
+
+          {
+            dots.map((d) => (
+              <span
+                class="chess-dot"
+                style={`left:${d.col * SQ + SQ / 2}px;top:${d.row * SQ + SQ / 2}px`}
+                data-row={d.row}
+                data-col={d.col}
+              />
+            ))
+          }
+
+          {
+            arrowPath && (
+              <svg class="chess-arrow" width={GRID_COLS * SQ} height={GRID_ROWS * SQ} data-row="0" data-col="0">
+                <path d={arrowPath.d} />
+                <polygon points={arrowPath.arrow} />
+              </svg>
+            )
+          }
+
+          {
+            tiles.map((t) => {
+              if (t.state === 'locked') {
+                return (
+                  <div
+                    class="chess-tile chess-tile--locked"
+                    style={`--col:${t.pos.col};--row:${t.pos.row}`}
+                    data-row={t.pos.row}
+                    data-col={t.pos.col}
+                  >
+                    <span class="chess-tile__icon" set:html={lockSVG({ size: 26, color: '#9A927F' })} />
+                    <span class="chess-tile__label">{t.mod.title}</span>
+                  </div>
+                );
+              }
+              const piece = t.state === 'current' ? 'knight' : 'pawn';
+              const fill = t.state === 'current' ? '#FF7A1A' : '#0F0F0F';
+              return (
+                <a
+                  href={MODULE_ROUTE[t.mod.id]}
+                  class:list={['chess-tile', t.state === 'current' && 'chess-tile--current']}
+                  style={`--col:${t.pos.col};--row:${t.pos.row}`}
+                  data-row={t.pos.row}
+                  data-col={t.pos.col}
+                >
+                  <span class="chess-tile__icon" set:html={`<svg viewBox="0 0 24 24" fill="${fill}">${pieceInner(piece)}</svg>`} />
+                  <span class="chess-tile__label">{t.mod.title}</span>
+                  <span class="chess-tile__badge">{t.progress.percent}%</span>
+                </a>
+              );
+            })
+          }
+
+          {
+            currentTile && (
+              <div
+                class="chess-flag"
+                style={`left:${currentTile.pos.col * SQ - 8}px;top:${currentTile.pos.row * SQ - 26}px`}
+                data-row={currentTile.pos.row}
+                data-col={currentTile.pos.col}
+              >
+                <span class="chess-flag__text">YOUR MOVE</span>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+
+  <script>
+    import '../../directions/chess/motion.js';
+  </script>
+</Base>

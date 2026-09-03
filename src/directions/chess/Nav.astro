@@ -1,0 +1,51 @@
+---
+// Nav.astro — Grandmaster Roda header. Fixed-height ink/bone bar with the
+// knight logo, a page nav, and the "MOVE N / streak / LOG OUT" pill group
+// from Paper artboard XN-0.
+import { STUDENT } from '../../data/student.js';
+import { overallProgress } from '../../data/curriculum.js';
+import { LOGO_INNER } from './pieces.js';
+
+interface Props {
+  active?: 'home' | 'dashboard' | 'movements' | 'music' | 'batizado';
+}
+
+const { active } = Astro.props;
+const progress = overallProgress();
+const moveNumber = progress.completed + 1;
+
+const links = [
+  { id: 'dashboard', href: '/chess/dashboard', label: 'Board' },
+  { id: 'movements', href: '/chess/movements', label: 'Movements' },
+  { id: 'music', href: '/chess/music', label: 'Music' },
+  { id: 'batizado', href: '/chess/batizado', label: 'Batizado' },
+];
+---
+
+<header class="chess-nav">
+  <a href="/chess/" class="chess-nav__brand" aria-label="Physical Chess home">
+    <span class="chess-nav__logo" set:html={LOGO_INNER ? `<svg width="34" height="34" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#F3EEE4">${LOGO_INNER}</svg>` : ''} />
+    <span class="chess-nav__wordmark">Physical Chess</span>
+  </a>
+
+  <nav class="chess-nav__links" aria-label="Screens">
+    {
+      links.map((link) => (
+        <a
+          href={link.href}
+          class="chess-nav__link"
+          aria-current={active === link.id ? 'page' : undefined}
+          data-active={active === link.id}
+        >
+          {link.label}
+        </a>
+      ))
+    }
+  </nav>
+
+  <div class="chess-nav__meta">
+    <span class="chess-nav__pill">MOVE {moveNumber}</span>
+    <span class="chess-nav__pill">{STUDENT.streakDays}-DAY STREAK</span>
+    <a href="/chess/" class="chess-nav__logout">LOG OUT</a>
+  </div>
+</header>

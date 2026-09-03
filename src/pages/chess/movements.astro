@@ -1,0 +1,95 @@
+---
+// movements.astro — Movements lesson player. The Movements module's real
+// lesson list as a move list, the aulão video framed like a position
+// panel, a practice drill card, and a mark-complete interaction
+// (SPEC §2 row 3, direction brief step 4).
+import Base from '../../layouts/Base.astro';
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../../directions/chess/Nav.astro';
+import Footer from '../../directions/chess/Footer.astro';
+import { MODULES, moduleProgress } from '../../data/curriculum.js';
+import { video } from '../../data/media.js';
+import '../../directions/chess/tokens.css';
+import '../../directions/chess/theme.css';
+
+const movements = MODULES.find((m) => m.id === 'movements');
+const progress = moduleProgress(movements);
+const drill = movements.lessons.find((l) => l.type === 'drill');
+const lessonVideo = video('aulao2024Lapa');
+
+const NOTATION = ['e4', 'Nf3', 'Bc4', 'O-O', 'Qxd5'];
+---
+
+<Base title="Movements — Physical Chess" direction="chess">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="movements" />
+
+  <main class="chess-section">
+    <div class="chess-section__head chess-fade-up">
+      <p class="chess-eyebrow">
+        Movements · {progress.completed} / {progress.total} moves played
+      </p>
+      <h1 class="chess-h2">First Moves.</h1>
+      <p class="chess-lede">Ginga, meia lua de frente, esquiva, cocorinha, aú, jogo — the opening moves every capoeirista learns.</p>
+    </div>
+
+    <div class="chess-movements-grid">
+      <div class="chess-scoresheet chess-fade-up">
+        <div class="chess-scoresheet__header">
+          <span class="chess-scoresheet__header-title">MOVE LIST</span>
+          <span class="chess-scoresheet__header-meta">MOVEMENTS · {progress.percent}%</span>
+        </div>
+        {
+          movements.lessons.map((lesson, i) => {
+            const currentIndex = movements.lessons.findIndex((l) => !l.completed);
+            const isCurrent = !lesson.completed && i === currentIndex;
+            return (
+              <div class:list={['chess-scoresheet__row', isCurrent && 'chess-scoresheet__row--current']}>
+                <span class="chess-scoresheet__num">{i + 1}.</span>
+                <span class="chess-scoresheet__title">{lesson.title}</span>
+                <span class="chess-scoresheet__notation">
+                  {lesson.completed ? `${NOTATION[i % NOTATION.length]} ✓` : isCurrent ? 'YOUR MOVE' : 'QUEUED'}
+                </span>
+              </div>
+            );
+          })
+        }
+      </div>
+
+      <div class="chess-fade-up">
+        <div class="chess-frame chess-frame--square">
+          <video
+            src={lessonVideo.mp4}
+            poster={lessonVideo.poster}
+            controls
+            preload="metadata"
+            aria-label="Aulão 2024 – 300 Anos Lapa, ACE class footage"
+          ></video>
+        </div>
+        <p class="chess-media-credit">Video: SoChlo Productions — Aulão 2024, 300 Anos Lapa</p>
+
+        {
+          drill && (
+            <div class="chess-drill-card">
+              <span class="chess-drill-card__label">Practice drill</span>
+              <h3 class="chess-h3">{drill.title}</h3>
+              <p>{drill.summary}</p>
+              <button type="button" class="chess-mark-complete" data-chess-mark-complete data-done={drill.completed ? 'true' : 'false'}>
+                {drill.completed ? 'Practice Complete ✓' : 'Mark Complete'}
+              </button>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+
+  <script>
+    import '../../directions/chess/motion.js';
+  </script>
+</Base>

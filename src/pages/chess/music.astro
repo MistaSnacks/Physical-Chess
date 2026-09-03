@@ -1,0 +1,210 @@
+---
+// music.astro — Music & Culture + the 3-question puzzle. Matches Paper
+// artboard XO-0 almost element-for-element: back button, move meta,
+// lesson checklist, a real ticking chess clock, the puzzle panel (the
+// shared Quiz component restyled as chess squares a1/b2/c3/d4), and a
+// position panel whose knight jumps on every correct answer.
+import Base from '../../layouts/Base.astro';
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../../directions/chess/Nav.astro';
+import Footer from '../../directions/chess/Footer.astro';
+import Quiz from '../../components/Quiz.astro';
+import { MODULES, INSTRUMENTS, PORTUGUESE_WORDS, MUSIC_QUIZ, moduleProgress } from '../../data/curriculum.js';
+import { PHOTOS, wix } from '../../data/media.js';
+import { pieceInner } from '../../directions/chess/pieces.js';
+import '../../directions/chess/tokens.css';
+import '../../directions/chess/theme.css';
+
+const music = MODULES.find((m) => m.id === 'music');
+const progress = moduleProgress(music);
+const checklistLessons = music.lessons;
+const quizLesson = music.lessons.find((l) => l.type === 'quiz');
+
+// Mini-board knight targets: one square per quiz question, in order.
+const positions = [
+  { col: 1, row: 3 },
+  { col: 2, row: 1 },
+  { col: 3, row: 2 },
+];
+const positionsAttr = positions.map((p) => `${p.col},${p.row}`).join(';');
+const orangeCell = { col: 3, row: 2 };
+const dotCells = [
+  { col: 3, row: 0 },
+  { col: 0, row: 2 },
+];
+
+function miniIsDark(row, col) {
+  return (row + col) % 2 === 1;
+}
+---
+
+<Base title="Music &amp; Culture — Physical Chess" direction="chess">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="music" />
+
+  <section class="chess-section">
+    <div class="chess-section__head chess-fade-up">
+      <p class="chess-eyebrow">Music &amp; Culture · {progress.completed} / {progress.total} moves played</p>
+      <h1 class="chess-h2">Sound of the Roda.</h1>
+      <p class="chess-lede">The instruments that carry the game, and the words every student hears in their first class.</p>
+    </div>
+
+    <div class="chess-fade-up" style="margin-bottom:40px;">
+      <h2 class="chess-h3" style="margin-bottom:16px;">Instruments</h2>
+      <div class="chess-instrument-grid">
+        {
+          INSTRUMENTS.map((inst) => (
+            <div class="chess-instrument-card">
+              {inst.photoKey && PHOTOS[inst.photoKey] && (
+                <div class="chess-instrument-card__photo">
+                  <img src={wix(inst.photoKey, 300, 300)} alt={PHOTOS[inst.photoKey].caption} loading="lazy" width="300" height="300" />
+                </div>
+              )}
+              <span class="chess-instrument-card__name">{inst.name}</span>
+              <p class="chess-instrument-card__blurb">{inst.blurb}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="chess-fade-up">
+      <h2 class="chess-h3" style="margin-bottom:16px;">Words for the Roda</h2>
+      <div class="chess-words-grid">
+        {
+          PORTUGUESE_WORDS.map((w) => (
+            <div class="chess-word-card">
+              <span class="chess-word-card__word">{w.word}</span>
+              <p class="chess-word-card__meaning">{w.meaning}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <div class="chess-puzzle-shell">
+    <div class="chess-puzzle-side chess-fade-up">
+      <a href="/chess/dashboard" class="chess-puzzle-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M15 5l-7 7 7 7" stroke="#0F0F0F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>Back to Board</span>
+      </a>
+
+      <p class="chess-puzzle-meta">Move {progress.completed + 1} · {quizLesson?.title}</p>
+      <h2 class="chess-h3">Puzzle Time.</h2>
+
+      <div class="chess-puzzle-checklist">
+        {
+          checklistLessons.map((lesson) => (
+            <div class:list={['chess-puzzle-checklist__row', lesson.id === quizLesson?.id && 'chess-puzzle-checklist__row--active']}>
+              <span class="chess-puzzle-checklist__badge">
+                {lesson.completed ? (
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12.5l4.5 4.5L19 7" stroke="#C6F547" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                ) : (
+                  <span class="chess-puzzle-checklist__badge-text">?</span>
+                )}
+              </span>
+              <span>{lesson.type === 'quiz' ? `Puzzle: ${MUSIC_QUIZ.length} questions` : lesson.title}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="chess-clock">
+        <div class="chess-clock__side chess-clock__side--maya" data-chess-clock-side-maya>
+          <span class="chess-clock__label">MAYA</span>
+          <span class="chess-clock__value" data-chess-clock-maya data-seconds="42">0:42</span>
+        </div>
+        <div class="chess-clock__side chess-clock__side--mestre">
+          <span class="chess-clock__label">MESTRE</span>
+          <span class="chess-clock__value">1:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chess-puzzle-panel chess-fade-up">
+      <div class="chess-puzzle-panel__head">
+        <span class="chess-puzzle-meta">Puzzle 1 of {MUSIC_QUIZ.length} · Find the right move</span>
+        <div class="chess-puzzle-progress">
+          {
+            MUSIC_QUIZ.map((_, i) => (
+              <span class:list={['chess-puzzle-progress__square', i === 0 && 'chess-puzzle-progress__square--current']} />
+            ))
+          }
+        </div>
+      </div>
+
+      <Quiz questions={MUSIC_QUIZ} />
+    </div>
+
+    <div class="chess-position-panel chess-fade-up">
+      <span class="chess-position-panel__label">The Position</span>
+      <div class="chess-mini-board" data-positions={positionsAttr}>
+        {
+          Array.from({ length: 16 }).map((_, i) => {
+            const row = Math.floor(i / 4);
+            const col = i % 4;
+            const isOrange = orangeCell.col === col && orangeCell.row === row;
+            return (
+              <div
+                class:list={[
+                  'chess-mini-board__sq',
+                  !isOrange && !miniIsDark(row, col) && 'chess-mini-board__sq--light',
+                  isOrange && 'chess-mini-board__sq--orange',
+                ]}
+              />
+            );
+          })
+        }
+        {
+          dotCells.map((d) => (
+            <span class="chess-mini-board__dot" style={`left:${(d.col + 0.5) * 25}%;top:${(d.row + 0.5) * 25}%`} />
+          ))
+        }
+        <span class="chess-mini-board__piece" style={`left:${(positions[0].col + 0.5) * 25}%;top:${(positions[0].row + 0.5) * 25}%`} set:html={`<svg viewBox="0 0 24 24" fill="#1D5DFF">${pieceInner('knight')}</svg>`} />
+      </div>
+
+      <div class="chess-position-note">
+        <span class="chess-position-note__title">Knight to f3</span>
+        <p class="chess-position-note__body">Answer {MUSIC_QUIZ.length} puzzles to land the jump and unlock Culture.</p>
+      </div>
+
+      <div class="chess-position-reward">+1 Move · +50 XP</div>
+    </div>
+  </div>
+
+  <div class="chess-checkmate" data-visible="false">
+    <div class="chess-checkmate__inner">
+      <div class="chess-checkmate__board">
+        {Array.from({ length: 16 }).map(() => <div />)}
+      </div>
+      <h2 class="chess-checkmate__title">Checkmate</h2>
+      <p class="chess-checkmate__score" data-quiz-score-echo>Puzzle complete, {'{'}score{'}'} correct.</p>
+      <div class="chess-checkmate__actions">
+        <a class="chess-btn" href="/chess/batizado">See Batizado</a>
+        <a class="chess-btn chess-btn--ink" href="/chess/dashboard">Back to Board</a>
+      </div>
+    </div>
+  </div>
+
+  <Footer />
+
+  <script>
+    import '../../directions/chess/motion.js';
+
+    const quiz = document.querySelector('[data-quiz]');
+    const scoreEcho = document.querySelector('[data-quiz-score-echo]');
+    if (quiz && scoreEcho) {
+      quiz.addEventListener('quiz:done', (e) => {
+        scoreEcho.textContent = `Puzzle complete, ${e.detail.score} / ${e.detail.total} correct.`;
+      });
+    }
+  </script>
+</Base>
