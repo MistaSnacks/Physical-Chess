@@ -120,22 +120,27 @@ export const PHOTOS = {
   // Teachers / mestres (Culture -> ABADÁ-Capoeira, About Us -> Educators)
   mestrePernilongo: {
     file: '473014_3401328370b04f2bb2dd99c78eea11df~mv2.webp',
+    focus: 'face',
     caption: 'Mestre Pernilongo',
   },
   mestraMarciaBerimbau: {
     file: '473014_49fa715f9fef4bc7826032cf796b9a4a~mv2.jpg',
+    focus: 'face',
     caption: 'Mestra Marcia on the berimbau',
   },
   mestraEdnaLima: {
     file: '473014_45bd6c2e77aa4c8c9c2a989d8c9aeed2~mv2.jpg',
+    focus: 'face',
     caption: 'Mestra Edna Lima',
   },
   mestreCobra: {
     file: '473014_a2f584a24fd04c5d91f21d957e8437a2~mv2.jpg',
+    focus: 'face',
     caption: 'Mestre Cobra',
   },
   mestrandaYara: {
     file: '473014_c856e8d81639422181a4e300b888dc7c~mv2.jpg',
+    focus: 'face',
     caption: 'Mestranda Yara',
   },
 
@@ -364,10 +369,14 @@ export const YOUTUBE = {
  * Wix fill-crop URL for a photo key, e.g. wix('heroWorkshop', 800, 600).
  * Uses Wix's `/v1/fill/w_<W>,h_<H>,al_c,q_85/<file>` transform.
  */
-export function wix(key, w, h) {
+export function wix(key, w, h, align) {
   const photo = PHOTOS[key];
   if (!photo) throw new Error(`media.js: unknown photo key "${key}"`);
-  return `${WIX_MEDIA_BASE}${photo.file}/v1/fill/w_${w},h_${h},al_c,q_85/${photo.file}`;
+  // `al_fa` = Wix face-detection alignment; photos flagged `focus: 'face'`
+  // (teacher portraits) crop to faces by default so small avatars never show
+  // a banner or logo instead of the person.
+  const al = align || (photo.focus === 'face' ? 'fa' : 'c');
+  return `${WIX_MEDIA_BASE}${photo.file}/v1/fill/w_${w},h_${h},al_${al},q_85/${photo.file}`;
 }
 
 /** Full-size original photo URL (no transform suffix) for a photo key. */
