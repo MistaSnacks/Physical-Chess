@@ -69,6 +69,9 @@ Wix (site 93f9dffd-79fb-4bea-94fa-810eef3397fe)
 3. Handle `EMAIL_VERIFICATION_REQUIRED` (6-digit code screen), `OWNER_APPROVAL_REQUIRED` (pending notice), `resetPassword`, `emailAlreadyExists`, `invalidPassword` with plain-language errors.
 4. **Session storage (see §2.1.1):** the refresh token never reaches page JavaScript. `/auth/callback` is a server route: it exchanges the code, stores the refresh token in an `httpOnly; Secure; SameSite=Lax` cookie, and returns only the 4-hour access token to the page. Logout via `wix.auth.logout(url)` plus clearing the cookie.
 5. First login with no `lms-accounts` row → create it (role `guardian`) → `/players/new` (add first player) → `/who` (picker) → `/journey`.
+   **Sign-up policy (client decision, §10):** default is open sign-up with email verification, but each program has an **invite code** the coach hands out (printed on the class flyer); a player is only placed in a program by entering that program's code, so strangers who sign up see an empty map and never appear in a turma. If the client prefers closed sign-up, Wix's "owner approval" setting handles it and the app shows the pending screen.
+   **First admins** are seeded by member ID in `scripts/seed-roles.mjs` (Camren, Pastor); after that `/admin/roles` manages the rest.
+   **Emails Wix sends** (verification code, password reset, approval) come from Wix's templates and cannot be re-skinned from headless; they say "physicalchess" as the site name. Emails the app sends (shop order to ACE, order confirmation to the parent, a weekly guardian digest in phase 2) go through Resend from `noreply@physicalchess.org` (needs one DNS record; until then, from the Vercel default domain).
 6. Server routes get `Authorization: Bearer <member access token>`; the server verifies it by calling Get My Member with that token, loads the account row with the client secret, and checks the role.
 
 Blocker: the OAuth app must be created in the Wix dashboard by someone with the site's **Headless Settings** permission (the MCP got a 403 again on 2026-09-03, and Camren's collaborator role may not include it either; the site owner, Pastor, can do it or raise Camren's role). Dashboard → Headless Settings → OAuth apps → "Physical Chess App", login URL empty, redirect URIs `http://localhost:4321/auth/callback` and `https://<prod-domain>/auth/callback`, allowed domain for the prod host, and **generate a client secret** in the same screen. That one screen yields both credentials the app ever needs: the **Client ID** (public, visitor and member auth in the browser) and the **client secret** (backend only, exchanged for a short-lived admin token with the OAuth `client_credentials` grant for leaderboards, coach tools, exports). No separate Wix API key, no further permissions from Camren's account. Until then everything runs in demo mode, and the collections themselves can already be created and seeded through the MCP, which does have data permissions.
@@ -96,6 +99,14 @@ Demo mode ignores all of this (there is no session to protect).
 ### 2.3 Player switching
 
 `store.activePlayerId` in `sessionStorage`; the nav shows the active player's avatar chip; tapping it opens the picker. Coaches get a "Coach" chip next to it.
+
+### 2.4 Class mode (shared tablets at school) — P1
+
+The spec above assumes the app is used at home on a family's device. ACE also teaches in schools, where the realistic device is a shared tablet and the adult in the room is the coach, not a parent. So a coach can put a device in **Class mode**: `/coach/class` → pick program → the tablet shows that turma's player cards (avatar + apelido only) → a kid taps their card and plays. Rules: no guardian session is ever created on the shared device; the coach's session on that device is capped at 8 hours and the screen shows a persistent "Class mode · Bushwick · tap to end" bar; events written in class mode carry `source: "class"` so guardians see "done in class" on the report card; the roster only lists players whose guardian ticked "may play in class" (default on). Players created by a coach in class mode (a kid with no family account yet) get `accountId = coach's account` and are transferable to a guardian later by claim code.
+
+### 2.5 Where the app lives
+
+The app is the new member experience; the Wix site stays the public site until the client decides otherwise. Recommended: `app.physicalchess.org` (CNAME in Wix DNS → Vercel), with the Wix home page's "Log In" box replaced by one button to the app. The cookie in §2.1.1 is first-party on that host, and the OAuth app's redirect URIs must list it. Until DNS is done, `physical-chess-app.vercel.app` is the host.
 
 ---
 
@@ -138,7 +149,18 @@ Field naming follows Wix (`camelCase`, `_owner` = the member). "Author" = `SITE_
 
 Rules: an event with an already-seen `clientEventId` is ignored. Re-doing a lesson never re-awards XP, only improves stars. All XP/level/streak/patch/readiness values are **pure functions** of the event list (`src/lib/game/*`), used identically in the browser (optimistic) and on the server (recompute + leaderboard).
 
-### 3.2 Export (the client must be able to leave with their data)
+### 3.2 Read path, offline writes, and quotas
+
+- **Loading a player reads snapshots, not the ledger**: `lms-players` + `lms-lesson-state` + `lms-patch-awards` (three queries). The ledger is only read for the report card timeline and the nightly recompute. This keeps a page load at three requests no matter how long a kid has played.
+- **Outbox**: every event is written to a `localStorage` outbox first, applied to the store optimistically, then flushed to Wix; a failed flush retries with backoff on the next page load. A kid on school Wi-Fi never loses a completed lesson. `clientEventId` makes the retry safe.
+- **Quotas**: Wix Data allows 1,000 collections, 500 KB per item, and per-plan request limits the Premium plan is well inside (an active kid writes ~3 items per lesson). Nothing here needs bulk operations beyond the nightly recompute, which pages through `lms-events` by `occurredAt`.
+- **Week boundaries** for streaks and leaderboards use America/New_York, not UTC.
+
+### 3.3 Delete (COPPA gives parents the right to erase)
+
+`/family/players/:id` has **Delete this player**: the server deletes that player's rows in every `lms-*` collection (ledger included) and writes one `player.deleted` tombstone with no personal data. **Delete my account** deletes all players, the `lms-accounts` row, and asks Wix to delete the member (Delete Member API, needs the client secret). Both are two-step confirmations and are logged in `lms-events` with `source: "system"`. A privacy page (`/privacy`) states in plain language what is stored about a child (first name, apelido, avatar, birth year, activity events) and how to get it deleted.
+
+### 3.4 Export (the client must be able to leave with their data)
 
 1. **Wix dashboard → CMS → any `lms-*` collection → Export to CSV.** No code, works today.
 2. **`/api/export?scope=program|all&format=csv|json`** for coaches/admin: players joined with account contact, current corda, level, XP, readiness, plus a second file of raw events. Streams, no size cap.
@@ -219,7 +241,11 @@ One 60-second task per day from a rotating pool: Portuguese flashcard (word ↔ 
 - Per program (school), current week, opted-in players only, **apelido + avatar only**, top 10 plus "you". Guardian toggle in settings (default on; confirm with client, §10).
 - **Community goal**: the whole roda's XP this month fills a berimbau-shaped bar toward a target the coach sets ("Fill the berimbau by Batizado"). Cooperative, visible to everyone.
 
-### 4.8 Mestre Bira and avatars
+### 4.8 Read-aloud (a seven-year-old cannot read a lesson) — P1
+
+Every reading lesson, quiz question, and Mestre Bira line has a **speaker button** that reads it with the browser's built-in speech synthesis (Web Speech API, zero dependencies, works offline). English voice for the lesson text; the Portuguese glossary words use a `pt-BR` voice when the device has one (iOS and Android both ship one), which also covers the "Portuguese audio" item that was parked. The highlighted sentence follows the voice. This is the single biggest usability decision for the younger half of the audience and it is cheap.
+
+### 4.9 Mestre Bira and avatars
 
 - Mestre Bira (SVG figure in a mango circle, already built) gets a small line library keyed by moment: welcome, first lesson, wrong answer, level up, streak saved, streak lost, readiness 100 %, patch earned.
 - Player avatar = an animal from the Wix rainforest set (frog, snake, lizard, armadillo, plus two from the African maps content: giraffe, gorilla) drawn as flat SVG stickers, plus a uniform-cord color. Picked when a player is created; editable in `/me`.
@@ -278,7 +304,8 @@ Parity with the Wix member site (nav: Home · About Us [Educators, the ACE, ABAD
 
 | Route | Screen | Status | Pri |
 |---|---|---|---|
-| `/coach` | Roster by program: name, apelido, level, readiness %, weeks streak, last active, corda | 🔨 | P1 |
+| `/coach` | **Overview** (active players this week, lessons done, readiness distribution, kids inactive 3+ weeks) then roster by program: name, apelido, level, readiness %, weeks streak, last active, corda | 🔨 | P1 |
+| `/coach/class` | Class mode (§2.4): pick program → tablet shows player cards | 🔨 | P1 |
 | `/coach/players/:id` | Student detail: readiness checklist, event timeline, notes; actions: stamp attendance, award patch, award corda (writes `lms-corda-awards`), XP bonus | 🔨 | P1 |
 | `/coach/attendance` | Today's class: tap-to-stamp grid per program | 🔨 | P1 |
 | `/coach/export` | Export CSV/JSON by program or all | 🔨 | P1 |
@@ -293,6 +320,8 @@ Four modules, ~22 lessons. Every lesson: `id, moduleId, group, title, type, minu
 - **Music** — Meet the Berimbau (reading), Pandeiro & Atabaque (video), Agogô & Reco-reco (reading), Sing the Roda: "Paranauê" (drill: call-and-response), Music Boss Quiz (5 questions; keep Q "Which country was capoeira born in?" → Brazil).
 - **Culture** — Portuguese for the Roda (reading, 12 words w/ audio later), ABADÁ-Capoeira (video, bhmShowcase), Manifestations: Samba de Roda, Jongo, Puxada de Rede, Maculelê (reading with Wix photos), Folklore (reading), History & Maps: Africa → Brazil (reading with the three maps), Culture Boss Quiz (5 questions).
 - **Graduation** — What is Batizado? (reading, verbatim copy), Cordas (reading), Batizado 2026 (video), Roda Ready check (quiz: 3 questions from all modules).
+
+**Video honesty:** the client's existing videos are event and class compilations, not step-by-step instruction. v1 uses them as "watch the roda" context and carries the actual teaching in the drill cards (step list, photo per step, timer, self-rating). ACE should shoot 6 short phone videos (ginga, meia lua, esquiva, cocorinha, aú, roda etiquette; 30–60 s each, landscape, in uniform) which drop straight into the same lesson slots; the spec lists them in §10.
 
 All new copy is written in the client's voice for kids 7–13 (short sentences, Portuguese words bolded on first use) and flagged `reviewNeeded: true` until ACE approves. Member-only Wix pages could not be read (login wall); when the client shares that copy, it replaces ours.
 
@@ -319,7 +348,7 @@ New components (all in `src/components/quest/`, styled in `theme.css` sections w
 - Session server routes (§2.1.1): `src/pages/auth/callback.js` (code → tokens, sets the `pc_session` httpOnly cookie), `src/pages/api/session.js` (cookie → fresh access token, slides the cookie), `src/pages/api/logout.js`. Env adds `SESSION_COOKIE_SECRET` (HMAC over the cookie payload) and `RECAPTCHA_SITE_KEY`.
 - `src/content/{modules,lessons,glossary,patches,readiness,levels,programs}.js` and `src/content/copy/*.md` for reading lessons.
 - `scripts/wix-collections.mjs` (creates/updates the §3 collections via the Wix Data Collections API with the client secret; idempotent) and `scripts/seed-demo.mjs`.
-- `.env.example`: `PUBLIC_WIX_CLIENT_ID`, `PUBLIC_DEMO`, `WIX_CLIENT_SECRET`, `WIX_SITE_ID`, `EXPORT_SECRET`.
+- `.env.example`: `PUBLIC_WIX_CLIENT_ID`, `PUBLIC_DEMO`, `WIX_CLIENT_SECRET`, `WIX_SITE_ID`, `EXPORT_SECRET`, `SESSION_COOKIE_SECRET`, `RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET`, `RESEND_API_KEY`, `APP_ORIGIN`.
 - Vercel project `physical-chess-app` (new; the showcase project stays).
 
 ---
@@ -337,7 +366,7 @@ WP0 is done by Claude first; WP1–WP5 run in parallel; WP6 after WP3; WP7 last.
 | **WP4 Accounts & family** | Codex | `/login /signup /forgot /verify /auth/callback`, `/who`, `/family/*` incl. report card + CSV/JSON download, AvatarPicker, settings, wixRepo auth paths (works once client ID exists), error states | Full flow in demo; with a real client ID, a real Wix member logs in and their rows appear in the Wix CMS |
 | **WP5 Public parity** | Codex | `/about/*`, `/graduation/*`, `/shop` (server route → Wix form collection), contact form, footer/nav updates, sitemap | Every Wix nav item has a Quest page; forms land in the Wix dashboard |
 | **WP6 Coach & server** | Codex | `/api/leaderboard`, `/api/coach/*`, `/api/export`, `/api/jobs/recompute` (+ vercel cron), `/coach/*`, `/admin/roles`, `/turma`, `/desafio` + pool | Coach demo roster works; with client secret, awards write to `lms-corda-awards` and the export CSV opens in Numbers |
-| **WP7 QA & polish** | Codex | Screenshots of every route at 1440/390 (`screenshots/`), Lighthouse ≥ 85 on Home/Journey, a11y pass (focus, labels, contrast), copy pass, console clean | Checklist in `QA.md` all ticked |
+| **WP7 QA & polish** | Codex | Screenshots of every route at 1440/390 (`screenshots/`), Lighthouse ≥ 85 on Home/Journey, a11y pass (focus, labels, contrast, read-aloud), copy pass, console clean, **empty and edge states** (brand-new player, all modules locked, coach with no program, guardian with no players, offline outbox replay), a Playwright smoke test of the demo flow (`npm run test:e2e`: sign in → add player → finish a lesson → HUD updates → report card CSV downloads) | Checklist in `QA.md` all ticked |
 
 Agent guardrails (paste into every Codex prompt): read `SPEC.md` fully; never edit `tokens.css`; never fork content or data helpers; all reads/writes go through `src/lib/repo`; every mutation is an event with a `clientEventId`; kid-safe copy; no new dependencies without noting it in the report; `npm run build` must pass before reporting; do not touch another WP's files except `theme.css` (append your own section).
 
@@ -364,9 +393,16 @@ Agent guardrails (paste into every Codex prompt): read `SPEC.md` fully; never ed
 7. **Educators**: names, titles (Mestre/Mestranda/Professor/Instrutor), one-line bios, which portrait for each.
 8. **Shop**: uniform tops only, or more items? Prices? Where should orders go (email + dashboard)?
 9. **Readiness checklist**: does the default list in §4.2 match how ACE decides who gets a corda?
+10. **Where it's used**: mostly at home on a parent's phone, in class on school tablets, or both? (Decides how much of §2.4 Class mode ships in v1.)
+11. **Sign-up**: open to anyone with a program invite code, or owner-approved only?
+12. **Module order**: keep Culture locked until Music is done (and Graduation until Culture), or let kids roam freely?
+13. **Six short teaching videos** (§5.5): can a coach shoot them on a phone before Batizado? We send the shot list.
+14. **Logo and name**: official ACE / ABADÁ-Capoeira logo files, and whether the app is "Physical Chess" or "ACE" to the kids.
+15. **Domain**: OK to put the app at `app.physicalchess.org` (one CNAME record in Wix DNS)?
+16. **Privacy page**: who signs off the plain-language privacy text for parents (ACE or Camren)?
 
 ---
 
 ## 11. Not in v1 (parked, on purpose)
 
-Content editing in the Wix CMS (phase 2 sync), email/SMS nudges, Portuguese audio in the glossary, Portuguese UI toggle, PWA/offline, class-scheduling/bookings, payments (Wix Invoices already covers ACE billing), Supabase/Postgres (only if Wix Data limits bite: 500 KB/item, author-only permissions, no field-level rules).
+Content editing in the Wix CMS (phase 2 sync), email/SMS nudges and the weekly guardian digest, recorded Portuguese audio (v1 uses speech synthesis, §4.8), Portuguese UI toggle, full PWA/offline (v1 has the write outbox only), class-scheduling/bookings, payments (Wix Invoices already covers ACE billing), Supabase/Postgres (only if Wix Data limits bite: 500 KB/item, author-only permissions, no field-level rules), Google/Facebook sign-in (Wix supports it on custom login pages; add when a parent asks).
