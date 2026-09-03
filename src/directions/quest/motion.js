@@ -20,17 +20,18 @@ function stagger(nodes, attr, delayStep, startDelay = 0) {
       el.setAttribute(attr, 'true');
       return;
     }
-    const delay = startDelay + i * delayStep;
+    // Cap the final delay so every entrance has fully settled by 1.2s.
+    const delay = Math.min(startDelay + i * delayStep, 600);
     setTimeout(() => el.setAttribute(attr, 'true'), delay);
   });
 }
 
 function initEntrance() {
   const enterEls = Array.from(document.querySelectorAll('[data-quest-enter]'));
-  stagger(enterEls, 'data-quest-enter', 70, 20);
+  stagger(enterEls, 'data-quest-enter', 45, 20);
 
   const nodeEls = Array.from(document.querySelectorAll('[data-quest-node]'));
-  stagger(nodeEls, 'data-quest-node', 90, 260);
+  stagger(nodeEls, 'data-quest-node', 75, 180);
 }
 
 function initTrailDraw() {
@@ -51,12 +52,10 @@ function initTrailDraw() {
       // dashoffset over a duplicated length
       path.style.strokeDasharray = `4 26`;
     }
-    path.style.strokeDashoffset = `${length}`;
-    path.getBoundingClientRect(); // force layout before transition
-    path.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)';
-    requestAnimationFrame(() => {
-      path.style.strokeDashoffset = '0';
-    });
+    path.animate(
+      [{ strokeDashoffset: length }, { strokeDashoffset: 0 }],
+      { duration: 1100, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' }
+    );
   });
 }
 
@@ -64,14 +63,32 @@ function initXpBar() {
   const fills = document.querySelectorAll('[data-xp-fill]');
   fills.forEach((fill) => {
     const percent = fill.getAttribute('data-xp-fill') || '0';
+    fill.style.setProperty('--quest-xp-scale', String(Number(percent) / 100));
     if (reduced()) {
-      fill.style.width = `${percent}%`;
+      fill.setAttribute('data-ready', 'true');
       return;
     }
-    fill.style.width = '0%';
     setTimeout(() => {
-      fill.style.width = `${percent}%`;
+      fill.setAttribute('data-ready', 'true');
     }, 500);
+  });
+}
+
+function initLessonDots() {
+  const guide = document.querySelector('[data-quest-trail-guide]');
+  const dots = document.querySelectorAll('[data-quest-lesson-dot]');
+  if (!(guide instanceof SVGPathElement) || !dots.length) return;
+
+  const length = guide.getTotalLength();
+  const svg = guide.ownerSVGElement;
+  const scaleX = svg ? svg.clientWidth / 900 : 1;
+  const scaleY = svg ? svg.clientHeight / 600 : 1;
+  dots.forEach((dot) => {
+    const progress = Number(dot.getAttribute('data-path-progress') || 0);
+    const point = guide.getPointAtLength(length * progress);
+    dot.style.setProperty('--dot-x', `${point.x * scaleX}px`);
+    dot.style.setProperty('--dot-y', `${point.y * scaleY}px`);
+    dot.setAttribute('data-ready', 'true');
   });
 }
 
@@ -86,6 +103,7 @@ function initCompleteButtons() {
     btn.addEventListener('click', () => {
       const done = btn.getAttribute('data-done') === 'true';
       btn.setAttribute('data-done', done ? 'false' : 'true');
+      btn.classList.toggle('is-complete', !done);
       const label = btn.querySelector('[data-quest-complete-label]');
       if (label) {
         label.textContent = done ? 'Mark complete' : 'Completed';
@@ -106,12 +124,15 @@ function initQuizReactions() {
   const xpTotalEl = document.querySelector('[data-quest-xp-total]');
   const mascotTarget = document.querySelector('[data-quest-xp-target]');
   const flashEl = document.querySelector('.quest-flash');
+  const winBanner = document.querySelector('[data-quest-win]');
   let xpEarned = 0;
   let heartsLost = 0;
 
   function updateProgress(index, state) {
     const seg = progressSegs[index];
     if (seg) seg.setAttribute('data-state', state);
+    const next = progressSegs[index + 1];
+    if (state === 'answered' && next) next.setAttribute('data-state', 'current');
   }
 
   quizRoot.addEventListener('quiz:wrong', (e) => {
@@ -134,12 +155,17 @@ function initQuizReactions() {
     xpEarned += 50;
     if (xpTotalEl) xpTotalEl.textContent = `+${xpEarned} XP`;
 
-    if (reduced() || !mascotTarget) return;
-
-    // Fly a "+50 XP" chip from the chosen answer toward the mascot's XP chip.
     const choiceEl = quizRoot.querySelector(
       `[data-question-index="${detail.index}"] [data-quiz-choice][data-selected="true"]`
     );
+    if (choiceEl && !reduced()) {
+      choiceEl.classList.add('quest-correct-bounce');
+      setTimeout(() => choiceEl.classList.remove('quest-correct-bounce'), 650);
+    }
+
+    if (reduced() || !mascotTarget) return;
+
+    // Fly a "+50 XP" chip from the chosen answer toward the mascot's XP chip.
     const originRect = (choiceEl || quizRoot).getBoundingClientRect();
     const targetRect = mascotTarget.getBoundingClientRect();
 
@@ -164,6 +190,16 @@ function initQuizReactions() {
   });
 
   quizRoot.addEventListener('quiz:done', (e) => {
+    if (winBanner) {
+      winBanner.setAttribute('aria-hidden', 'false');
+      winBanner.classList.add('is-visible');
+      if (!reduced()) {
+        setTimeout(() => {
+          winBanner.classList.remove('is-visible');
+          winBanner.setAttribute('aria-hidden', 'true');
+        }, 2600);
+      }
+    }
     if (flashEl && !reduced()) {
       flashEl.classList.add('is-flashing');
       setTimeout(() => flashEl.classList.remove('is-flashing'), 750);
@@ -236,9 +272,15 @@ function initGate() {
   if (!gate || !ceremony) return;
 
   gate.addEventListener('click', () => {
+    if (gate.getAttribute('data-open') === 'true') return;
     gate.setAttribute('data-open', 'true');
-    ceremony.setAttribute('data-visible', 'true');
-    if (!reduced()) {
+    const reveal = () => {
+      gate.setAttribute('hidden', '');
+      ceremony.setAttribute('data-visible', 'true');
+      if (reduced()) {
+        ceremony.scrollIntoView({ behavior: 'auto', block: 'start' });
+        return;
+      }
       ceremony.animate(
         [
           { opacity: 0, transform: 'translateY(24px)' },
@@ -246,8 +288,13 @@ function initGate() {
         ],
         { duration: 500, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }
       );
+      ceremony.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    if (reduced()) {
+      reveal();
+    } else {
+      setTimeout(reveal, 520);
     }
-    ceremony.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' });
   });
 }
 
@@ -262,6 +309,7 @@ function init() {
 
   initEntrance();
   initTrailDraw();
+  initLessonDots();
   initXpBar();
   initMascotBreathing();
   initCompleteButtons();

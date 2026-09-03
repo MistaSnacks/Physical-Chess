@@ -5,9 +5,10 @@ import { ClientRouter } from 'astro:transitions';
 import Base from '../../layouts/Base.astro';
 import Nav from '../../directions/quest/Nav.astro';
 import Footer from '../../directions/quest/Footer.astro';
+import YouTube from '../../components/YouTube.astro';
 import { MODULES, moduleProgress, overallProgress, nextUpLesson } from '../../data/curriculum.js';
 import { STUDENT } from '../../data/student.js';
-import { wix, HERO_CANDIDATES } from '../../data/media.js';
+import { wix, yt, HERO_CANDIDATES } from '../../data/media.js';
 import { CORDAS, cordaIndex, BATIZADO_DATE } from '../../data/batizado.js';
 
 import '../../directions/quest/tokens.css';
@@ -51,11 +52,12 @@ function stateFor(mod) {
 // stay within a 900px-tall viewport alongside the header + HUD above them.
 const POSITIONS = {
   movements: { x: 140, y: 440 },
-  music: { x: 370, y: 330 },
-  culture: { x: 580, y: 210 },
-  graduation: { x: 740, y: 110 },
+  music: { x: 390, y: 480 },
+  culture: { x: 660, y: 315 },
+  graduation: { x: 610, y: 150 },
 };
-const GATE_POS = { x: 830, y: 30 };
+const GATE_POS = { x: 830, y: 80 };
+const TRAIL_PATH = 'M50 560 C80 510 105 465 140 440 C230 360 310 520 390 480 C500 425 535 315 660 315 C760 315 730 190 610 150 C550 120 700 60 830 80';
 
 const nodes = MODULES.map((mod) => ({
   mod,
@@ -67,6 +69,20 @@ const nodes = MODULES.map((mod) => ({
 }));
 
 const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
+const MODULE_TRAIL_RANGES = {
+  movements: [0.12, 0.31],
+  music: [0.38, 0.54],
+  culture: [0.62, 0.74],
+  graduation: [0.82, 0.96],
+};
+const allLessons = MODULES.flatMap((mod) => {
+  const [start, end] = MODULE_TRAIL_RANGES[mod.id];
+  return mod.lessons.map((lesson, i) => ({
+    lesson,
+    locked: mod.locked,
+    progress: start + ((end - start) * (i + 1)) / (mod.lessons.length + 1),
+  }));
+});
 ---
 
 <Base title="My Journey — Roda Quest" direction="quest">
@@ -126,16 +142,16 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
 
         <div class="quest-hud__stats">
           <div class="quest-hud__stat">
-            <span class="quest-hud__stat-value">{overall.completed}</span>
-            <span class="quest-hud__stat-label">LESSONS</span>
+            <span class="quest-hud__stat-value">{STUDENT.streakDays}</span>
+            <span class="quest-hud__stat-label">DAY STREAK</span>
           </div>
           <div class="quest-hud__stat quest-hud__stat--pink">
-            <span class="quest-hud__stat-value">{STUDENT.badges}</span>
-            <span class="quest-hud__stat-label">BADGES</span>
+            <span class="quest-hud__stat-value">{STUDENT.stars}</span>
+            <span class="quest-hud__stat-label">STARS</span>
           </div>
           <div class="quest-hud__stat quest-hud__stat--mango">
-            <span class="quest-hud__stat-value">{daysToBatizado}</span>
-            <span class="quest-hud__stat-label">DAYS</span>
+            <span class="quest-hud__stat-value">{STUDENT.badges}</span>
+            <span class="quest-hud__stat-label">BADGES</span>
           </div>
         </div>
 
@@ -144,6 +160,30 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
           <span>Batizado is in {daysToBatizado} days (date TBC). Finish Corda {corda.label} to earn your first belt!</span>
         </div>
       </aside>
+
+      <!-- The phone map follows the HUD so Maya's status leads into the trail. -->
+      <div class="quest-map-mobile" aria-label="Curriculum map">
+        {
+          nodes.map((n) => (
+            <a class={`quest-map-mobile__node quest-map-mobile__node--${n.state}`} href={n.state === 'locked' ? undefined : n.href}>
+              <span class="quest-map-mobile__circle">
+                {n.state === 'locked' ? (
+                  <svg width="30" height="30" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="#7FA894" stroke-width="2.6"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="#7FA894" stroke-width="2.6"/></svg>
+                ) : (
+                  <img class="quest-map-mobile__photo" src={wix(n.state === 'current' ? HERO_CANDIDATES[0] : n.photoKey, 180, 180)} alt="" loading="lazy" />
+                )}
+              </span>
+              <span>
+                <span class="quest-map-mobile__label">{n.mod.title}</span>
+                <br />
+                <span class="quest-map-mobile__tag">
+                  {n.state === 'current' ? 'YOU ARE HERE' : n.state === 'locked' ? 'Locked' : `${n.progress.completed}/${n.progress.total} done`}
+                </span>
+              </span>
+            </a>
+          ))
+        }
+      </div>
 
       {
         next && (
@@ -158,19 +198,48 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
           </a>
         )
       }
+
+      <article class="quest-latest" data-quest-enter>
+        <div class="quest-latest__copy">
+          <span class="quest-latest__eyebrow">LATEST FROM THE RODA</span>
+          <span class="quest-latest__title">Brooklyn in motion</span>
+        </div>
+        <YouTube id={yt('acb2024')} title="Abadá Capoeira Brooklyn 2024" />
+        <span class="quest-latest__credit">Video: SoChlo Productions</span>
+      </article>
       </div>
 
       <div class="quest-trail-area">
         <svg class="quest-trail-svg" viewBox="0 0 900 600" preserveAspectRatio="none">
           <path
+            class="quest-trail-path quest-trail-path--glow"
+            d="M50 560 C80 510 105 465 140 440"
+          />
+          <path
             class="quest-trail-path"
-            d={`M50 560 C 80 520, 100 480, ${POSITIONS.movements.x} ${POSITIONS.movements.y}`}
+            d="M50 560 C80 510 105 465 140 440"
           />
           <path
             class="quest-trail-path quest-trail-path--dashed"
-            d={`M${POSITIONS.movements.x} ${POSITIONS.movements.y} C 230 400, 270 370, ${POSITIONS.music.x} ${POSITIONS.music.y} C 450 290, 500 260, ${POSITIONS.culture.x} ${POSITIONS.culture.y} C 640 180, 680 150, ${POSITIONS.graduation.x} ${POSITIONS.graduation.y} C 780 80, 800 55, ${GATE_POS.x} ${GATE_POS.y}`}
+            d="M140 440 C230 360 310 520 390 480 C500 425 535 315 660 315 C760 315 730 190 610 150 C550 120 700 60 830 80"
           />
+          <path class="quest-trail-guide" d={TRAIL_PATH} data-quest-trail-guide />
         </svg>
+
+        <div class="quest-lesson-dots" aria-hidden="true">
+          {
+            allLessons.map((item) => (
+              <span
+                class:list={[
+                  'quest-lesson-dot',
+                  item.locked ? 'quest-lesson-dot--locked' : item.lesson.completed ? 'quest-lesson-dot--done' : 'quest-lesson-dot--open',
+                ]}
+                data-quest-lesson-dot
+                data-path-progress={item.progress}
+              />
+            ))
+          }
+        </div>
 
         {
           nodes.map((n) => {
@@ -178,7 +247,7 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
               return (
                 <div
                   class="quest-node quest-node--current"
-                  style={`left:${n.pos.x - 120}px; top:${n.pos.y - 120}px`}
+                  style={`left:${n.pos.x - 120}px; top:${n.pos.y - 133}px`}
                   data-quest-node
                 >
                   <div class="quest-node__flag">
@@ -198,7 +267,7 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
               return (
                 <div
                   class={`quest-node quest-node--done`}
-                  style={`left:${n.pos.x - 75}px; top:${n.pos.y - 75}px`}
+                  style={`left:${n.pos.x - 75}px; top:${n.pos.y - 48}px`}
                   data-quest-node
                 >
                   <a class="quest-node__circle" href={n.href} aria-label={`${n.mod.title} — complete`}>
@@ -215,7 +284,7 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
               return (
                 <div
                   class="quest-node quest-node--open"
-                  style={`left:${n.pos.x - 75}px; top:${n.pos.y - 75}px`}
+                  style={`left:${n.pos.x - 75}px; top:${n.pos.y - 48}px`}
                   data-quest-node
                 >
                   <a class="quest-node__circle" href={n.href} aria-label={`${n.mod.title} — ${n.progress.completed} of ${n.progress.total} done`}>
@@ -229,7 +298,7 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
             return (
               <div
                 class="quest-node quest-node--locked"
-                style={`left:${n.pos.x - 75}px; top:${n.pos.y - 75}px`}
+                style={`left:${n.pos.x - 75}px; top:${n.pos.y - 48}px`}
                 data-quest-node
               >
                 <div class="quest-node__circle" aria-hidden="true">
@@ -243,7 +312,7 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
 
         <div
           class="quest-gate"
-          style={`left:${GATE_POS.x - 100}px; top:${GATE_POS.y - 100}px`}
+          style={`left:${GATE_POS.x - 100}px; top:${GATE_POS.y - 60}px`}
           data-quest-node
         >
           <div class="quest-gate__shape">
@@ -254,29 +323,6 @@ const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
       </div>
       </div>
 
-      <!-- Mobile fallback: a vertical rail instead of the free-form trail -->
-      <div class="quest-map-mobile">
-        {
-          nodes.map((n) => (
-            <a class={`quest-map-mobile__node quest-map-mobile__node--${n.state === 'current' ? 'current' : n.state === 'locked' ? 'locked' : 'done'}`} href={n.state === 'locked' ? undefined : n.href}>
-              <span class="quest-map-mobile__circle">
-                {n.state === 'locked' ? (
-                  <svg width="30" height="30" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="#7FA894" stroke-width="2.6"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="#7FA894" stroke-width="2.6"/></svg>
-                ) : (
-                  <img class="quest-map-mobile__photo" src={wix(n.state === 'current' ? HERO_CANDIDATES[0] : n.photoKey, 180, 180)} alt="" loading="lazy" />
-                )}
-              </span>
-              <span>
-                <span class="quest-map-mobile__label">{n.mod.title}</span>
-                <br />
-                <span class="quest-map-mobile__tag">
-                  {n.state === 'current' ? 'YOU ARE HERE' : n.state === 'locked' ? 'Locked' : `${n.progress.completed}/${n.progress.total} done`}
-                </span>
-              </span>
-            </a>
-          ))
-        }
-      </div>
     </main>
 
     <Footer />

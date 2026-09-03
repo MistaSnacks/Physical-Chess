@@ -11,7 +11,7 @@ import Gallery from '../../components/Gallery.astro';
 import YouTube from '../../components/YouTube.astro';
 import { INTRO, MOMENTS, CORDAS, BATIZADO_DATE, BATIZADO_DATE_TBC, cordaIndex } from '../../data/batizado.js';
 import { STUDENT } from '../../data/student.js';
-import { wix } from '../../data/media.js';
+import { wix, yt } from '../../data/media.js';
 
 import '../../directions/quest/tokens.css';
 import '../../directions/quest/theme.css';
@@ -69,6 +69,9 @@ const VIDEOS = [
           data-open="false"
           data-quest-enter
         >
+          <span class="quest-gate-panel__doors" aria-hidden="true">
+            <span></span><span></span>
+          </span>
           <span class="quest-gate-panel__icon">
             <svg width="46" height="46" viewBox="0 0 24 24"><path d="M6 3h12l2 7-8 11L4 10z" fill="none" stroke="#FFF6E5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h16M9 3l3 7 3-7M9 10l3 11 3-11" fill="none" stroke="#FFF6E5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
@@ -127,7 +130,7 @@ const VIDEOS = [
               {
                 VIDEOS.map((v) => (
                   <div class="quest-video-card">
-                    <YouTube id={v.key} title={v.label} />
+                    <YouTube id={yt(v.key)} title={v.label} />
                     <span class="quest-video-card__title">{v.label}</span>
                     <span class="quest-video-card__credit">Video: SoChlo Productions</span>
                   </div>
