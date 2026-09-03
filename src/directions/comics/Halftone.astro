@@ -1,0 +1,45 @@
+---
+// Halftone.astro — the diagonal halftone dot field, generated the same way
+// as Paper artboard EF-0's decorative SVG (11 rows, dots growing toward the
+// bottom-right, thinning to a point). Positioned top-right by default; pass
+// `class` to reposition. Drifts slowly via theme.css `.cx-halftone` keyframes.
+//
+// Props:
+//   width, height — viewBox size, default 420x300
+//   class         — extra class names / positioning hook
+
+interface Props {
+  width?: number;
+  height?: number;
+  class?: string;
+}
+
+const { width = 420, height = 300, class: className } = Astro.props;
+
+const cols = Math.round(width / 30) + 1;
+const rows = Math.round(height / 30) + 1;
+const dots: { cx: number; cy: number; r: number }[] = [];
+for (let row = 0; row < rows; row++) {
+  for (let col = 0; col < cols; col++) {
+    // Diagonal falloff: dots shrink and drop out toward the top-left.
+    const diag = col + row;
+    const maxDiag = cols + rows - 2;
+    const t = 1 - diag / maxDiag; // 1 at top-left, 0 at bottom-right
+    if (t > 0.62) continue; // clip the sparse top-left corner entirely
+    const r = 1 + (1 - t) * 8.5;
+    dots.push({ cx: col * 30 + 10, cy: row * 30 + 10, r: Math.round(r * 10) / 10 });
+  }
+}
+---
+
+<svg
+  width={width}
+  height={height}
+  viewBox={`0 0 ${width} ${height}`}
+  xmlns="http://www.w3.org/2000/svg"
+  class:list={['cx-halftone', className]}
+  aria-hidden="true"
+  data-halftone
+>
+  {dots.map((d) => <circle cx={d.cx} cy={d.cy} r={d.r} fill="#111111" />)}
+</svg>

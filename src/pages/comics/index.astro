@@ -1,0 +1,61 @@
+---
+// index.astro — Axé Comics Home: the cover of Issue #4, "MAYA VS. THE RODA!"
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/comics/Nav.astro';
+import Footer from '../../directions/comics/Footer.astro';
+import Starburst from '../../directions/comics/Starburst.astro';
+import PhotoArt from '../../directions/comics/PhotoArt.astro';
+import { HERO_CANDIDATES } from '../../data/media.js';
+import { CONTACT } from '../../data/batizado.js';
+import '../../directions/comics/tokens.css';
+import '../../directions/comics/theme.css';
+
+const coverPhoto = HERO_CANDIDATES[0]; // heroWorkshop
+---
+
+<Base title="Physical Chess — Axé Comics" direction="comics">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="home" />
+
+  <main class="wrap">
+    <section class="cx-cover">
+      <div data-enter="left" style="--cx-delay:60ms;">
+        <p class="cx-cover__eyebrow">PHYSICAL CHESS PRESENTS</p>
+        <h1 class="cx-cover__title">
+          MAYA VS.
+          <span>THE RODA!</span>
+        </h1>
+        <div class="cx-cover__captions">
+          <p class="cx-cover__caption">{CONTACT.ageLine}</p>
+          <p class="cx-cover__caption">{CONTACT.phone} · {CONTACT.email}</p>
+        </div>
+        <a class="cx-cover__cta" href="/comics/dashboard">LOG IN</a>
+      </div>
+
+      <div class="cx-cover__art-wrap" data-enter="right" style="--cx-delay:180ms;">
+        <span class="cx-cover__badge">ISSUE #4</span>
+        <PhotoArt
+          photoKey={coverPhoto}
+          w={900}
+          h={1120}
+          eager
+          class="cx-panel cx-cover__art"
+          style="--cx-tilt:-2deg;"
+        />
+        <a href="/comics/batizado" class="cx-cover__burst" aria-label="Batizado 2026 — see the special issue">
+          <Starburst text="BATIZADO 2026" size={168} fontSize={17} rotate={-6} />
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+
+  <script>
+    import '../../directions/comics/motion.js';
+  </script>
+</Base>

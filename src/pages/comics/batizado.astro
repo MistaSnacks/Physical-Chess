@@ -1,0 +1,133 @@
+---
+// batizado.astro — Axé Comics "Special Issue": countdown, the six ceremony
+// moments as a 3×2 panel grid, the cordas rank strip, a photo contact sheet,
+// and the Batizado 2026/2025/2024 videos. SPEC §2 row 5, §5.3.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/comics/Nav.astro';
+import Footer from '../../directions/comics/Footer.astro';
+import PhotoArt from '../../directions/comics/PhotoArt.astro';
+import Countdown from '../../components/Countdown.astro';
+import Gallery from '../../components/Gallery.astro';
+import YouTube from '../../components/YouTube.astro';
+import { INTRO, MOMENTS, CORDAS, BATIZADO_DATE, BATIZADO_DATE_TBC, CONTACT, cordaIndex } from '../../data/batizado.js';
+import { STUDENT } from '../../data/student.js';
+import { yt } from '../../data/media.js';
+import '../../directions/comics/tokens.css';
+import '../../directions/comics/theme.css';
+
+const currentCordaIndex = cordaIndex(STUDENT.corda);
+
+const GALLERY_PHOTOS = [
+  'celebration2018',
+  'cordsTable2018',
+  'batizado2019a',
+  'batizado2019b',
+  'groupFoto2019',
+  'xampuGasparzinho',
+  'troca2019',
+  'batizado2022',
+  'cordsTable2022',
+  'kidsWorkshopDay2',
+  'pastorPerigoCiborg',
+  'guindasteTubarao',
+  'classPhoto2022a',
+  'classPhoto2021a',
+];
+
+const VIDEOS = [
+  { key: 'batizado2026', title: 'Abadá Capoeira NYC Batizado 2026' },
+  { key: 'batizado2025', title: 'Abadá Capoeira NYC Batizado 2025' },
+  { key: 'batizado2024', title: 'Abadá Capoeira NYC Batizado 2024' },
+];
+
+const MOMENT_TILTS = [-1.2, 1, -0.7, 1.3, -1, 0.8];
+---
+
+<Base title="Batizado — Axé Comics Special Issue" direction="comics">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="batizado" />
+
+  <main class="wrap">
+    <section data-enter="left" style="padding-block:40px 8px; --cx-delay:40ms;">
+      <span class="cx-special">SPECIAL ISSUE</span>
+      <h1 class="cx-strip-head__title" style="font-size:clamp(40px, 6vw, 88px);">
+        THE
+        <span>BATIZADO!</span>
+      </h1>
+    </section>
+
+    <div class="cx-panel cx-countdown-panel" data-enter="right" style="--cx-tilt:-0.5deg; --cx-delay:160ms;">
+      <Countdown target={BATIZADO_DATE} dateTbc={BATIZADO_DATE_TBC} />
+      <div>
+        <p style="font-family:var(--cx-font-display); font-size:26px;">BATIZADO 2026</p>
+        <p style="font-size:13px; font-weight:800; color:var(--cx-gray-mute);">{CONTACT.ageLine}</p>
+      </div>
+    </div>
+
+    <p class="cx-panel cx-intro-caption" data-enter="up" style="--cx-tilt:0.4deg; --cx-delay:220ms;">{INTRO}</p>
+
+    <div class="cx-moments">
+      {
+        MOMENTS.map((moment, i) => (
+          <div
+            class="cx-panel cx-moment"
+            data-enter={i % 2 === 0 ? 'left' : 'right'}
+            style={`--cx-tilt:${MOMENT_TILTS[i % MOMENT_TILTS.length]}deg; --cx-delay:${i * 90}ms;`}
+          >
+            <PhotoArt photoKey={moment.photoKey} w={480} h={360} class="cx-moment__art" />
+            <div class="cx-moment__body">
+              <p class="cx-moment__num">MOMENT {i + 1}</p>
+              <p class="cx-moment__title">{moment.title}</p>
+              <p class="cx-moment__copy">{moment.copy}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <h2 style="font-family:var(--cx-font-display); font-size:32px; margin-block:8px 4px;">CORDAS — THE RANK TRACK</h2>
+    <div class="cx-panel cx-rank-strip" data-enter="up" style="--cx-tilt:-0.3deg;">
+      {
+        CORDAS.map((corda, i) => (
+          <div class="cx-rank" data-current={i === currentCordaIndex ? 'true' : 'false'}>
+            <span class="cx-rank__flag">MAYA IS HERE</span>
+            <span class="cx-rank__swatch" style={`background:${corda.color};`} />
+            <span class="cx-rank__label">{corda.label}</span>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="cx-contact-sheet-head">
+      <h2 style="font-family:var(--cx-font-display); margin:0;">FROM THE ARCHIVE</h2>
+      <p style="font-size:13px; font-weight:800; color:var(--cx-gray-mute); margin:0;">{GALLERY_PHOTOS.length} photos</p>
+    </div>
+    <Gallery photos={GALLERY_PHOTOS} width={480} height={360} eager={4} />
+
+    <h2 style="font-family:var(--cx-font-display); font-size:32px; margin-block:8px 4px;">BATIZADO ON FILM</h2>
+    <div class="cx-videos">
+      {
+        VIDEOS.map((v, i) => (
+          <div
+            class="cx-panel cx-video-panel"
+            data-enter={i % 2 === 0 ? 'left' : 'right'}
+            style={`--cx-tilt:${i % 2 === 0 ? -0.8 : 0.9}deg; --cx-delay:${i * 100}ms;`}
+          >
+            <YouTube id={yt(v.key)} title={v.title} />
+            <p class="cx-video-panel__credit">▶ PLAY! · {v.title} · Video: SoChlo Productions</p>
+          </div>
+        ))
+      }
+    </div>
+  </main>
+
+  <Footer />
+
+  <script>
+    import '../../directions/comics/motion.js';
+  </script>
+</Base>

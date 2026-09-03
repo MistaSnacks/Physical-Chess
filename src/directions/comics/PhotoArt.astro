@@ -1,0 +1,63 @@
+---
+// PhotoArt.astro — a real Wix photo styled as printed comic panel art: a
+// CSS radial-gradient dot overlay in `mix-blend-mode: multiply` sits on top
+// of the photo so it reads as halftone-printed ink (SPEC §5.3). Optional
+// PLAY! button (video panels), DONE! starburst, or a locked overlay.
+//
+// Props:
+//   photoKey — key into data/media.js PHOTOS
+//   w, h     — wix() crop size, default 640x480
+//   state    — 'done' | 'locked' | undefined
+//   play     — true to show the cobalt "▶ PLAY!" button (video panels)
+//   eager    — loading="eager" when true
+//   class    — extra class names
+
+import { PHOTOS, wix } from '../../data/media.js';
+import Starburst from './Starburst.astro';
+
+interface Props {
+  photoKey: string;
+  w?: number;
+  h?: number;
+  state?: 'done' | 'locked';
+  play?: boolean;
+  eager?: boolean;
+  class?: string;
+  style?: string;
+}
+
+const { photoKey, w = 640, h = 480, state, play = false, eager = false, class: className, style } = Astro.props;
+const photo = PHOTOS[photoKey];
+---
+
+<div class:list={['cx-art', className]} style={style} data-state={state} data-motion-panel-art>
+  <img
+    class="cx-art__img"
+    src={wix(photoKey, w, h)}
+    alt={photo?.caption ?? ''}
+    loading={eager ? 'eager' : 'lazy'}
+    width={w}
+    height={h}
+  />
+  <div class="cx-art__halftone" aria-hidden="true"></div>
+  {
+    play && (
+      <button type="button" class="cx-art__play" data-art-play>
+        <span>▶ PLAY!</span>
+      </button>
+    )
+  }
+  {state === 'done' && <Starburst text="DONE!" size={104} rotate={10} class="cx-art__burst" />}
+  {
+    state === 'locked' && (
+      <div class="cx-art__lock">
+        <svg width="30" height="34" viewBox="0 0 30 34" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="15" width="24" height="17" fill="none" stroke="#111111" stroke-width="3" />
+          <path d="M8 15v-4a7 7 0 0 1 14 0v4" fill="none" stroke="#111111" stroke-width="3" />
+        </svg>
+        <span>LOCKED</span>
+      </div>
+    )
+  }
+  <slot />
+</div>

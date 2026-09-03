@@ -1,0 +1,25 @@
+---
+// SpeechBubble.astro — white ink-bordered rounded speech bubble with a
+// triangular tail, per Paper artboard EF-0. Text types itself in with a
+// CSS steps() animation on first paint (see theme.css `.cx-bubble__text`).
+//
+// Props:
+//   text  — bubble copy
+//   align — 'left' | 'right' tail placement, default 'left'
+//   class — extra class names
+
+interface Props {
+  text: string;
+  align?: 'left' | 'right';
+  class?: string;
+}
+
+const { text, align = 'left', class: className } = Astro.props;
+---
+
+<div class:list={['cx-bubble', `cx-bubble--${align}`, className]} data-bubble>
+  <p class="cx-bubble__text" data-bubble-text style={`--cx-type-len:${text.length};`}>{text}</p>
+  <svg width="40" height="30" viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg" class="cx-bubble__tail">
+    <path d="M4 0h32L6 30z" fill="#FFFFFF" stroke="#111111" stroke-width="5" stroke-linejoin="round" />
+  </svg>
+</div>

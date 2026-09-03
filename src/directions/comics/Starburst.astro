@@ -1,0 +1,40 @@
+---
+// Starburst.astro — the 18-point ink-outlined red starburst sticker used
+// for "DONE!" / "AXÉ!" / "NEW!" callouts. Polygon points copied verbatim
+// from Paper file 01M017JHZGTKX64S7G2TBPBBKH artboard EF-0.
+//
+// Props:
+//   text     — the word inside the burst, e.g. "DONE!"
+//   size     — px, default 110
+//   rotate   — deg, default 8
+//   fontSize — px, default scales with size
+//   class    — extra class names
+
+interface Props {
+  text: string;
+  size?: number;
+  rotate?: number;
+  fontSize?: number;
+  class?: string;
+}
+
+const { text, size = 110, rotate = 8, fontSize, class: className } = Astro.props;
+const fs = fontSize ?? Math.round(size * 0.22);
+---
+
+<div
+  class:list={['cx-burst', className]}
+  style={`--cx-burst-size:${size}px; --cx-burst-rotate:${rotate}deg; --cx-burst-fs:${fs}px;`}
+  data-burst
+>
+  <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="cx-burst__svg">
+    <polygon
+      points="50,2 61,20 82,10 78,32 98,40 82,55 92,76 70,74 62,96 50,80 38,96 30,74 8,76 18,55 2,40 22,32 18,10 39,20"
+      fill="#FF2E2E"
+      stroke="#111111"
+      stroke-width="4"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <span class="cx-burst__text">{text}</span>
+</div>
