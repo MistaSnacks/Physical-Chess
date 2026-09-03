@@ -48,41 +48,49 @@ function stateFor(mod) {
   return p.percent === 100 ? 'done' : 'open';
 }
 
-// Hand-placed anchor points along a 900x600 winding trail canvas, tuned to
-// stay within a 900px-tall viewport alongside the header + HUD above them.
-const POSITIONS = {
-  movements: { x: 140, y: 440 },
-  music: { x: 390, y: 480 },
-  culture: { x: 660, y: 315 },
-  graduation: { x: 610, y: 150 },
+// Stops and lessons share normalized positions so motion.js can place them
+// along either the wide desktop S-curve or the tall mobile S-curve.
+const MODULE_STOPS = {
+  movements: 0.1,
+  music: 0.36,
+  culture: 0.58,
+  graduation: 0.76,
 };
-const GATE_POS = { x: 830, y: 80 };
-const TRAIL_PATH = 'M50 560 C80 510 105 465 140 440 C230 360 310 520 390 480 C500 425 535 315 660 315 C760 315 730 190 610 150 C550 120 700 60 830 80';
+const GATE_PROGRESS = 0.985;
+const DESKTOP_TRAIL = 'M40 670 C80 590 160 510 240 510 C330 510 380 650 460 590 C540 530 560 410 660 410 C740 410 660 250 520 210 C440 190 660 70 865 105';
+const MOBILE_TRAIL = 'M72 46 C292 118 296 210 172 280 C42 352 52 468 234 515 C350 548 306 688 158 720 C26 750 70 904 280 1000';
 
 const nodes = MODULES.map((mod) => ({
   mod,
   state: stateFor(mod),
-  pos: POSITIONS[mod.id],
+  pathProgress: MODULE_STOPS[mod.id],
   progress: moduleProgress(mod),
   href: PAGE_FOR_MODULE[mod.id],
   photoKey: MODULE_PHOTO[mod.id],
 }));
 
 const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
-const MODULE_TRAIL_RANGES = {
-  movements: [0.12, 0.31],
-  music: [0.38, 0.54],
-  culture: [0.62, 0.74],
-  graduation: [0.82, 0.96],
-};
+const MODULE_ORDER = MODULES.map((mod) => mod.id);
 const allLessons = MODULES.flatMap((mod) => {
-  const [start, end] = MODULE_TRAIL_RANGES[mod.id];
+  const moduleIndex = MODULE_ORDER.indexOf(mod.id);
+  const stop = MODULE_STOPS[mod.id];
+  const nextStop = moduleIndex === MODULES.length - 1
+    ? GATE_PROGRESS
+    : MODULE_STOPS[MODULES[moduleIndex + 1].id];
+  const start = stop + 0.045;
+  const end = nextStop - 0.045;
   return mod.lessons.map((lesson, i) => ({
     lesson,
     locked: mod.locked,
+    moduleId: mod.id,
     progress: start + ((end - start) * (i + 1)) / (mod.lessons.length + 1),
   }));
 });
+const clearedTrailProgress = Math.max(
+  0.04,
+  ...allLessons.filter((item) => item.lesson.completed).map((item) => item.progress)
+);
+const clearedTrailPercent = Math.round(clearedTrailProgress * 1000) / 10;
 ---
 
 <Base title="My Journey — Roda Quest" direction="quest">
@@ -161,28 +169,79 @@ const allLessons = MODULES.flatMap((mod) => {
         </div>
       </aside>
 
-      <!-- The phone map follows the HUD so Maya's status leads into the trail. -->
+      <!-- On phones the same stops and lessons follow a taller winding path. -->
       <div class="quest-map-mobile" aria-label="Curriculum map">
+        <svg class="quest-map-mobile__svg" viewBox="0 0 350 1080" preserveAspectRatio="none" aria-hidden="true">
+          <path class="quest-trail-path quest-trail-path--dashed" d={MOBILE_TRAIL} />
+          <path
+            class="quest-trail-path quest-trail-path--glow"
+            d={MOBILE_TRAIL}
+            pathLength="100"
+            stroke-dasharray={`${clearedTrailPercent} 100`}
+          />
+          <path
+            class="quest-trail-path quest-trail-path--cleared"
+            d={MOBILE_TRAIL}
+            pathLength="100"
+            stroke-dasharray={`${clearedTrailPercent} 100`}
+          />
+          <path class="quest-trail-guide" d={MOBILE_TRAIL} data-quest-trail-guide />
+        </svg>
+
+        <div class="quest-map-mobile__dots" aria-hidden="true">
+          {
+            allLessons.map((item) => (
+              <span
+                class:list={[
+                  'quest-lesson-dot quest-lesson-dot--mobile',
+                  item.locked ? 'quest-lesson-dot--locked' : item.lesson.completed ? 'quest-lesson-dot--done' : 'quest-lesson-dot--open',
+                ]}
+                data-quest-lesson-dot
+                data-path-progress={item.progress}
+              />
+            ))
+          }
+        </div>
+
         {
           nodes.map((n) => (
-            <a class={`quest-map-mobile__node quest-map-mobile__node--${n.state}`} href={n.state === 'locked' ? undefined : n.href}>
+            <a
+              class={`quest-map-mobile__node quest-map-mobile__node--${n.state}`}
+              href={n.state === 'locked' ? undefined : n.href}
+              data-quest-node
+              data-map-progress={n.pathProgress}
+            >
+              {n.state === 'current' && <span class="quest-map-mobile__flag">YOU ARE HERE!</span>}
+              <span class="quest-map-mobile__halo">
               <span class="quest-map-mobile__circle">
                 {n.state === 'locked' ? (
                   <svg width="30" height="30" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="#7FA894" stroke-width="2.6"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="#7FA894" stroke-width="2.6"/></svg>
                 ) : (
                   <img class="quest-map-mobile__photo" src={wix(n.state === 'current' ? HERO_CANDIDATES[0] : n.photoKey, 180, 180)} alt="" loading="lazy" />
                 )}
+                {n.state === 'done' && (
+                  <span class="quest-map-mobile__check">
+                    <svg width="34" height="34" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#0B2E24" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  </span>
+                )}
               </span>
-              <span>
+              </span>
+              <span class="quest-map-mobile__copy">
                 <span class="quest-map-mobile__label">{n.mod.title}</span>
-                <br />
                 <span class="quest-map-mobile__tag">
-                  {n.state === 'current' ? 'YOU ARE HERE' : n.state === 'locked' ? 'Locked' : `${n.progress.completed}/${n.progress.total} done`}
+                  {n.state === 'current' ? `${n.progress.completed}/${n.progress.total} cleared` : n.state === 'locked' ? 'Locked' : `${n.progress.completed}/${n.progress.total} done`}
                 </span>
               </span>
             </a>
           ))
         }
+
+        <div class="quest-map-mobile__gate" data-quest-node data-map-progress={GATE_PROGRESS}>
+          <div class="quest-map-mobile__gate-shape">
+            <svg width="44" height="44" viewBox="0 0 24 24"><path d="M6 3h12l2 7-8 11L4 10z" fill="none" stroke="#0B2E24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h16M9 3l3 7 3-7M9 10l3 11 3-11" fill="none" stroke="#0B2E24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="quest-map-mobile__gate-label">CORDA {CORDAS[cordaIndex(STUDENT.nextCorda)].label.toUpperCase()}</span>
+        </div>
       </div>
 
       {
@@ -210,20 +269,21 @@ const allLessons = MODULES.flatMap((mod) => {
       </div>
 
       <div class="quest-trail-area">
-        <svg class="quest-trail-svg" viewBox="0 0 900 600" preserveAspectRatio="none">
+        <svg class="quest-trail-svg" viewBox="0 0 960 720" preserveAspectRatio="none" aria-hidden="true">
+          <path class="quest-trail-path quest-trail-path--dashed" d={DESKTOP_TRAIL} />
           <path
             class="quest-trail-path quest-trail-path--glow"
-            d="M50 560 C80 510 105 465 140 440"
+            d={DESKTOP_TRAIL}
+            pathLength="100"
+            stroke-dasharray={`${clearedTrailPercent} 100`}
           />
           <path
-            class="quest-trail-path"
-            d="M50 560 C80 510 105 465 140 440"
+            class="quest-trail-path quest-trail-path--cleared"
+            d={DESKTOP_TRAIL}
+            pathLength="100"
+            stroke-dasharray={`${clearedTrailPercent} 100`}
           />
-          <path
-            class="quest-trail-path quest-trail-path--dashed"
-            d="M140 440 C230 360 310 520 390 480 C500 425 535 315 660 315 C760 315 730 190 610 150 C550 120 700 60 830 80"
-          />
-          <path class="quest-trail-guide" d={TRAIL_PATH} data-quest-trail-guide />
+          <path class="quest-trail-guide" d={DESKTOP_TRAIL} data-quest-trail-guide />
         </svg>
 
         <div class="quest-lesson-dots" aria-hidden="true">
@@ -247,8 +307,8 @@ const allLessons = MODULES.flatMap((mod) => {
               return (
                 <div
                   class="quest-node quest-node--current"
-                  style={`left:${n.pos.x - 120}px; top:${n.pos.y - 133}px`}
                   data-quest-node
+                  data-map-progress={n.pathProgress}
                 >
                   <div class="quest-node__flag">
                     <span class="quest-node__flag-text">YOU ARE HERE!</span>
@@ -267,8 +327,8 @@ const allLessons = MODULES.flatMap((mod) => {
               return (
                 <div
                   class={`quest-node quest-node--done`}
-                  style={`left:${n.pos.x - 75}px; top:${n.pos.y - 48}px`}
                   data-quest-node
+                  data-map-progress={n.pathProgress}
                 >
                   <a class="quest-node__circle" href={n.href} aria-label={`${n.mod.title} — complete`}>
                     <img class="quest-node__photo" src={wix(n.photoKey, 200, 200)} alt="" loading="lazy" />
@@ -284,8 +344,8 @@ const allLessons = MODULES.flatMap((mod) => {
               return (
                 <div
                   class="quest-node quest-node--open"
-                  style={`left:${n.pos.x - 75}px; top:${n.pos.y - 48}px`}
                   data-quest-node
+                  data-map-progress={n.pathProgress}
                 >
                   <a class="quest-node__circle" href={n.href} aria-label={`${n.mod.title} — ${n.progress.completed} of ${n.progress.total} done`}>
                     <img class="quest-node__photo" src={wix(n.photoKey, 200, 200)} alt="" loading="lazy" />
@@ -298,8 +358,8 @@ const allLessons = MODULES.flatMap((mod) => {
             return (
               <div
                 class="quest-node quest-node--locked"
-                style={`left:${n.pos.x - 75}px; top:${n.pos.y - 48}px`}
                 data-quest-node
+                data-map-progress={n.pathProgress}
               >
                 <div class="quest-node__circle" aria-hidden="true">
                   <svg width="40" height="40" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="#7FA894" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="#7FA894" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -312,8 +372,8 @@ const allLessons = MODULES.flatMap((mod) => {
 
         <div
           class="quest-gate"
-          style={`left:${GATE_POS.x - 100}px; top:${GATE_POS.y - 60}px`}
           data-quest-node
+          data-map-progress={GATE_PROGRESS}
         >
           <div class="quest-gate__shape">
             <svg width="60" height="60" viewBox="0 0 24 24"><path d="M6 3h12l2 7-8 11L4 10z" fill="none" stroke="#0B2E24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h16M9 3l3 7 3-7M9 10l3 11 3-11" fill="none" stroke="#0B2E24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>

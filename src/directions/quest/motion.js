@@ -30,32 +30,39 @@ function initEntrance() {
   const enterEls = Array.from(document.querySelectorAll('[data-quest-enter]'));
   stagger(enterEls, 'data-quest-enter', 45, 20);
 
-  const nodeEls = Array.from(document.querySelectorAll('[data-quest-node]'));
-  stagger(nodeEls, 'data-quest-node', 75, 180);
+  const nodeEls = Array.from(document.querySelectorAll('[data-quest-node]')).filter(
+    (el) => el.offsetParent !== null
+  );
+  stagger(nodeEls, 'data-quest-node', 60, 540);
 }
 
 function initTrailDraw() {
-  const paths = document.querySelectorAll('.quest-trail-path');
-  paths.forEach((path) => {
-    if (!(path instanceof SVGPathElement)) return;
-    const length = path.getTotalLength();
+  const trails = Array.from(
+    document.querySelectorAll('.quest-trail-svg, .quest-map-mobile__svg')
+  ).filter((trail) => trail.getBoundingClientRect().width > 0);
+
+  trails.forEach((trail) => {
+    const paths = trail.querySelectorAll('.quest-trail-path');
     if (reduced()) {
-      path.style.strokeDasharray = 'none';
-      path.style.strokeDashoffset = '0';
+      trail.style.clipPath = 'inset(0 0 0 0)';
+      paths.forEach((path) => {
+        path.style.strokeDashoffset = '0';
+      });
       return;
     }
-    const dashed = path.classList.contains('quest-trail-path--dashed');
-    if (!dashed) {
-      path.style.strokeDasharray = `${length}`;
-    } else {
-      // preserve the dashed pattern while still animating a draw-on via
-      // dashoffset over a duplicated length
-      path.style.strokeDasharray = `4 26`;
-    }
-    path.animate(
-      [{ strokeDashoffset: length }, { strokeDashoffset: 0 }],
-      { duration: 1100, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' }
+    trail.animate(
+      [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }],
+      { duration: 520, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' }
     );
+    paths.forEach((path) => {
+      const cleared = path.classList.contains('quest-trail-path--cleared') ||
+        path.classList.contains('quest-trail-path--glow');
+      const dash = Number(path.getAttribute('stroke-dasharray')?.split(' ')[0] || 100);
+      path.animate(
+        [{ strokeDashoffset: cleared ? dash : 52 }, { strokeDashoffset: 0 }],
+        { duration: 520, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' }
+      );
+    });
   });
 }
 
@@ -75,20 +82,37 @@ function initXpBar() {
 }
 
 function initLessonDots() {
-  const guide = document.querySelector('[data-quest-trail-guide]');
-  const dots = document.querySelectorAll('[data-quest-lesson-dot]');
-  if (!(guide instanceof SVGPathElement) || !dots.length) return;
+  document.querySelectorAll('[data-quest-trail-guide]').forEach((guide) => {
+    if (!(guide instanceof SVGPathElement)) return;
+    const svg = guide.ownerSVGElement;
+    const map = svg?.closest('.quest-trail-area, .quest-map-mobile');
+    const width = svg?.clientWidth || 0;
+    const height = svg?.clientHeight || 0;
+    if (!svg || !map || width === 0 || height === 0) return;
 
-  const length = guide.getTotalLength();
-  const svg = guide.ownerSVGElement;
-  const scaleX = svg ? svg.clientWidth / 900 : 1;
-  const scaleY = svg ? svg.clientHeight / 600 : 1;
-  dots.forEach((dot) => {
-    const progress = Number(dot.getAttribute('data-path-progress') || 0);
-    const point = guide.getPointAtLength(length * progress);
-    dot.style.setProperty('--dot-x', `${point.x * scaleX}px`);
-    dot.style.setProperty('--dot-y', `${point.y * scaleY}px`);
-    dot.setAttribute('data-ready', 'true');
+    const viewBox = svg.viewBox.baseVal;
+    const scaleX = width / viewBox.width;
+    const scaleY = height / viewBox.height;
+    const length = guide.getTotalLength();
+    const positionOnTrail = (el, progress) => {
+      const point = guide.getPointAtLength(length * progress);
+      el.style.left = `${point.x * scaleX}px`;
+      el.style.top = `${point.y * scaleY}px`;
+    };
+
+    const dots = Array.from(map.querySelectorAll('[data-quest-lesson-dot]'));
+    dots.forEach((dot, index) => {
+      positionOnTrail(dot, Number(dot.getAttribute('data-path-progress') || 0));
+      if (reduced()) {
+        dot.setAttribute('data-ready', 'true');
+      } else {
+        setTimeout(() => dot.setAttribute('data-ready', 'true'), 260 + index * 18);
+      }
+    });
+
+    map.querySelectorAll('[data-map-progress]').forEach((node) => {
+      positionOnTrail(node, Number(node.getAttribute('data-map-progress') || 0));
+    });
   });
 }
 
@@ -307,9 +331,9 @@ function init() {
   if (now - lastInitAt < 50) return;
   lastInitAt = now;
 
+  initLessonDots();
   initEntrance();
   initTrailDraw();
-  initLessonDots();
   initXpBar();
   initMascotBreathing();
   initCompleteButtons();
