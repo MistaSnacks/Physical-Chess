@@ -3,15 +3,15 @@
 // steps in the level rail, a real embedded video, a practice drill card
 // and a mark-complete interaction. Per SPEC §2 row 3 + §5.2.
 import { ClientRouter } from 'astro:transitions';
-import Base from '../../layouts/Base.astro';
-import Nav from '../../directions/quest/Nav.astro';
-import Footer from '../../directions/quest/Footer.astro';
-import YouTube from '../../components/YouTube.astro';
-import { MODULES, moduleProgress } from '../../data/curriculum.js';
-import { video, yt } from '../../data/media.js';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import YouTube from '../components/YouTube.astro';
+import { MODULES, moduleProgress } from '../data/curriculum.js';
+import { video, yt } from '../data/media.js';
 
-import '../../directions/quest/tokens.css';
-import '../../directions/quest/theme.css';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
 
 const mod = MODULES.find((m) => m.id === 'movements');
 const progress = moduleProgress(mod);
@@ -31,7 +31,7 @@ const featured = video('aulao2024Lapa');
 
     <main class="quest-detail">
       <aside class="quest-rail" data-quest-enter>
-        <a class="quest-rail__back" href="/quest/dashboard">
+        <a class="quest-rail__back" href="/dashboard">
           <svg width="18" height="18" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Back to map
         </a>
@@ -108,5 +108,5 @@ const featured = video('aulao2024Lapa');
 </Base>
 
 <script>
-  import '../../directions/quest/motion.js';
+  import '../directions/quest/motion.js';
 </script>

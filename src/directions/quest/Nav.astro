@@ -9,15 +9,15 @@ interface Props {
 const { active } = Astro.props;
 
 const LINKS = [
-  { id: 'dashboard', href: '/quest/dashboard', label: 'My Journey' },
-  { id: 'movements', href: '/quest/movements', label: 'Movements' },
-  { id: 'music', href: '/quest/music', label: 'Music' },
-  { id: 'batizado', href: '/quest/batizado', label: 'Batizado' },
+  { id: 'dashboard', href: '/dashboard', label: 'My Journey' },
+  { id: 'movements', href: '/movements', label: 'Movements' },
+  { id: 'music', href: '/music', label: 'Music' },
+  { id: 'batizado', href: '/batizado', label: 'Batizado' },
 ];
 ---
 
 <header class="quest-nav" data-quest-enter>
-  <a class="quest-nav__brand" href="/quest">
+  <a class="quest-nav__brand" href="/">
     <span class="quest-nav__mark">
       <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="13" cy="4" r="2" fill="none" stroke="#FFF6E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />

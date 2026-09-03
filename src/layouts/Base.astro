@@ -1,6 +1,6 @@
 ---
 // Base.astro — shared <html> shell for every route.
-// Accepts a `direction` prop ('sticker' | 'quest' | 'comics' | 'chess' | undefined
+// Accepts a `direction` prop ('quest' | undefined
 // for the neutral chooser) and stamps it as a class on <body> so each
 // direction's theme.css can scope its selectors, e.g. body.direction-sticker.
 import '../styles/base.css';
@@ -8,7 +8,7 @@ import '../styles/base.css';
 interface Props {
   title: string;
   description?: string;
-  direction?: 'sticker' | 'quest' | 'comics' | 'chess';
+  direction?: 'quest';
 }
 
 const {

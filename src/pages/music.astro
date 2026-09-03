@@ -1,15 +1,15 @@
 ---
 // music.astro — Music & Culture + the Boss Quiz. Per SPEC §2 row 4 + §5.2.
 import { ClientRouter } from 'astro:transitions';
-import Base from '../../layouts/Base.astro';
-import Nav from '../../directions/quest/Nav.astro';
-import Footer from '../../directions/quest/Footer.astro';
-import Quiz from '../../components/Quiz.astro';
-import { MODULES, moduleProgress, INSTRUMENTS, PORTUGUESE_WORDS, MUSIC_QUIZ } from '../../data/curriculum.js';
-import { wix } from '../../data/media.js';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import Quiz from '../components/Quiz.astro';
+import { MODULES, moduleProgress, INSTRUMENTS, PORTUGUESE_WORDS, MUSIC_QUIZ } from '../data/curriculum.js';
+import { wix } from '../data/media.js';
 
-import '../../directions/quest/tokens.css';
-import '../../directions/quest/theme.css';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
 
 const mod = MODULES.find((m) => m.id === 'music');
 const progress = moduleProgress(mod);
@@ -161,5 +161,5 @@ const INSTRUMENT_PHOTO = {
 </Base>
 
 <script>
-  import '../../directions/quest/motion.js';
+  import '../directions/quest/motion.js';
 </script>

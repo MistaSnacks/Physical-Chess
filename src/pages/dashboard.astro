@@ -2,17 +2,17 @@
 // dashboard.astro — "My Journey". The dashboard IS the map: an SVG trail
 // through the four curriculum modules with a HUD panel, per SPEC §5.2.
 import { ClientRouter } from 'astro:transitions';
-import Base from '../../layouts/Base.astro';
-import Nav from '../../directions/quest/Nav.astro';
-import Footer from '../../directions/quest/Footer.astro';
-import YouTube from '../../components/YouTube.astro';
-import { MODULES, moduleProgress, overallProgress, nextUpLesson } from '../../data/curriculum.js';
-import { STUDENT } from '../../data/student.js';
-import { wix, yt, HERO_CANDIDATES } from '../../data/media.js';
-import { CORDAS, cordaIndex, BATIZADO_DATE } from '../../data/batizado.js';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import YouTube from '../components/YouTube.astro';
+import { MODULES, moduleProgress, overallProgress, nextUpLesson } from '../data/curriculum.js';
+import { STUDENT } from '../data/student.js';
+import { wix, yt, HERO_CANDIDATES } from '../data/media.js';
+import { CORDAS, cordaIndex, BATIZADO_DATE } from '../data/batizado.js';
 
-import '../../directions/quest/tokens.css';
-import '../../directions/quest/theme.css';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
 
 const overall = overallProgress();
 const next = nextUpLesson();
@@ -28,10 +28,10 @@ const daysToBatizado = Math.max(
 );
 
 const PAGE_FOR_MODULE = {
-  movements: '/quest/movements',
-  music: '/quest/music',
-  culture: '/quest/music',
-  graduation: '/quest/batizado',
+  movements: '/movements',
+  music: '/music',
+  culture: '/music',
+  graduation: '/batizado',
 };
 
 const MODULE_PHOTO = {
@@ -69,7 +69,7 @@ const nodes = MODULES.map((mod) => ({
   photoKey: MODULE_PHOTO[mod.id],
 }));
 
-const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/quest/movements';
+const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/movements';
 const MODULE_ORDER = MODULES.map((mod) => mod.id);
 const allLessons = MODULES.flatMap((mod) => {
   const moduleIndex = MODULE_ORDER.indexOf(mod.id);
@@ -390,5 +390,5 @@ const clearedTrailPercent = Math.round(clearedTrailProgress * 1000) / 10;
 </Base>
 
 <script>
-  import '../../directions/quest/motion.js';
+  import '../directions/quest/motion.js';
 </script>

@@ -3,18 +3,18 @@
 // reveal the ceremony moments, the cordas track and the gallery. Per
 // SPEC §2 row 5 + §4.3 + §5.2.
 import { ClientRouter } from 'astro:transitions';
-import Base from '../../layouts/Base.astro';
-import Nav from '../../directions/quest/Nav.astro';
-import Footer from '../../directions/quest/Footer.astro';
-import Countdown from '../../components/Countdown.astro';
-import Gallery from '../../components/Gallery.astro';
-import YouTube from '../../components/YouTube.astro';
-import { INTRO, MOMENTS, CORDAS, BATIZADO_DATE, BATIZADO_DATE_TBC, cordaIndex } from '../../data/batizado.js';
-import { STUDENT } from '../../data/student.js';
-import { wix, yt } from '../../data/media.js';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import Countdown from '../components/Countdown.astro';
+import Gallery from '../components/Gallery.astro';
+import YouTube from '../components/YouTube.astro';
+import { INTRO, MOMENTS, CORDAS, BATIZADO_DATE, BATIZADO_DATE_TBC, cordaIndex } from '../data/batizado.js';
+import { STUDENT } from '../data/student.js';
+import { wix, yt } from '../data/media.js';
 
-import '../../directions/quest/tokens.css';
-import '../../directions/quest/theme.css';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
 
 const gateCorda = CORDAS.find((c) => c.id === 'amarela');
 const currentCordaIndex = cordaIndex(STUDENT.corda);
@@ -147,5 +147,5 @@ const VIDEOS = [
 </Base>
 
 <script>
-  import '../../directions/quest/motion.js';
+  import '../directions/quest/motion.js';
 </script>
