@@ -2,13 +2,13 @@
 // PhotoArt.astro — a real Wix photo styled as printed comic panel art: a
 // CSS radial-gradient dot overlay in `mix-blend-mode: multiply` sits on top
 // of the photo so it reads as halftone-printed ink (SPEC §5.3). Optional
-// PLAY! button (video panels), DONE! starburst, or a locked overlay.
+// PLAY! link label (video panels), DONE! starburst, or a locked overlay.
 //
 // Props:
 //   photoKey — key into data/media.js PHOTOS
 //   w, h     — wix() crop size, default 640x480
 //   state    — 'done' | 'locked' | undefined
-//   play     — true to show the cobalt "▶ PLAY!" button (video panels)
+//   play     — true to show the cobalt "▶ PLAY!" link label (video panels)
 //   eager    — loading="eager" when true
 //   class    — extra class names
 
@@ -42,9 +42,9 @@ const photo = PHOTOS[photoKey];
   <div class="cx-art__halftone" aria-hidden="true"></div>
   {
     play && (
-      <button type="button" class="cx-art__play" data-art-play>
+      <span class="cx-art__play" aria-hidden="true">
         <span>▶ PLAY!</span>
-      </button>
+      </span>
     )
   }
   {state === 'done' && <Starburst text="DONE!" size={104} rotate={10} class="cx-art__burst" />}

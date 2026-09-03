@@ -14,9 +14,10 @@
 
 function restartAnimation(el, className) {
   el.classList.remove(className);
-  // eslint-disable-next-line no-unused-expressions
-  void el.offsetWidth;
-  el.classList.add(className);
+  requestAnimationFrame(() => {
+    el.classList.add(className);
+    el.addEventListener('animationend', () => el.classList.remove(className), { once: true });
+  });
 }
 
 function wireQuizReward() {

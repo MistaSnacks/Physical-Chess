@@ -24,16 +24,21 @@ const coverPhoto = HERO_CANDIDATES[0]; // heroWorkshop
   <main class="wrap">
     <section class="cx-cover">
       <div data-enter="left" style="--cx-delay:60ms;">
+        <p class="cx-cover__kicker">ISSUE #4 · THE CAPOEIRA ADVENTURE</p>
         <p class="cx-cover__eyebrow">PHYSICAL CHESS PRESENTS</p>
         <h1 class="cx-cover__title">
           MAYA VS.
           <span>THE RODA!</span>
         </h1>
+        <p class="cx-cover__dek">Train the moves. Learn the music. Step into the circle.</p>
         <div class="cx-cover__captions">
           <p class="cx-cover__caption">{CONTACT.ageLine}</p>
           <p class="cx-cover__caption">{CONTACT.phone} · {CONTACT.email}</p>
         </div>
-        <a class="cx-cover__cta" href="/comics/dashboard">LOG IN</a>
+        <div class="cx-cover__actions">
+          <a class="cx-cover__cta" href="/comics/dashboard">ENTER THE RODA! <span aria-hidden="true">→</span></a>
+          <a class="cx-cover__cta cx-cover__cta--red" href="/comics/batizado">BATIZADO 2026</a>
+        </div>
       </div>
 
       <div class="cx-cover__art-wrap" data-enter="right" style="--cx-delay:180ms;">
@@ -46,6 +51,8 @@ const coverPhoto = HERO_CANDIDATES[0]; // heroWorkshop
           class="cx-panel cx-cover__art"
           style="--cx-tilt:-2deg;"
         />
+        <p class="cx-cover__sound cx-cover__sound--top" aria-hidden="true">GINGA!</p>
+        <p class="cx-cover__sound cx-cover__sound--bottom" aria-hidden="true">AXÉ!</p>
         <a href="/comics/batizado" class="cx-cover__burst" aria-label="Batizado 2026 — see the special issue">
           <Starburst text="BATIZADO 2026" size={168} fontSize={17} rotate={-6} />
         </a>

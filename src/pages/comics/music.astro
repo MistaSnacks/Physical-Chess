@@ -37,6 +37,33 @@ const ICONS: Record<string, string> = {
       <h1 class="cx-strip-head__title" style="font-size:clamp(36px, 5vw, 64px);">THE SOUND OF THE RODA</h1>
     </section>
 
+    <div class="cx-quiz-wrap cx-quiz-wrap--lead">
+      <div class="cx-panel cx-quiz-panel" data-enter="left" style="--cx-tilt:-0.4deg; --cx-delay:120ms;">
+        <div class="cx-quiz-badge-row">
+          <span class="cx-quiz-label">BOSS QUIZ!</span>
+          <span class="cx-quiz-progress">3 QUESTIONS · +150 XP</span>
+        </div>
+        <Quiz questions={MUSIC_QUIZ} />
+      </div>
+
+      <aside class="cx-quiz-side" data-enter="right" style="--cx-delay:220ms;">
+        <div class="cx-quiz-side__bubble">
+          <SpeechBubble text="Boa, Maya! Answer all three and axé is yours." align="left" />
+        </div>
+        <PhotoArt photoKey="mestraMarciaBerimbau" w={300} h={300} class="cx-panel cx-quiz-side__art" style="--cx-tilt:1.5deg;" eager />
+        <p class="cx-quiz-side__name">MESTRA MARCIA</p>
+        <p class="cx-quiz-side__xp">+50 XP EACH</p>
+      </aside>
+    </div>
+
+    <div class="cx-section-heading" data-enter="up">
+      <div>
+        <p class="cx-strip-head__eyebrow">YOUR RODA TOOLKIT</p>
+        <h2>MEET THE BAND</h2>
+      </div>
+      <p>Study these clues, then replay the quiz.</p>
+    </div>
+
     <div class="cx-instruments">
       {
         INSTRUMENTS.map((inst, i) => (
@@ -77,25 +104,6 @@ const ICONS: Record<string, string> = {
       }
     </div>
 
-    <h2 style="font-family:var(--cx-font-display); font-size:32px; margin-block:16px 4px;">QUIZ TIME!</h2>
-    <div class="cx-quiz-wrap">
-      <div class="cx-panel cx-quiz-panel" data-enter="left" style="--cx-tilt:-0.4deg;">
-        <div class="cx-quiz-badge-row">
-          <span class="cx-quiz-label">QUIZ TIME!</span>
-          <span class="cx-quiz-progress">3 QUESTIONS</span>
-        </div>
-        <Quiz questions={MUSIC_QUIZ} />
-      </div>
-
-      <aside class="cx-quiz-side" data-enter="right" style="--cx-delay:180ms;">
-        <div class="cx-quiz-side__bubble">
-          <SpeechBubble text="Boa, Maya! Answer all three and axé is yours." align="left" />
-        </div>
-        <PhotoArt photoKey="mestraMarciaBerimbau" w={300} h={300} class="cx-panel cx-quiz-side__art" style="--cx-tilt:1.5deg;" eager />
-        <p class="cx-quiz-side__name">MESTRA MARCIA</p>
-        <p class="cx-quiz-side__xp">+50 XP</p>
-      </aside>
-    </div>
   </main>
 
   <Footer />
