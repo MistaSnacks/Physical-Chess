@@ -67,11 +67,27 @@ Wix (site 93f9dffd-79fb-4bea-94fa-810eef3397fe)
 1. `/login` (our design). Email + password → `wix.auth.login()`; `/signup` → `wix.auth.register({ email, password, profile: { firstName, lastName } })`.
 2. On `SUCCESS`, always use the **full-page redirect** exchange (Create Redirect Session with PKCE → `/auth/callback` → `/oauth2/token`). Never the iframe path; it fails on iOS Safari.
 3. Handle `EMAIL_VERIFICATION_REQUIRED` (6-digit code screen), `OWNER_APPROVAL_REQUIRED` (pending notice), `resetPassword`, `emailAlreadyExists`, `invalidPassword` with plain-language errors.
-4. Tokens in `localStorage["pc.tokens"]`; `wix.auth.renewToken` on expiry; logout via `wix.auth.logout(url)`.
+4. **Session storage (see §2.1.1):** the refresh token never reaches page JavaScript. `/auth/callback` is a server route: it exchanges the code, stores the refresh token in an `httpOnly; Secure; SameSite=Lax` cookie, and returns only the 4-hour access token to the page. Logout via `wix.auth.logout(url)` plus clearing the cookie.
 5. First login with no `lms-accounts` row → create it (role `guardian`) → `/players/new` (add first player) → `/who` (picker) → `/journey`.
 6. Server routes get `Authorization: Bearer <member access token>`; the server verifies it by calling Get My Member with that token, loads the account row with the API key, and checks the role.
 
-Blocker: the OAuth app must be created by hand (the MCP got a 403). Dashboard → Headless Settings → OAuth apps → "Physical Chess App", login URL empty, redirect URIs `http://localhost:4321/auth/callback` and `https://<prod-domain>/auth/callback`, plus allowed domain for the prod host. Until then everything runs in demo mode.
+Blocker: the OAuth app must be created by hand (the MCP got a 403 again on 2026-09-03; the "Manage OAuth Apps" scope is not granted to the MCP token). Dashboard → Headless Settings → OAuth apps → "Physical Chess App", login URL empty, redirect URIs `http://localhost:4321/auth/callback` and `https://<prod-domain>/auth/callback`, plus allowed domain for the prod host. Until then everything runs in demo mode.
+
+#### 2.1.1 Sessions that do not randomly log people out
+
+The client's biggest complaint about the Wix site is members getting logged out. That happens on Wix-hosted pages because the member session rides on Wix's own browser cookies, which expire on their schedule, get dropped by Safari's third-party-cookie rules, and are shared across every Wix site in the browser. In the headless app we own the session, so we can make it behave:
+
+| Wix facts we build on | What we do with them |
+|---|---|
+| Member **access tokens live 4 hours**; **refresh tokens are long-lived** and only die on logout, password change, or revocation. | The refresh token is the real session. It sits in a first-party `httpOnly` cookie on our domain (`pc_session`, 180-day `Max-Age`, renewed on every use, so an active family is never logged out). Nothing third-party, nothing Safari can purge as tracking. |
+| Access tokens are minted from the refresh token with `renewToken` / `POST /oauth2/token`. | On every page load the app calls `/api/session`, which reads the cookie, mints a fresh access token server-side, and hands it to the page in memory only (never `localStorage`). API calls that get a 401 retry once through `/api/session`. From the user's side the app is simply always logged in. |
+| The SDK's iframe token exchange breaks on iOS Safari. | We only use the full-page redirect exchange (§2.1 step 2). |
+| Wix supports reCAPTCHA on custom login pages and email verification on sign-up. | Both on. reCAPTCHA v3 on `/login` and `/signup` stops credential stuffing; verification stops junk accounts. |
+| PKCE `state` and `code_verifier` protect the redirect. | Stored server-side keyed by a one-time cookie, checked on callback, single use. |
+
+Other rules: HTTPS only (HSTS), a strict Content-Security-Policy, the Wix API key only in Vercel env (never shipped to the browser), sign-out on all devices = password reset (Wix revokes refresh tokens), and coaches/admins get a shorter 24-hour cookie because their screens show other families' data. Player switching inside a family never touches the session.
+
+Demo mode ignores all of this (there is no session to protect).
 
 ### 2.2 Demo mode
 
@@ -300,6 +316,7 @@ New components (all in `src/components/quest/`, styled in `theme.css` sections w
 
 - Add `@astrojs/vercel`, `@wix/sdk`, `@wix/data`, `@wix/members`. Keep `output: 'static'`; server routes opt out with `export const prerender = false`.
 - `src/lib/wix.js` (port from the old LMS repo, upgraded to the redirect exchange), `src/lib/repo/{index,wixRepo,localRepo}.js`, `src/lib/store.js`, `src/lib/game/*.js`, `src/lib/auth-guard.js` (redirects to `/login` or `/who`).
+- Session server routes (§2.1.1): `src/pages/auth/callback.js` (code → tokens, sets the `pc_session` httpOnly cookie), `src/pages/api/session.js` (cookie → fresh access token, slides the cookie), `src/pages/api/logout.js`. Env adds `SESSION_COOKIE_SECRET` (HMAC over the cookie payload) and `RECAPTCHA_SITE_KEY`.
 - `src/content/{modules,lessons,glossary,patches,readiness,levels,programs}.js` and `src/content/copy/*.md` for reading lessons.
 - `scripts/wix-collections.mjs` (creates/updates the §3 collections via the Wix Data Collections API with the API key; idempotent) and `scripts/seed-demo.mjs`.
 - `.env.example`: `PUBLIC_WIX_CLIENT_ID`, `PUBLIC_DEMO`, `WIX_API_KEY`, `WIX_SITE_ID`, `EXPORT_SECRET`.
