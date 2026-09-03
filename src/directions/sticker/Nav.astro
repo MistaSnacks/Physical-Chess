@@ -1,0 +1,54 @@
+---
+// Nav.astro — Sticker Roda header. Sticker sun-badge wordmark, pill nav
+// links to all five screens, pill CTA. Mobile collapses into a bottom
+// sheet menu (motion.js wires the open/close + slide animation).
+const { active = 'index' } = Astro.props as { active?: 'index' | 'dashboard' | 'movements' | 'music' | 'batizado' };
+
+const LINKS = [
+  { id: 'dashboard', label: 'My Journey', href: '/sticker/dashboard' },
+  { id: 'movements', label: 'Movements', href: '/sticker/movements' },
+  { id: 'music', label: 'Music', href: '/sticker/music' },
+  { id: 'batizado', label: 'Batizado', href: '/sticker/batizado' },
+];
+---
+
+<header class="sr-nav">
+  <div class="sr-nav__bar wrap">
+    <a class="sr-nav__brand" href="/sticker/">
+      <span class="sr-nav__badge" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="2.6" fill="var(--color-ink)" />
+          <path d="M12 8 L12 14 M12 10 L6 7 M12 10 L18 13 M12 14 L7 20 M12 14 L17 19" fill="none" stroke="var(--color-ink)" stroke-width="2.4" stroke-linecap="round" />
+        </svg>
+      </span>
+      <span class="sr-nav__wordmark">Physical Chess</span>
+    </a>
+
+    <nav class="sr-nav__links" aria-label="Sticker Roda sections">
+      {LINKS.map((l) => (
+        <a class="sr-nav__link" href={l.href} data-current={active === l.id ? 'true' : 'false'}>{l.label}</a>
+      ))}
+    </nav>
+
+    <div class="sr-nav__actions">
+      <a class="sr-btn sr-btn--ghost sr-nav__login" href="/sticker/dashboard">Log in</a>
+      <button class="sr-nav__burger" type="button" data-sheet-open aria-expanded="false" aria-controls="sr-mobile-sheet">
+        <span></span><span></span><span></span>
+        <span class="sr-only">Open menu</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="sr-sheet" id="sr-mobile-sheet" data-mobile-sheet hidden>
+  <div class="sr-sheet__scrim" data-sheet-close></div>
+  <div class="sr-sheet__panel" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="sr-sheet__handle" aria-hidden="true"></div>
+    <a class="sr-sheet__link" href="/sticker/">Enter the Roda</a>
+    {LINKS.map((l) => (
+      <a class="sr-sheet__link" href={l.href} data-current={active === l.id ? 'true' : 'false'}>{l.label}</a>
+    ))}
+    <a class="sr-btn sr-btn--sun sr-sheet__cta" href="/sticker/dashboard">Log in</a>
+    <button class="sr-btn sr-btn--ghost sr-sheet__close" type="button" data-sheet-close>Close</button>
+  </div>
+</div>

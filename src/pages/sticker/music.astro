@@ -1,0 +1,109 @@
+---
+// music.astro — Sticker Roda / Music & Culture + quiz
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/sticker/Nav.astro';
+import Footer from '../../directions/sticker/Footer.astro';
+import '../../directions/sticker/theme.css';
+import Quiz from '../../components/Quiz.astro';
+import { INSTRUMENTS, PORTUGUESE_WORDS, MUSIC_QUIZ } from '../../data/curriculum.js';
+import { PHOTOS, wix } from '../../data/media.js';
+
+const INSTRUMENT_ICON = {
+  pandeiro: '<circle cx="12" cy="12" r="8" fill="none" stroke="var(--color-ink)" stroke-width="2.4"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--color-ink)" stroke-width="1" stroke-dasharray="2 4"/>',
+  atabaque: '<path d="M8 4h8l-1.5 16h-5L8 4Z" fill="none" stroke="var(--color-ink)" stroke-width="2.2" stroke-linejoin="round"/><path d="M8 4h8" stroke="var(--color-ink)" stroke-width="2.2"/>',
+  agogo: '<circle cx="9" cy="9" r="4" fill="none" stroke="var(--color-ink)" stroke-width="2.2"/><circle cx="16" cy="16" r="3" fill="none" stroke="var(--color-ink)" stroke-width="2.2"/><path d="M9 5V2M9 2h4" stroke="var(--color-ink)" stroke-width="2" stroke-linecap="round"/>',
+};
+---
+
+<Base title="Music & Culture — Sticker Roda — Physical Chess" direction="sticker">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="music" />
+
+  <main transition:animate="fade">
+    <section class="sr-section wrap">
+      <div class="sr-section__head">
+        <p class="sr-eyebrow">Music</p>
+        <h1 class="sr-section__title">Meet the instruments</h1>
+        <p class="sr-section__sub">The berimbau leads the roda; these four instruments carry every song.</p>
+      </div>
+      <div class="sr-instrument-grid" data-stagger>
+        {INSTRUMENTS.map((inst, i) => (
+          <div class="sr-card sr-instrument-card" data-anim="card" style={`--tilt:${i % 2 === 0 ? '-1.4deg' : '1deg'}`}>
+            {inst.photoKey && PHOTOS[inst.photoKey] ? (
+              <div class="sr-instrument-card__media">
+                <img src={wix(inst.photoKey, 500, 375)} alt={PHOTOS[inst.photoKey].caption} loading="lazy" width="500" height="375" />
+              </div>
+            ) : (
+              <div class="sr-instrument-card__media sr-instrument-card__media--icon" set:html={`<svg width="72" height="72" viewBox="0 0 24 24">${INSTRUMENT_ICON[inst.id] || ''}</svg>`} />
+            )}
+            <h3>{inst.name}</h3>
+            <p>{inst.blurb}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="sr-section wrap">
+      <div class="sr-section__head">
+        <p class="sr-eyebrow">Culture · Portuguese for the Roda</p>
+        <h2 class="sr-section__title">Six words every student learns</h2>
+      </div>
+      <div class="sr-words-grid" data-stagger>
+        {PORTUGUESE_WORDS.map((w, i) => (
+          <div class="sr-card sr-word-chip" data-anim="card" style={`--tilt:${(i % 3 - 1) * 1.1}deg`}>
+            <span class="word">{w.word}</span>
+            <span class="meaning">{w.meaning}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="sr-section wrap">
+      <div class="sr-section__head">
+        <p class="sr-eyebrow">Music Quiz</p>
+        <h2 class="sr-section__title">Test what you've learned</h2>
+        <p class="sr-section__sub">Three questions. Get it right and the roda erupts.</p>
+      </div>
+      <div class="sr-card sr-quiz-card" data-anim="card" style="--tilt:0deg">
+        <div class="sr-quiz-progress">
+          <div class="sr-progress__track"><div class="sr-progress__fill" data-quiz-progress-fill></div></div>
+          <span class="sr-quiz-progress__badge" data-quiz-progress-badge>Question 1 / {MUSIC_QUIZ.length}</span>
+        </div>
+        <Quiz questions={MUSIC_QUIZ} title="Music &amp; Culture Quiz" />
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+
+  <script>
+    import '../../directions/sticker/motion.js';
+
+    // Keep the sticker-styled progress bar / "Question X / N" badge in sync
+    // with the shared Quiz component's data-state attributes.
+    function syncQuizChrome(quiz) {
+      const bar = quiz.parentElement.querySelector('[data-quiz-progress-fill]');
+      const badge = quiz.parentElement.querySelector('[data-quiz-progress-badge]');
+      const index = Number(quiz.dataset.index || 0);
+      const total = Number(quiz.dataset.total || 1);
+      const state = quiz.dataset.state;
+      const shown = state === 'done' ? total : index + 1;
+      if (bar) bar.style.width = `${Math.round((shown / total) * 100)}%`;
+      if (badge) badge.textContent = state === 'done' ? 'Done!' : `Question ${shown} / ${total}`;
+    }
+
+    function init() {
+      document.querySelectorAll('[data-quiz]').forEach((quiz) => {
+        const observer = new MutationObserver(() => syncQuizChrome(quiz));
+        observer.observe(quiz, { attributes: true, attributeFilter: ['data-state', 'data-index'] });
+        syncQuizChrome(quiz);
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

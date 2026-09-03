@@ -1,0 +1,135 @@
+---
+// index.astro — Sticker Roda / Home / "Enter the roda"
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/sticker/Nav.astro';
+import Footer from '../../directions/sticker/Footer.astro';
+import '../../directions/sticker/theme.css';
+import { PHOTOS, wix, video, HERO_CANDIDATES } from '../../data/media.js';
+import { CONTACT } from '../../data/batizado.js';
+
+const heroKey = HERO_CANDIDATES[0]; // heroWorkshop
+const heroVideo = video('videoProject1');
+
+const EXPLORE = [
+  {
+    href: '/sticker/dashboard',
+    title: 'My Journey',
+    desc: 'Modules, progress, streak and what to do next.',
+    badge: 'sun',
+  },
+  {
+    href: '/sticker/movements',
+    title: 'Movements',
+    desc: 'Ginga, kicks, escapes — watch, then practice.',
+    badge: 'sky',
+  },
+  {
+    href: '/sticker/music',
+    title: 'Music & Culture',
+    desc: 'Instruments, Portuguese words and a quiz.',
+    badge: 'coral',
+  },
+  {
+    href: '/sticker/batizado',
+    title: 'Graduation',
+    desc: 'Batizado 2026, the cordas, and the gallery.',
+    badge: 'lime',
+  },
+];
+---
+
+<Base title="Physical Chess — Sticker Roda" direction="sticker">
+  <Fragment slot="head">
+    <ClientRouter />
+  </Fragment>
+
+  <Nav active="index" />
+
+  <main>
+    <section class="sr-hero wrap" transition:animate="fade">
+      <div class="sr-hero__inner">
+        <div class="sr-hero__copy">
+          <span class="sr-hero__eyebrow" data-anim="card" style="--tilt:-1.5deg">Physical Chess LMS</span>
+          <h1 class="sr-hero__title">
+            Enter the roda
+            <svg class="sr-wave" width="0.9em" height="0.9em" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--color-sun); vertical-align:-0.08em;">
+              <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 12V4a1.5 1.5 0 0 1 3 0v8M14 12V5.5a1.5 1.5 0 0 1 3 0V13M17 13v-3.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.2-3L5 14.5c-.6-1 .1-2 1.2-1.8.5.1.9.4 1.2.8L8 15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" />
+            </svg>
+          </h1>
+          <p class="sr-hero__sub">
+            A capoeira learning app for kids, built from the real classes, music and Batizado of
+            ACE &amp; ABADÁ-Capoeira Brooklyn. Stickers, stripes and a little confetti along the way.
+          </p>
+          <p class="sr-hero__age">🥋 {CONTACT.ageLine}</p>
+          <div class="sr-hero__ctas">
+            <a class="sr-btn sr-btn--sun sr-btn--lg" href="/sticker/dashboard">Log in</a>
+            <a class="sr-btn sr-btn--blue sr-btn--lg" href="/sticker/batizado">Batizado 2026</a>
+          </div>
+          <p class="sr-hero__contact">
+            <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
+            &nbsp;·&nbsp;
+            <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+          </p>
+        </div>
+
+        <div class="sr-hero__media">
+          <div class="sr-hero__video" aria-hidden="true">
+            <video
+              src={heroVideo.mp4}
+              poster={heroVideo.poster}
+              autoplay
+              muted
+              loop
+              playsinline
+            ></video>
+          </div>
+          <div class="sr-card sr-hero__photo-card" data-anim="card" style="--tilt:-3deg">
+            <span class="sr-hero__sticker sr-hero__sticker--tl">Axé!</span>
+            <img
+              src={wix(heroKey, 720, 540)}
+              alt={PHOTOS[heroKey].caption}
+              loading="eager"
+              width="720"
+              height="540"
+            />
+            <span class="sr-hero__sticker sr-hero__sticker--br">Ages 7–13</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sr-section wrap">
+      <div class="sr-section__head">
+        <p class="sr-eyebrow">Five screens, one roda</p>
+        <h2 class="sr-section__title">Where do you want to go?</h2>
+        <p class="sr-section__sub">Jump straight into any part of the course — the demo logs you in as Maya.</p>
+      </div>
+      <div class="sr-explore__grid" data-stagger>
+        {EXPLORE.map((item, i) => (
+          <a
+            class={`sr-card sr-explore__card`}
+            href={item.href}
+            data-anim="card"
+            style={`--tilt:${i % 2 === 0 ? '-1.2deg' : '1deg'}`}
+          >
+            <span class={`sr-icon-badge sr-icon-badge--${item.badge}`} aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="7" fill="none" stroke="var(--color-ink)" stroke-width="2" />
+                <path d="M12 8v4l3 2" fill="none" stroke="var(--color-ink)" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
+            <h3>{item.title}</h3>
+            <p>{item.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+
+  <script>
+    import '../../directions/sticker/motion.js';
+  </script>
+</Base>
