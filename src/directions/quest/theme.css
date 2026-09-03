@@ -764,9 +764,8 @@ html:has(body.direction-quest) {
   opacity: 0.55;
 }
 .quest-trail-path--glow {
-  stroke-width: 34;
-  stroke-dasharray: 2 20;
-  opacity: 0.18;
+  stroke-width: 30;
+  opacity: 0.16;
 }
 .quest-trail-path--cleared {
   stroke: var(--quest-lime);
@@ -804,9 +803,9 @@ html:has(body.direction-quest) {
   background: var(--quest-cream);
 }
 .quest-lesson-dot--locked {
-  border-color: var(--quest-leaf-border);
-  background: var(--quest-deep-leaf);
-  opacity: 0.8;
+  border-color: rgba(255, 246, 229, 0.45);
+  background: var(--quest-palm-shadow);
+  opacity: 0.9;
 }
 
 .quest-node {
