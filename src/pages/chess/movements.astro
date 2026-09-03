@@ -7,15 +7,16 @@ import Base from '../../layouts/Base.astro';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../../directions/chess/Nav.astro';
 import Footer from '../../directions/chess/Footer.astro';
+import YouTube from '../../components/YouTube.astro';
 import { MODULES, moduleProgress } from '../../data/curriculum.js';
-import { video } from '../../data/media.js';
+import { yt } from '../../data/media.js';
 import '../../directions/chess/tokens.css';
 import '../../directions/chess/theme.css';
 
 const movements = MODULES.find((m) => m.id === 'movements');
 const progress = moduleProgress(movements);
 const drill = movements.lessons.find((l) => l.type === 'drill');
-const lessonVideo = video('aulao2024Lapa');
+const lessonVideo = movements.lessons.find((l) => l.videoKey)?.videoKey || 'aulaoBushwick';
 
 const NOTATION = ['e4', 'Nf3', 'Bc4', 'O-O', 'Qxd5'];
 ---
@@ -60,16 +61,13 @@ const NOTATION = ['e4', 'Nf3', 'Bc4', 'O-O', 'Qxd5'];
       </div>
 
       <div class="chess-fade-up">
-        <div class="chess-frame chess-frame--square">
-          <video
-            src={lessonVideo.mp4}
-            poster={lessonVideo.poster}
-            controls
-            preload="metadata"
-            aria-label="Aulão 2024 – 300 Anos Lapa, ACE class footage"
-          ></video>
+        <div class="chess-frame chess-frame--lesson">
+          <YouTube
+            id={yt(lessonVideo)}
+            title="Ginga Basics — ACE Aulão at Achievement First Bushwick Elementary"
+          />
         </div>
-        <p class="chess-media-credit">Video: SoChlo Productions — Aulão 2024, 300 Anos Lapa</p>
+        <p class="chess-media-credit">Video: SoChlo Productions</p>
 
         {
           drill && (

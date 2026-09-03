@@ -32,7 +32,8 @@ function initEntrance() {
     const col = Number(el.dataset.col || 0);
     const diagonal = row + col;
     const delay = el.dataset.row || el.dataset.col ? diagonal * 45 : i * 55;
-    el.style.animationDelay = `${Math.min(delay, 900)}ms`;
+    // Keep the full entrance (delay + longest 560ms animation) under 1.2s.
+    el.style.animationDelay = `${Math.min(delay, 560)}ms`;
   });
 
   const io = new IntersectionObserver(
@@ -72,6 +73,8 @@ function initClock() {
   const clockValue = document.querySelector('[data-chess-clock-maya]');
   const clockSide = document.querySelector('[data-chess-clock-side-maya]');
   if (!clockValue) return;
+  if (clockValue.dataset.clockInit === 'true') return;
+  clockValue.dataset.clockInit = 'true';
 
   let seconds = Number(clockValue.dataset.seconds || 42);
 
@@ -107,6 +110,8 @@ function initQuizReward() {
   const checkmate = document.querySelector('.chess-checkmate');
 
   if (!quiz) return;
+  if (quiz.dataset.chessRewardInit === 'true') return;
+  quiz.dataset.chessRewardInit = 'true';
 
   let positions = [];
   if (miniBoard && miniBoard.dataset.positions) {
@@ -119,8 +124,36 @@ function initQuizReward() {
   function placePiece(col, row, cells = 4) {
     if (!piece) return;
     const pct = 100 / cells;
-    piece.style.left = `${col * pct + pct / 2}%`;
-    piece.style.top = `${row * pct + pct / 2}%`;
+    const targetLeft = `${col * pct + pct / 2}%`;
+    const targetTop = `${row * pct + pct / 2}%`;
+
+    if (reducedMotion()) {
+      piece.style.left = targetLeft;
+      piece.style.top = targetTop;
+      return;
+    }
+
+    const boardRect = miniBoard.getBoundingClientRect();
+    const pieceRect = piece.getBoundingClientRect();
+    const currentX = pieceRect.left + pieceRect.width / 2 - boardRect.left;
+    const currentY = pieceRect.top + pieceRect.height / 2 - boardRect.top;
+    const targetX = (col + 0.5) * (boardRect.width / cells);
+    const targetY = (row + 0.5) * (boardRect.height / cells);
+    const dx = targetX - currentX;
+    const dy = targetY - currentY;
+
+    const jump = piece.animate(
+      [
+        { transform: 'translate(-50%, -50%) translate(0, 0)' },
+        { transform: `translate(-50%, -50%) translate(${dx * 0.5}px, ${dy * 0.5 - 28}px)`, offset: 0.5 },
+        { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px)` },
+      ],
+      { duration: 520, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
+    );
+    jump.addEventListener('finish', () => {
+      piece.style.left = targetLeft;
+      piece.style.top = targetTop;
+    }, { once: true });
   }
 
   function updateProgress(index, total) {
@@ -161,6 +194,8 @@ function initQuizReward() {
 function initMarkComplete() {
   const btn = document.querySelector('[data-chess-mark-complete]');
   if (!btn) return;
+  if (btn.dataset.completeInit === 'true') return;
+  btn.dataset.completeInit = 'true';
   btn.addEventListener('click', () => {
     const done = btn.dataset.done === 'true';
     btn.dataset.done = done ? 'false' : 'true';

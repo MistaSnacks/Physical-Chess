@@ -8,10 +8,11 @@ import Base from '../../layouts/Base.astro';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../../directions/chess/Nav.astro';
 import Footer from '../../directions/chess/Footer.astro';
+import YouTube from '../../components/YouTube.astro';
 import { MODULES, moduleProgress, nextUpLesson } from '../../data/curriculum.js';
 import { STUDENT } from '../../data/student.js';
 import { CORDAS, cordaIndex, BATIZADO_DATE } from '../../data/batizado.js';
-import { wix } from '../../data/media.js';
+import { wix, yt } from '../../data/media.js';
 import { pieceInner, lockSVG } from '../../directions/chess/pieces.js';
 import '../../directions/chess/tokens.css';
 import '../../directions/chess/theme.css';
@@ -307,6 +308,21 @@ const ctaHref = currentModuleId ? MODULE_ROUTE[currentModuleId] : '/chess/moveme
         </div>
       </div>
     </div>
+
+    <section class="chess-latest chess-fade-up" aria-labelledby="chess-latest-title">
+      <div class="chess-latest__copy">
+        <p class="chess-eyebrow">Latest from the roda · Match replay</p>
+        <h2 class="chess-h3" id="chess-latest-title">Study the Game.</h2>
+        <p class="chess-lede">Watch the 2024 Brooklyn roda, spot the openings, then bring one new move to class.</p>
+        <a class="chess-btn chess-btn--ink" href="/chess/movements">Open Movements</a>
+      </div>
+      <div>
+        <div class="chess-frame chess-frame--lesson">
+          <YouTube id={yt('acb2024')} title="Abadá Capoeira Brooklyn 2024 — latest from the roda" />
+        </div>
+        <p class="chess-media-credit">Video: SoChlo Productions</p>
+      </div>
+    </section>
   </main>
 
   <Footer />

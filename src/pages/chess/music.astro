@@ -52,38 +52,6 @@ function miniIsDark(row, col) {
       <p class="chess-lede">The instruments that carry the game, and the words every student hears in their first class.</p>
     </div>
 
-    <div class="chess-fade-up" style="margin-bottom:40px;">
-      <h2 class="chess-h3" style="margin-bottom:16px;">Instruments</h2>
-      <div class="chess-instrument-grid">
-        {
-          INSTRUMENTS.map((inst) => (
-            <div class="chess-instrument-card">
-              {inst.photoKey && PHOTOS[inst.photoKey] && (
-                <div class="chess-instrument-card__photo">
-                  <img src={wix(inst.photoKey, 300, 300)} alt={PHOTOS[inst.photoKey].caption} loading="lazy" width="300" height="300" />
-                </div>
-              )}
-              <span class="chess-instrument-card__name">{inst.name}</span>
-              <p class="chess-instrument-card__blurb">{inst.blurb}</p>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-
-    <div class="chess-fade-up">
-      <h2 class="chess-h3" style="margin-bottom:16px;">Words for the Roda</h2>
-      <div class="chess-words-grid">
-        {
-          PORTUGUESE_WORDS.map((w) => (
-            <div class="chess-word-card">
-              <span class="chess-word-card__word">{w.word}</span>
-              <p class="chess-word-card__meaning">{w.meaning}</p>
-            </div>
-          ))
-        }
-      </div>
-    </div>
   </section>
 
   <div class="chess-puzzle-shell">
@@ -147,6 +115,14 @@ function miniIsDark(row, col) {
     <div class="chess-position-panel chess-fade-up">
       <span class="chess-position-panel__label">The Position</span>
       <div class="chess-mini-board" data-positions={positionsAttr}>
+        <img
+          class="chess-mini-board__photo"
+          src={wix('heroWorkshop', 560, 560)}
+          alt="Kids capoeira workshop — the lesson position"
+          loading="lazy"
+          width="560"
+          height="560"
+        />
         {
           Array.from({ length: 16 }).map((_, i) => {
             const row = Math.floor(i / 4);
@@ -179,6 +155,47 @@ function miniIsDark(row, col) {
       <div class="chess-position-reward">+1 Move · +50 XP</div>
     </div>
   </div>
+
+  <section class="chess-section chess-culture-deck">
+    <div class="chess-fade-up" style="margin-bottom:40px;">
+      <h2 class="chess-h3" style="margin-bottom:16px;">Instruments</h2>
+      <div class="chess-instrument-grid">
+        {
+          INSTRUMENTS.map((inst, index) => (
+            <div class="chess-instrument-card">
+              {inst.photoKey && PHOTOS[inst.photoKey] ? (
+                <div class="chess-instrument-card__photo">
+                  <img src={wix(inst.photoKey, 360, 240)} alt={PHOTOS[inst.photoKey].caption} loading="lazy" width="360" height="240" />
+                </div>
+              ) : (
+                <div class="chess-instrument-card__mark" aria-hidden="true">
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <i></i><i></i><i></i>
+                </div>
+              )}
+              <span class="chess-instrument-card__name">{inst.name}</span>
+              <p class="chess-instrument-card__blurb">{inst.blurb}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="chess-fade-up">
+      <h2 class="chess-h3" style="margin-bottom:16px;">Words for the Roda</h2>
+      <div class="chess-words-grid">
+        {
+          PORTUGUESE_WORDS.map((w, index) => (
+            <div class="chess-word-card">
+              <span class="chess-word-card__coordinate">{String.fromCharCode(97 + index)}{index + 1}</span>
+              <span class="chess-word-card__word">{w.word}</span>
+              <p class="chess-word-card__meaning">{w.meaning}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
 
   <div class="chess-checkmate" data-visible="false">
     <div class="chess-checkmate__inner">

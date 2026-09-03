@@ -55,12 +55,18 @@ const videos = [
   <Nav active="batizado" />
 
   <section class="chess-section">
-    <div class="chess-section__head chess-fade-up">
-      <p class="chess-eyebrow">Graduation</p>
-      <h1 class="chess-h2">Batizado 2026.</h1>
-      <p class="chess-lede">{INTRO}</p>
-      <div class="chess-countdown" style="margin-top:20px;">
-        <Countdown target={BATIZADO_DATE} dateTbc={BATIZADO_DATE_TBC} />
+    <div class="chess-batizado-hero chess-fade-up">
+      <div class="chess-batizado-hero__copy">
+        <p class="chess-eyebrow">Graduation · The Final Rank</p>
+        <h1 class="chess-h2">Batizado 2026.</h1>
+        <p class="chess-lede">{INTRO}</p>
+        <div class="chess-countdown">
+          <Countdown target={BATIZADO_DATE} dateTbc={BATIZADO_DATE_TBC} />
+        </div>
+      </div>
+      <div class="chess-batizado-hero__photo">
+        <img src={wix('kidsParents', 1200, 800)} alt="Kids playing capoeira with parents during Batizado" loading="eager" width="1200" height="800" />
+        <span class="chess-batizado-hero__flag">Your next promotion</span>
       </div>
     </div>
 
