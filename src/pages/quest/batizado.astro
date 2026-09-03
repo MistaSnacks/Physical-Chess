@@ -1,0 +1,148 @@
+---
+// batizado.astro — Graduation / Batizado. The Corda Amarela gate opens to
+// reveal the ceremony moments, the cordas track and the gallery. Per
+// SPEC §2 row 5 + §4.3 + §5.2.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import Countdown from '../../components/Countdown.astro';
+import Gallery from '../../components/Gallery.astro';
+import YouTube from '../../components/YouTube.astro';
+import { INTRO, MOMENTS, CORDAS, BATIZADO_DATE, BATIZADO_DATE_TBC, cordaIndex } from '../../data/batizado.js';
+import { STUDENT } from '../../data/student.js';
+import { wix } from '../../data/media.js';
+
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+
+const gateCorda = CORDAS.find((c) => c.id === 'amarela');
+const currentCordaIndex = cordaIndex(STUDENT.corda);
+
+const GALLERY_PHOTOS = [
+  'batizado2019a',
+  'batizado2019b',
+  'groupFoto2019',
+  'xampuGasparzinho',
+  'troca2019',
+  'batizado2022',
+  'cordsTable2022',
+  'cordsTable2018',
+  'celebration2018',
+  'kidsWorkshopDay2',
+  'pastorPerigoCiborg',
+  'guindasteTubarao',
+  'voltaAdults',
+  'classPhoto2022a',
+];
+
+const VIDEOS = [
+  { key: 'batizado2026', label: 'Batizado 2026' },
+  { key: 'batizado2025', label: 'Batizado 2025' },
+  { key: 'batizado2024', label: 'Batizado 2024' },
+];
+---
+
+<Base title="Batizado — Roda Quest" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
+
+    <Nav active="batizado" />
+
+    <main>
+      <section class="quest-batizado-hero">
+        <p class="quest-hero__eyebrow" data-quest-enter>Graduation</p>
+        <h1 class="quest-batizado-hero__title" data-quest-enter>Batizado 2026</h1>
+        <p class="quest-batizado-hero__intro" data-quest-enter>{INTRO}</p>
+        <div data-quest-enter>
+          <Countdown target={BATIZADO_DATE} dateTbc={BATIZADO_DATE_TBC} class="quest-countdown" />
+        </div>
+      </section>
+
+      <section class="quest-gate-reveal">
+        <button
+          type="button"
+          class="quest-gate-panel"
+          data-quest-gate
+          data-open="false"
+          data-quest-enter
+        >
+          <span class="quest-gate-panel__icon">
+            <svg width="46" height="46" viewBox="0 0 24 24"><path d="M6 3h12l2 7-8 11L4 10z" fill="none" stroke="#FFF6E5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h16M9 3l3 7 3-7M9 10l3 11 3-11" fill="none" stroke="#FFF6E5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="quest-gate-panel__title">The Corda {gateCorda.label} gate</span>
+          <span class="quest-gate-panel__sub">Tap to open it and see what Batizado is all about &darr;</span>
+        </button>
+
+        <div class="quest-ceremony" data-quest-ceremony data-visible="false">
+          <div>
+            <p class="quest-section__eyebrow">What is it?</p>
+            <h2 class="quest-section__title">The six moments of the ceremony</h2>
+            <div class="quest-moments">
+              {
+                MOMENTS.map((m, i) => (
+                  <div class="quest-moment">
+                    <div class="quest-moment__photo-wrap">
+                      <img class="quest-moment__photo" src={wix(m.photoKey, 480, 360)} alt={m.title} loading="lazy" />
+                    </div>
+                    <div class="quest-moment__body">
+                      <span class="quest-moment__index">MOMENT {i + 1}</span>
+                      <h3 class="quest-moment__title">{m.title}</h3>
+                      <p class="quest-moment__copy">{m.copy}</p>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="quest-section__eyebrow">Cordas &middot; Ranks</p>
+            <h2 class="quest-section__title">Maya is Corda {CORDAS[currentCordaIndex].label} right now.</h2>
+            <div class="quest-cordas-track">
+              {
+                CORDAS.map((c, i) => (
+                  <div class="quest-corda" data-current={i === currentCordaIndex ? 'true' : 'false'}>
+                    <span class="quest-corda__swatch" style={`background:${c.color}`} />
+                    <span class="quest-corda__label">{c.label}</span>
+                    {i === currentCordaIndex && <span class="quest-corda__you">MAYA IS HERE</span>}
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <div>
+            <p class="quest-section__eyebrow">From the roda</p>
+            <h2 class="quest-section__title">The gallery</h2>
+            <Gallery photos={GALLERY_PHOTOS} width={500} height={500} eager={4} class="quest-gallery" />
+          </div>
+
+          <div>
+            <p class="quest-section__eyebrow">Batizado media</p>
+            <h2 class="quest-section__title">Watch the last three Batizados</h2>
+            <div class="quest-videos">
+              {
+                VIDEOS.map((v) => (
+                  <div class="quest-video-card">
+                    <YouTube id={v.key} title={v.label} />
+                    <span class="quest-video-card__title">{v.label}</span>
+                    <span class="quest-video-card__credit">Video: SoChlo Productions</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </div>
+</Base>
+
+<script>
+  import '../../directions/quest/motion.js';
+</script>

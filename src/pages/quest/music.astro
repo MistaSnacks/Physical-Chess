@@ -1,0 +1,154 @@
+---
+// music.astro — Music & Culture + the Boss Quiz. Per SPEC §2 row 4 + §5.2.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import Quiz from '../../components/Quiz.astro';
+import { MODULES, moduleProgress, INSTRUMENTS, PORTUGUESE_WORDS, MUSIC_QUIZ } from '../../data/curriculum.js';
+import { wix } from '../../data/media.js';
+
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+
+const mod = MODULES.find((m) => m.id === 'music');
+const progress = moduleProgress(mod);
+const currentIndex = mod.lessons.findIndex((l) => !l.completed);
+---
+
+<Base title="Music & Culture — Roda Quest" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
+
+    <Nav active="music" />
+
+    <main>
+      <section class="quest-section">
+        <p class="quest-section__eyebrow" data-quest-enter>Music</p>
+        <h2 class="quest-section__title" data-quest-enter>Meet the roda's rhythm section.</h2>
+        <div class="quest-instruments">
+          {
+            INSTRUMENTS.map((inst) => (
+              <div class="quest-instrument-card" data-quest-enter>
+                <div class="quest-instrument-card__photo">
+                  {inst.photoKey ? (
+                    <img src={wix(inst.photoKey, 400, 300)} alt={inst.name} loading="lazy" />
+                  ) : (
+                    <div class="quest-instrument-card__photo quest-instrument-card__photo--placeholder">
+                      <svg width="36" height="36" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    </div>
+                  )}
+                </div>
+                <span class="quest-instrument-card__name">{inst.name}</span>
+                <p class="quest-instrument-card__blurb">{inst.blurb}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="quest-section">
+        <p class="quest-section__eyebrow" data-quest-enter>Culture &middot; Portuguese for the roda</p>
+        <h2 class="quest-section__title" data-quest-enter>Six words every student learns.</h2>
+        <div class="quest-words">
+          {
+            PORTUGUESE_WORDS.map((w) => (
+              <div class="quest-word-card" data-quest-enter>
+                <p class="quest-word-card__word">{w.word}</p>
+                <p class="quest-word-card__meaning">{w.meaning}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="quest-quiz-layout">
+        <aside class="quest-rail" data-quest-enter>
+          <h1 class="quest-rail__title" style="font-size:28px;">Music</h1>
+          <p class="quest-rail__eyebrow">{progress.completed} OF {progress.total} CLEARED</p>
+          {
+            mod.lessons.map((lesson, i) => {
+              const isDone = lesson.completed;
+              const isCurrent = !isDone && i === currentIndex;
+              const isQuiz = lesson.type === 'quiz';
+              const stateClass = isDone
+                ? 'quest-rail__item--done'
+                : isCurrent
+                  ? 'quest-rail__item--current'
+                  : '';
+              return (
+                <div class={`quest-rail__item ${stateClass}`}>
+                  <span class="quest-rail__item-icon">
+                    {isDone ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#0B2E24" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    ) : isQuiz ? (
+                      '?'
+                    ) : (
+                      i + 1
+                    )}
+                  </span>
+                  <span class="quest-rail__item-body">
+                    <span class="quest-rail__item-title">{lesson.title}</span>
+                    <span class="quest-rail__item-meta">
+                      {lesson.minutes} min &middot; {isDone ? 'cleared' : isQuiz ? 'in progress' : lesson.type}
+                    </span>
+                  </span>
+                </div>
+              );
+            })
+          }
+        </aside>
+
+        <div class="quest-boss-panel" data-quest-enter>
+          <div class="quest-boss-panel__top">
+            <div class="quest-boss-panel__badge-row">
+              <span class="quest-boss-panel__badge">BOSS QUIZ</span>
+              <span class="quest-boss-panel__of">{MUSIC_QUIZ.length} questions</span>
+            </div>
+            <div class="quest-hearts" aria-label="3 lives">
+              <svg data-quest-heart width="30" height="30" viewBox="0 0 24 24"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z" fill="#FF4F7A" stroke="#0B2E24" stroke-width="2"/></svg>
+              <svg data-quest-heart width="30" height="30" viewBox="0 0 24 24"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z" fill="#FF4F7A" stroke="#0B2E24" stroke-width="2"/></svg>
+              <svg data-quest-heart width="30" height="30" viewBox="0 0 24 24"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z" fill="#FF4F7A" stroke="#0B2E24" stroke-width="2"/></svg>
+            </div>
+          </div>
+
+          <div class="quest-quiz-progress">
+            {MUSIC_QUIZ.map((q, i) => <span class="quest-quiz-progress__seg" data-quest-progress-seg data-state={i === 0 ? 'current' : 'upcoming'} />)}
+          </div>
+
+          <Quiz questions={MUSIC_QUIZ} class="quest-quiz" />
+        </div>
+
+        <div class="quest-mascot" data-quest-enter>
+          <div class="quest-mascot__bubble-wrap">
+            <p class="quest-mascot__bubble">Boa, Maya! Answer all three and the corda gets closer.</p>
+            <svg class="quest-mascot__tail" width="26" height="16" viewBox="0 0 26 16"><path d="M0 0h26L13 16z" fill="#FFF6E5" /></svg>
+          </div>
+          <div class="quest-mascot__figure">
+            <svg width="90" height="90" viewBox="0 0 24 24">
+              <circle cx="15" cy="4.5" r="2.2" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M3 21l5-6 3 1 2-6 4 3 4-5" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M8 15l-2 6" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <p class="quest-mascot__name">MESTRE BIRA</p>
+          <div class="quest-chip" style="background:var(--quest-lime); color:var(--quest-ink); border:4px solid var(--quest-ink);" data-quest-xp-target>
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z" fill="#0B2E24" /></svg>
+            <span data-quest-xp-total>+0 XP</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+
+    <div class="quest-flash" aria-hidden="true"></div>
+    <canvas class="quest-confetti-canvas" aria-hidden="true"></canvas>
+  </div>
+</Base>
+
+<script>
+  import '../../directions/quest/motion.js';
+</script>

@@ -1,0 +1,14 @@
+---
+// Footer.astro — Roda Quest footer with the ACE contact info (SPEC §4.3).
+import { CONTACT } from '../../data/batizado.js';
+---
+
+<footer class="quest-footer" data-quest-enter>
+  <div class="quest-footer__brand">Physical Chess &middot; Roda Quest</div>
+  <div class="quest-footer__contact">
+    <span>{CONTACT.ageLine}</span>
+    <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
+    <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+  </div>
+  <div class="quest-footer__note">A program of ACE / Abad&aacute; Capoeira Brooklyn.</div>
+</footer>

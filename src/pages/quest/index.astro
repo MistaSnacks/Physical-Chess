@@ -1,0 +1,101 @@
+---
+// index.astro — Roda Quest home / "Enter the Roda".
+// Wix home port: night-sky hero, age line, contact, Batizado 2026 CTA,
+// nav into the app. Per SPEC §2 row 1 + §5.2.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import { video } from '../../data/media.js';
+import { CONTACT } from '../../data/batizado.js';
+
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+
+const hero = video('videoProject1');
+
+const SCREENS = [
+  {
+    href: '/quest/dashboard',
+    title: 'My Journey',
+    sub: 'The map — see your stops, your streak and what’s next.',
+  },
+  {
+    href: '/quest/movements',
+    title: 'Movements',
+    sub: 'Ginga, kicks and escapes with real class video.',
+  },
+  {
+    href: '/quest/music',
+    title: 'Music',
+    sub: 'Instruments, Portuguese words and the Boss Quiz.',
+  },
+  {
+    href: '/quest/batizado',
+    title: 'Batizado',
+    sub: 'The gate opens on the ceremony, cordas and the gallery.',
+  },
+];
+---
+
+<Base title="Roda Quest — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
+
+    <Nav active="home" />
+
+    <main>
+      <section class="quest-hero">
+        <div class="quest-hero__bg" aria-hidden="true">
+          <video
+            class="quest-hero__video"
+            src={hero.mp4}
+            poster={hero.poster}
+            autoplay
+            muted
+            loop
+            playsinline
+          ></video>
+          <div class="quest-hero__scrim"></div>
+        </div>
+        <div class="quest-hero__content">
+          <p class="quest-hero__eyebrow" data-quest-enter>Roda Quest &middot; Physical Chess</p>
+          <h1 class="quest-hero__title" data-quest-enter>Enter the roda.<br />Level up your ax&eacute;.</h1>
+          <p class="quest-hero__sub" data-quest-enter>
+            A tropical-night adventure through capoeira: clear stops on the map, earn XP, beat the
+            Boss Quiz and climb toward your next corda &mdash; all with real classes from ACE / Abad&aacute;
+            Capoeira Brooklyn.
+          </p>
+          <p class="quest-hero__age" data-quest-enter>{CONTACT.ageLine}</p>
+          <div class="quest-hero__actions" data-quest-enter>
+            <a class="quest-btn quest-btn--mango" href="/quest/dashboard">Log in &amp; play &rarr;</a>
+            <a class="quest-btn quest-btn--hibiscus" href="/quest/batizado">Batizado 2026</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="quest-section">
+        <p class="quest-section__eyebrow" data-quest-enter>The quest</p>
+        <h2 class="quest-section__title" data-quest-enter>Four stops on the road to the roda.</h2>
+        <div class="quest-screens">
+          {
+            SCREENS.map((s) => (
+              <a class="quest-screen-card" href={s.href} data-quest-enter>
+                <span class="quest-screen-card__title">{s.title}</span>
+                <span class="quest-screen-card__sub">{s.sub}</span>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </div>
+</Base>
+
+<script>
+  import '../../directions/quest/motion.js';
+</script>

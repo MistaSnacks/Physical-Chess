@@ -1,0 +1,49 @@
+/* ---------------------------------------------------------------------
+   tokens.css — Roda Quest design tokens.
+   Values copied from Paper artboards ED-0 (map) / EE-0 (quiz) JSX.
+   --------------------------------------------------------------------- */
+
+:root {
+  /* Colors */
+  --quest-palm-shadow: #0b2e24; /* ground / page bg */
+  --quest-deep-leaf: #154334; /* surface */
+  --quest-leaf-border: #1e5a46; /* surface border */
+  --quest-hibiscus: #ff4f7a;
+  --quest-hibiscus-shadow: #8a1f3d;
+  --quest-mango: #ffb238;
+  --quest-mango-shadow: #7a4a00;
+  --quest-lime: #b9f26b;
+  --quest-lime-shadow: #4e7a22;
+  --quest-cream: #fff6e5;
+  --quest-muted: #9fc4b3;
+  --quest-muted-2: #7fa894;
+  --quest-ink: #0b2e24;
+
+  /* Corda progression (from batizado.js CORDAS, for reference) */
+  --quest-corda-crua: #e8dcc3;
+
+  /* Type */
+  --quest-font-display: 'Lilita One', system-ui, sans-serif;
+  --quest-font-label: 'Nunito', system-ui, sans-serif;
+  --quest-font-body: 'Nunito', system-ui, sans-serif;
+
+  --quest-text-display-lg: 56px;
+  --quest-text-display-md: 40px;
+  --quest-text-display-sm: 26px;
+  --quest-text-label: 14px;
+  --quest-text-body: 17px;
+
+  /* Radii */
+  --quest-radius-pill: 999px;
+  --quest-radius-lg: 36px;
+  --quest-radius-md: 20px;
+  --quest-radius-sm: 12px;
+
+  /* Borders */
+  --quest-border-thin: 3px;
+  --quest-border-thick: 6px;
+
+  /* Motion timing */
+  --quest-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --quest-entrance-duration: 1.2s;
+}
