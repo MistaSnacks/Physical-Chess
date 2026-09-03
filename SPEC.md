@@ -15,7 +15,7 @@ Repo: `/Users/admin/physical-chess-app` (cloned from the showcase, Quest promote
 | 1 | **Accounts belong to grown-ups; kids are "players" inside an account.** One Wix member (parent, guardian, teacher, coach) can hold several players. Kids never enter an email or password. | Ages 7–13 means COPPA. It also matches who the 61 existing members actually are: parents and school coordinators. Siblings share a login; a shared classroom tablet works with a "Who's playing?" picker. |
 | 2 | **Wix Members stays the identity provider.** Custom-designed login/sign-up screens in the Quest look, powered by the Wix JS SDK (`auth.login` / `auth.register`), tokens exchanged with the mobile-safe full-page redirect flow. | Existing members keep their logins. The client keeps one member list in the Wix dashboard. No second auth vendor. |
 | 3 | **Wix CMS collections are the system of record for student data**, designed as an **append-only event ledger** plus small snapshot tables. | The client can open the Wix dashboard, filter, and Export CSV with zero code. Every number the app shows is derivable from the ledger, so nothing is trapped in the UI. |
-| 4 | **A thin server layer on Vercel (Astro server routes) holds a Wix API key** for anything cross-member: leaderboards, coach roster, exports, awarding cordas/patches, attendance. | Wix member tokens can only read a member's own rows (author-scoped). Anything that needs to see other families' data must run server-side under a trusted key. This is the "combo" of headless Wix plus our own logic, without our own database. |
+| 4 | **A thin server layer on Vercel (Astro server routes) holds a OAuth client secret** for anything cross-member: leaderboards, coach roster, exports, awarding cordas/patches, attendance. | Wix member tokens can only read a member's own rows (author-scoped). Anything that needs to see other families' data must run server-side under a trusted key. This is the "combo" of headless Wix plus our own logic, without our own database. |
 | 5 | **Everything talks to data through one repository interface** (`src/lib/repo/`), with two implementations: `wixRepo` and `localRepo` (localStorage demo). | Demo mode works today with no OAuth app; the whole app is buildable and reviewable before the client creates the Wix OAuth app. If Wix CMS ever becomes limiting, a Postgres/Supabase repo drops in behind the same interface. |
 | 6 | **The corda is real and coach-awarded; XP earns Levels, not cordas.** | A kid must never believe the app promoted them. Levels are named after capoeira movements; the corda on the HUD is set only by ACE at Batizado. "XP to next corda" becomes a **Batizado Readiness** ring. |
 | 7 | **Streaks are weekly ("roda weeks"), not daily.** | Kids train once or twice a week. A daily streak punishes a seven-year-old for having a life. |
@@ -35,7 +35,7 @@ Repo: `/Users/admin/physical-chess-app` (cloned from the showcase, Quest promote
 | **Admin** | Camren, Pastor | role `admin` | Everything a coach sees plus role management and full export |
 | **Visitor** | Not logged in | — | Public pages: Home, About Us set, Graduation public set, Shop, Batizado Media (non-members) |
 
-Roles live in `lms-accounts.role` and are only writable by the server (API key). Default on sign-up is `guardian`.
+Roles live in `lms-accounts.role` and are only writable by the server (client secret). Default on sign-up is `guardian`.
 
 ---
 
@@ -55,7 +55,7 @@ Vercel (Astro server routes, @astrojs/vercel adapter, `prerender = false`)
  ├─ /api/coach/*           roster, student, attendance, awards (coach/admin only)
  ├─ /api/export            CSV/JSON of players + progress + events (scope by role)
  └─ /api/shop/order        uniform order → Wix form collection + email to ACE
-   env: WIX_API_KEY, WIX_SITE_ID, PUBLIC_WIX_CLIENT_ID, PUBLIC_DEMO
+   env: WIX_CLIENT_SECRET, WIX_SITE_ID, PUBLIC_WIX_CLIENT_ID, PUBLIC_DEMO
 
 Wix (site 93f9dffd-79fb-4bea-94fa-810eef3397fe)
  ├─ Members (identity: 61 existing accounts keep working)
@@ -69,9 +69,9 @@ Wix (site 93f9dffd-79fb-4bea-94fa-810eef3397fe)
 3. Handle `EMAIL_VERIFICATION_REQUIRED` (6-digit code screen), `OWNER_APPROVAL_REQUIRED` (pending notice), `resetPassword`, `emailAlreadyExists`, `invalidPassword` with plain-language errors.
 4. **Session storage (see §2.1.1):** the refresh token never reaches page JavaScript. `/auth/callback` is a server route: it exchanges the code, stores the refresh token in an `httpOnly; Secure; SameSite=Lax` cookie, and returns only the 4-hour access token to the page. Logout via `wix.auth.logout(url)` plus clearing the cookie.
 5. First login with no `lms-accounts` row → create it (role `guardian`) → `/players/new` (add first player) → `/who` (picker) → `/journey`.
-6. Server routes get `Authorization: Bearer <member access token>`; the server verifies it by calling Get My Member with that token, loads the account row with the API key, and checks the role.
+6. Server routes get `Authorization: Bearer <member access token>`; the server verifies it by calling Get My Member with that token, loads the account row with the client secret, and checks the role.
 
-Blocker: the OAuth app must be created by hand (the MCP got a 403 again on 2026-09-03; the "Manage OAuth Apps" scope is not granted to the MCP token). Dashboard → Headless Settings → OAuth apps → "Physical Chess App", login URL empty, redirect URIs `http://localhost:4321/auth/callback` and `https://<prod-domain>/auth/callback`, plus allowed domain for the prod host. Until then everything runs in demo mode.
+Blocker: the OAuth app must be created in the Wix dashboard by someone with the site's **Headless Settings** permission (the MCP got a 403 again on 2026-09-03, and Camren's collaborator role may not include it either; the site owner, Pastor, can do it or raise Camren's role). Dashboard → Headless Settings → OAuth apps → "Physical Chess App", login URL empty, redirect URIs `http://localhost:4321/auth/callback` and `https://<prod-domain>/auth/callback`, allowed domain for the prod host, and **generate a client secret** in the same screen. That one screen yields both credentials the app ever needs: the **Client ID** (public, visitor and member auth in the browser) and the **client secret** (backend only, exchanged for a short-lived admin token with the OAuth `client_credentials` grant for leaderboards, coach tools, exports). No separate Wix API key, no further permissions from Camren's account. Until then everything runs in demo mode, and the collections themselves can already be created and seeded through the MCP, which does have data permissions.
 
 #### 2.1.1 Sessions that do not randomly log people out
 
@@ -85,7 +85,7 @@ The client's biggest complaint about the Wix site is members getting logged out.
 | Wix supports reCAPTCHA on custom login pages and email verification on sign-up. | Both on. reCAPTCHA v3 on `/login` and `/signup` stops credential stuffing; verification stops junk accounts. |
 | PKCE `state` and `code_verifier` protect the redirect. | Stored server-side keyed by a one-time cookie, checked on callback, single use. |
 
-Other rules: HTTPS only (HSTS), a strict Content-Security-Policy, the Wix API key only in Vercel env (never shipped to the browser), sign-out on all devices = password reset (Wix revokes refresh tokens), and coaches/admins get a shorter 24-hour cookie because their screens show other families' data. Player switching inside a family never touches the session.
+Other rules: HTTPS only (HSTS), a strict Content-Security-Policy, the OAuth client secret only in Vercel env (never shipped to the browser), sign-out on all devices = password reset (Wix revokes refresh tokens), and coaches/admins get a shorter 24-hour cookie because their screens show other families' data. Player switching inside a family never touches the session.
 
 Demo mode ignores all of this (there is no session to protect).
 
@@ -318,8 +318,8 @@ New components (all in `src/components/quest/`, styled in `theme.css` sections w
 - `src/lib/wix.js` (port from the old LMS repo, upgraded to the redirect exchange), `src/lib/repo/{index,wixRepo,localRepo}.js`, `src/lib/store.js`, `src/lib/game/*.js`, `src/lib/auth-guard.js` (redirects to `/login` or `/who`).
 - Session server routes (§2.1.1): `src/pages/auth/callback.js` (code → tokens, sets the `pc_session` httpOnly cookie), `src/pages/api/session.js` (cookie → fresh access token, slides the cookie), `src/pages/api/logout.js`. Env adds `SESSION_COOKIE_SECRET` (HMAC over the cookie payload) and `RECAPTCHA_SITE_KEY`.
 - `src/content/{modules,lessons,glossary,patches,readiness,levels,programs}.js` and `src/content/copy/*.md` for reading lessons.
-- `scripts/wix-collections.mjs` (creates/updates the §3 collections via the Wix Data Collections API with the API key; idempotent) and `scripts/seed-demo.mjs`.
-- `.env.example`: `PUBLIC_WIX_CLIENT_ID`, `PUBLIC_DEMO`, `WIX_API_KEY`, `WIX_SITE_ID`, `EXPORT_SECRET`.
+- `scripts/wix-collections.mjs` (creates/updates the §3 collections via the Wix Data Collections API with the client secret; idempotent) and `scripts/seed-demo.mjs`.
+- `.env.example`: `PUBLIC_WIX_CLIENT_ID`, `PUBLIC_DEMO`, `WIX_CLIENT_SECRET`, `WIX_SITE_ID`, `EXPORT_SECRET`.
 - Vercel project `physical-chess-app` (new; the showcase project stays).
 
 ---
@@ -336,7 +336,7 @@ WP0 is done by Claude first; WP1–WP5 run in parallel; WP6 after WP3; WP7 last.
 | **WP3 Gamification UI** | Codex | Hud (bound), ReadinessRing, LevelUp, PatchUnlock, Patch art ×6, `/me` patch wall, map bound to lesson state, gate glow/open states, streak logic UI | Trigger every reward moment from real events in demo; map reflects state after each lesson |
 | **WP4 Accounts & family** | Codex | `/login /signup /forgot /verify /auth/callback`, `/who`, `/family/*` incl. report card + CSV/JSON download, AvatarPicker, settings, wixRepo auth paths (works once client ID exists), error states | Full flow in demo; with a real client ID, a real Wix member logs in and their rows appear in the Wix CMS |
 | **WP5 Public parity** | Codex | `/about/*`, `/graduation/*`, `/shop` (server route → Wix form collection), contact form, footer/nav updates, sitemap | Every Wix nav item has a Quest page; forms land in the Wix dashboard |
-| **WP6 Coach & server** | Codex | `/api/leaderboard`, `/api/coach/*`, `/api/export`, `/api/jobs/recompute` (+ vercel cron), `/coach/*`, `/admin/roles`, `/turma`, `/desafio` + pool | Coach demo roster works; with API key, awards write to `lms-corda-awards` and the export CSV opens in Numbers |
+| **WP6 Coach & server** | Codex | `/api/leaderboard`, `/api/coach/*`, `/api/export`, `/api/jobs/recompute` (+ vercel cron), `/coach/*`, `/admin/roles`, `/turma`, `/desafio` + pool | Coach demo roster works; with client secret, awards write to `lms-corda-awards` and the export CSV opens in Numbers |
 | **WP7 QA & polish** | Codex | Screenshots of every route at 1440/390 (`screenshots/`), Lighthouse ≥ 85 on Home/Journey, a11y pass (focus, labels, contrast), copy pass, console clean | Checklist in `QA.md` all ticked |
 
 Agent guardrails (paste into every Codex prompt): read `SPEC.md` fully; never edit `tokens.css`; never fork content or data helpers; all reads/writes go through `src/lib/repo`; every mutation is an event with a `clientEventId`; kid-safe copy; no new dependencies without noting it in the report; `npm run build` must pass before reporting; do not touch another WP's files except `theme.css` (append your own section).
@@ -355,7 +355,7 @@ Agent guardrails (paste into every Codex prompt): read `SPEC.md` fully; never ed
 
 ## 10. Open questions for the client (batch them into one message)
 
-1. **Create the OAuth app** in the Wix dashboard (5 minutes; we send exact steps) or grant Camren "Manage OAuth Apps" on the site.
+1. **Create the OAuth app and generate its client secret** in the Wix dashboard (5 minutes; we send exact steps and a screenshot), or raise Camren's site role so Headless Settings is visible. This is the only thing that gates real logins; everything else is built and reviewed in demo mode.
 2. **Member-page copy**: a member login (or a copy of the text) for Movements, Music, Culture, About Us, Educators, FAQ, Cordas so we can port it verbatim instead of our draft.
 3. **Programs / schools list** (we see Achievement First Bushwick, Berkeley Carroll, Prospect Schools, John Jay adult crew) and which coach runs each.
 4. **Kids' corda ladder**: confirm Crua → Crua-Amarela → Amarela → Amarela-Laranja → Laranja, and whether older kids go further.
