@@ -23,8 +23,8 @@ const INSTRUMENT_ICON = {
 
   <Nav active="music" />
 
-  <main transition:animate="fade">
-    <section class="sr-section wrap">
+  <main class="sr-music-page" transition:animate="fade">
+    <section class="sr-section wrap sr-music-instruments">
       <div class="sr-section__head">
         <p class="sr-eyebrow">Music</p>
         <h1 class="sr-section__title">Meet the instruments</h1>
@@ -47,7 +47,7 @@ const INSTRUMENT_ICON = {
       </div>
     </section>
 
-    <section class="sr-section wrap">
+    <section class="sr-section wrap sr-music-words">
       <div class="sr-section__head">
         <p class="sr-eyebrow">Culture · Portuguese for the Roda</p>
         <h2 class="sr-section__title">Six words every student learns</h2>
@@ -62,7 +62,7 @@ const INSTRUMENT_ICON = {
       </div>
     </section>
 
-    <section class="sr-section wrap">
+    <section class="sr-section wrap sr-music-quiz">
       <div class="sr-section__head">
         <p class="sr-eyebrow">Music Quiz</p>
         <h2 class="sr-section__title">Test what you've learned</h2>
@@ -92,7 +92,7 @@ const INSTRUMENT_ICON = {
       const total = Number(quiz.dataset.total || 1);
       const state = quiz.dataset.state;
       const shown = state === 'done' ? total : index + 1;
-      if (bar) bar.style.width = `${Math.round((shown / total) * 100)}%`;
+      if (bar) bar.style.transform = `scaleX(${shown / total})`;
       if (badge) badge.textContent = state === 'done' ? 'Done!' : `Question ${shown} / ${total}`;
     }
 

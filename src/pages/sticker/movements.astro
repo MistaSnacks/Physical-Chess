@@ -13,6 +13,14 @@ const mod = MODULES.find((m) => m.id === 'movements');
 const prog = moduleProgress(mod);
 const currentLesson = mod.lessons.find((l) => !l.completed) || mod.lessons[0];
 const drillLesson = mod.lessons.find((l) => l.type === 'drill');
+const lessonRail = mod.lessons.flatMap((lesson) =>
+  lesson.id === 'esquiva-cocorinha'
+    ? [
+        { ...lesson, railTitle: 'Esquiva', railMinutes: 4 },
+        { ...lesson, railTitle: 'Cocorinha', railMinutes: 4 },
+      ]
+    : [{ ...lesson, railTitle: lesson.title, railMinutes: lesson.minutes }]
+);
 
 function lessonState(lesson) {
   if (lesson.completed) return 'done';
@@ -45,7 +53,7 @@ const TYPE_LABEL = { video: 'Watch', drill: 'Practice', reading: 'Read', quiz: '
 
     <div class="sr-lesson-layout">
       <div class="sr-lesson-list" data-stagger>
-        {mod.lessons.map((lesson, i) => {
+        {lessonRail.map((lesson, i) => {
           const state = lessonState(lesson);
           return (
             <div class="sr-card sr-lesson-item" data-anim="card" data-state={state} style={`--tilt:${(i % 2 === 0 ? -0.8 : -0.1) + (i * 0.15)}deg`}>
@@ -57,8 +65,8 @@ const TYPE_LABEL = { video: 'Watch', drill: 'Practice', reading: 'Read', quiz: '
                 )}
               </span>
               <div>
-                <p class="sr-lesson-item__title">{lesson.title}</p>
-                <p class="sr-lesson-item__meta">{TYPE_LABEL[lesson.type]} · {lesson.minutes} min</p>
+                <p class="sr-lesson-item__title">{lesson.railTitle}</p>
+                <p class="sr-lesson-item__meta">{TYPE_LABEL[lesson.type]} · {lesson.railMinutes} min</p>
               </div>
             </div>
           );

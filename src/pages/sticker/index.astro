@@ -5,11 +5,10 @@ import Base from '../../layouts/Base.astro';
 import Nav from '../../directions/sticker/Nav.astro';
 import Footer from '../../directions/sticker/Footer.astro';
 import '../../directions/sticker/theme.css';
-import { PHOTOS, wix, video, HERO_CANDIDATES } from '../../data/media.js';
+import { PHOTOS, wix, HERO_CANDIDATES } from '../../data/media.js';
 import { CONTACT } from '../../data/batizado.js';
 
 const heroKey = HERO_CANDIDATES[0]; // heroWorkshop
-const heroVideo = video('videoProject1');
 
 const EXPLORE = [
   {
@@ -49,24 +48,30 @@ const EXPLORE = [
   <main>
     <section class="sr-hero wrap" transition:animate="fade">
       <div class="sr-hero__inner">
-        <div class="sr-hero__copy">
+        <div class="sr-hero__copy" data-stagger>
           <span class="sr-hero__eyebrow" data-anim="card" style="--tilt:-1.5deg">Physical Chess LMS</span>
-          <h1 class="sr-hero__title">
+          <h1 class="sr-hero__title" data-anim="card">
             Enter the roda
             <svg class="sr-wave" width="0.9em" height="0.9em" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--color-sun); vertical-align:-0.08em;">
               <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 12V4a1.5 1.5 0 0 1 3 0v8M14 12V5.5a1.5 1.5 0 0 1 3 0V13M17 13v-3.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.2-3L5 14.5c-.6-1 .1-2 1.2-1.8.5.1.9.4 1.2.8L8 15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" />
             </svg>
           </h1>
-          <p class="sr-hero__sub">
+          <p class="sr-hero__sub" data-anim="card">
             A capoeira learning app for kids, built from the real classes, music and Batizado of
             ACE &amp; ABADÁ-Capoeira Brooklyn. Stickers, stripes and a little confetti along the way.
           </p>
-          <p class="sr-hero__age">🥋 {CONTACT.ageLine}</p>
-          <div class="sr-hero__ctas">
+          <p class="sr-hero__age" data-anim="card">
+            <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 4 4 9l4 3-1 8h10l-1-8 4-3-3-5-3 3h-4L7 4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="m9 11 6 4m0-4-6 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            {CONTACT.ageLine}
+          </p>
+          <div class="sr-hero__ctas" data-anim="card">
             <a class="sr-btn sr-btn--sun sr-btn--lg" href="/sticker/dashboard">Log in</a>
             <a class="sr-btn sr-btn--blue sr-btn--lg" href="/sticker/batizado">Batizado 2026</a>
           </div>
-          <p class="sr-hero__contact">
+          <p class="sr-hero__contact" data-anim="card">
             <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
             &nbsp;·&nbsp;
             <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
@@ -74,16 +79,8 @@ const EXPLORE = [
         </div>
 
         <div class="sr-hero__media">
-          <div class="sr-hero__video" aria-hidden="true">
-            <video
-              src={heroVideo.mp4}
-              poster={heroVideo.poster}
-              autoplay
-              muted
-              loop
-              playsinline
-            ></video>
-          </div>
+          <span class="sr-hero__orbit sr-hero__orbit--one" aria-hidden="true"></span>
+          <span class="sr-hero__orbit sr-hero__orbit--two" aria-hidden="true"></span>
           <div class="sr-card sr-hero__photo-card" data-anim="card" style="--tilt:-3deg">
             <span class="sr-hero__sticker sr-hero__sticker--tl">Axé!</span>
             <img

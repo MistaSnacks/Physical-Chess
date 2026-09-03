@@ -35,16 +35,11 @@ function playEntrance(el, index) {
     }
   );
   anim.addEventListener('finish', () => {
-    el.style.opacity = '1';
-    el.style.transform = `translateY(0) rotate(${tilt})`;
-    // Bake the final frame into inline style then drop the animation so
-    // CSS hover/active transitions can take over the transform property.
-    try {
-      anim.commitStyles();
-    } catch (e) {
-      /* commitStyles can throw if the element left the document */
-    }
+    // Remove temporary inline values so stylesheet hover/focus transforms
+    // regain control immediately after the entrance settles.
     anim.cancel();
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('transform');
   });
 }
 
@@ -102,12 +97,12 @@ function initProgressBars() {
         const pct = Math.max(0, Math.min(100, Number(bar.dataset.progress) || 0));
         if (fill) {
           if (reduceMotion()) {
-            fill.style.width = `${pct}%`;
+            fill.style.transform = `scaleX(${pct / 100})`;
           } else {
-            fill.style.width = '0%';
+            fill.style.transform = 'scaleX(0)';
             requestAnimationFrame(() => {
-              fill.style.transition = 'width 900ms cubic-bezier(0.16,1,0.3,1)';
-              fill.style.width = `${pct}%`;
+              fill.style.transition = 'transform 900ms cubic-bezier(0.16,1,0.3,1)';
+              fill.style.transform = `scaleX(${pct / 100})`;
             });
           }
         }

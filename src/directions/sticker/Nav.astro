@@ -12,7 +12,7 @@ const LINKS = [
 ];
 ---
 
-<header class="sr-nav">
+<header class:list={['sr-nav', active === 'dashboard' && 'sr-nav--static']}>
   <div class="sr-nav__bar wrap">
     <a class="sr-nav__brand" href="/sticker/">
       <span class="sr-nav__badge" aria-hidden="true">

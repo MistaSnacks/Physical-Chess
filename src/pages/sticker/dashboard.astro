@@ -8,6 +8,7 @@ import '../../directions/sticker/theme.css';
 import { MODULES, moduleProgress, overallProgress, nextUpLesson } from '../../data/curriculum.js';
 import { STUDENT } from '../../data/student.js';
 import { CORDAS, cordaIndex, BATIZADO_DATE, BATIZADO_DATE_TBC } from '../../data/batizado.js';
+import { PHOTOS, wix } from '../../data/media.js';
 
 const overall = overallProgress();
 const currentCorda = CORDAS[cordaIndex(STUDENT.corda)];
@@ -24,22 +25,26 @@ const MODULE_META = {
     badge: 'sky',
     href: '/sticker/movements',
     icon: '<path d="M12 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" fill="var(--color-ink)"/><path d="M12 8v5M12 10l-5-2M12 11l5 2M12 13l-4 6M12 13l4 6.5" fill="none" stroke="var(--color-ink)" stroke-width="2" stroke-linecap="round"/>',
+    photo: 'classPhoto2022a',
   },
   music: {
     badge: 'sun',
     href: '/sticker/music',
     icon: '<path d="M6 20c-3 0-5-6 1-8 1.5-.5 3 .3 3 2v9" fill="none" stroke="var(--color-ink)" stroke-width="2" stroke-linecap="round"/><path d="M10 5.5 18 3v11" fill="none" stroke="var(--color-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="15.5" cy="15.5" rx="2.5" ry="2" fill="var(--color-ink)"/>',
+    photo: 'mestraMarciaBerimbau',
   },
   culture: {
     badge: 'coral',
     href: '/sticker/music',
     icon: '<circle cx="12" cy="12" r="8" fill="none" stroke="var(--color-white)" stroke-width="2"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16" fill="none" stroke="var(--color-white)" stroke-width="1.6"/>',
     iconStroke: '#fff',
+    photo: 'sambaDeRoda',
   },
   graduation: {
     badge: 'blue',
     href: '/sticker/batizado',
     icon: '<path d="M5 10 12 6l7 4-7 4-7-4Z" fill="none" stroke="var(--color-white)" stroke-width="2" stroke-linejoin="round"/><path d="M8 12.5V16c0 1.3 1.8 2.5 4 2.5s4-1.2 4-2.5v-3.5" fill="none" stroke="var(--color-white)" stroke-width="2"/>',
+    photo: 'heroWorkshop',
   },
 };
 ---
@@ -91,8 +96,15 @@ const MODULE_META = {
                   Done!
                 </span>
               ) : mod.locked ? (
-                <span class="sr-chip sr-chip--locked">🔒 Locked</span>
+                <span class="sr-chip sr-chip--locked">
+                  <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+                  Locked
+                </span>
               ) : null}
+            </div>
+            <div class="sr-module-card__photo">
+              <img src={wix(meta.photo, 640, 300)} alt={PHOTOS[meta.photo].caption} loading="lazy" width="640" height="300" />
+              <span>{mod.locked ? 'Unlock this world' : `${prog.completed} of ${prog.total} complete`}</span>
             </div>
             <h3 class="sr-module-card__title">{mod.title}</h3>
             <p class="sr-module-card__desc">
