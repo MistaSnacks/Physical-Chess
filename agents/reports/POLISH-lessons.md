@@ -1,0 +1,9 @@
+- Polished all four `/learn/*` module hubs and the shared player for video, reading, drill, and quiz lessons.
+- Kept the mobile “Back to map” action visible above the horizontally scrolling lesson rail.
+- Restored full contrast to locked lesson rows and the Graduation gate without changing unlock behavior.
+- Tightened stage spacing, reading measure, media crops, check-card rhythm, and supporting card type at 390 and 1440.
+- Added clear Quest hover/press states while preserving the reduced-motion fallback and existing event flow.
+- Added a visible quiz question count, accessible rail/stage labels, and working `#main` skip-link targets.
+- Captured 16 final screenshots in `screenshots/polish/lessons/`; no new dependencies were added.
+- Verification passed: build, 20 unit tests, mobile target/overflow audit, and demo smoke (`SMOKE OK`) on port 4412.
+- Left for Camren: the existing curriculum-copy review and replacement teaching-video shot list remain unchanged.

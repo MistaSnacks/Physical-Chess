@@ -4402,3 +4402,260 @@ body.has-class-mode .quest-page { padding-top: 0; }
 .quest-footer__note {
   color: var(--quest-cream);
 }
+
+/* === POLISH: lessons === */
+.quest-hub .quest-detail,
+.quest-lesson {
+  width: 100%;
+}
+
+.quest-hub__mobile-back {
+  display: none;
+}
+
+.quest-hub .quest-rail__back,
+.quest-lesson .quest-rail__back {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.quest-hub .quest-rail__item,
+.quest-lesson .quest-rail__item,
+.quest-rating button,
+.quest-readaloud,
+.quest-quiz .quiz__choice,
+.quest-quiz .quiz__next {
+  transition:
+    transform 0.16s var(--quest-ease),
+    border-color 0.16s var(--quest-ease),
+    box-shadow 0.16s var(--quest-ease);
+}
+
+.quest-hub .quest-rail__item:not(.quest-rail__item--locked):hover,
+.quest-lesson .quest-rail__item:not(.quest-rail__item--locked):hover,
+.quest-rating button:not(:disabled):hover,
+.quest-readaloud:hover {
+  transform: translateY(-2px);
+  border-color: var(--quest-lime);
+  box-shadow: 0 4px 0 var(--quest-lime-shadow);
+}
+
+.quest-hub .quest-rail__item:not(.quest-rail__item--locked):active,
+.quest-lesson .quest-rail__item:not(.quest-rail__item--locked):active,
+.quest-rating button:not(:disabled):active,
+.quest-readaloud:active,
+.quest-quiz .quiz__choice:not(:disabled):active,
+.quest-quiz .quiz__next:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--quest-lime-shadow);
+}
+
+.quest-rail__item--locked {
+  opacity: 1;
+  background: color-mix(in srgb, var(--quest-deep-leaf) 82%, var(--quest-palm-shadow));
+}
+
+.quest-rail__item--locked .quest-rail__item-title {
+  color: var(--quest-cream);
+}
+
+.quest-hub-gate[data-state='locked'] {
+  opacity: 1;
+}
+
+.quest-lesson__stage {
+  box-shadow: 0 8px 0 color-mix(in srgb, var(--quest-palm-shadow) 72%, transparent);
+}
+
+.quest-lesson__title {
+  font-size: clamp(34px, 4vw, 42px);
+  line-height: 1.05;
+}
+
+.quest-lesson__summary,
+.quest-panel__summary {
+  max-width: 65ch;
+  line-height: 1.6;
+}
+
+.quest-reading__figure img,
+.quest-hub-photo img {
+  display: block;
+}
+
+.quest-reading__figure img {
+  aspect-ratio: 16 / 8.5;
+  object-fit: cover;
+}
+
+.quest-reading__toolbar {
+  min-height: 44px;
+}
+
+.quest-reading p:last-child {
+  margin-bottom: 0;
+}
+
+.quest-check {
+  border: 3px solid var(--quest-leaf-border);
+}
+
+.quest-check__prompt {
+  max-width: 34ch;
+  line-height: 1.2;
+}
+
+.quest-check [data-check-feedback] {
+  min-height: 24px;
+  margin-bottom: 0;
+}
+
+.quiz__chrome {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 16px;
+}
+
+.quiz__progress-label {
+  justify-self: end;
+  margin: 0;
+  color: var(--quest-mango);
+  font: 800 13px/1 var(--quest-font-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quest-quiz-progress {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.quest-quiz .quiz__next {
+  min-height: 48px;
+}
+
+.quest-instrument-card__blurb,
+.quest-word-card__meaning,
+.quest-hub-tile figcaption {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.quest-word-card__word,
+.quest-word-card__meaning,
+.quest-instrument-card__blurb,
+.quest-hub-tile figcaption {
+  max-width: 65ch;
+}
+
+@media (max-width: 860px) {
+  .quest-hub__mobile-back {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px 0 12px;
+    border-radius: 999px;
+    background: var(--quest-deep-leaf);
+    color: var(--quest-cream);
+    font-weight: 800;
+  }
+
+  .quest-hub .quest-rail__back {
+    display: none;
+  }
+
+  .quest-hub .quest-rail__group-title {
+    max-width: 92px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .quest-hub .quest-rail__item,
+  .quest-lesson .quest-rail__item {
+    flex-basis: 204px;
+  }
+
+  .quest-lesson__stage {
+    padding: 28px 24px;
+    border-radius: 28px;
+  }
+
+  .quest-lesson__summary {
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .quest-reading {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .quest-reading__figure img {
+    aspect-ratio: 4 / 3;
+  }
+
+  .quest-check {
+    padding: 18px 16px;
+  }
+
+  .quest-check__top {
+    align-items: flex-start;
+  }
+
+  .quiz__progress-label {
+    font-size: 12px;
+  }
+
+  .quest-instrument-card__blurb,
+  .quest-word-card__meaning,
+  .quest-hub-tile figcaption {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 430px) {
+  .quest-hub .quest-detail {
+    padding-inline: 16px;
+  }
+
+  .quest-hub .quest-rail {
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+
+  .quest-lesson__stage {
+    padding: 24px 20px;
+  }
+
+  .quest-lesson__title {
+    font-size: 34px;
+  }
+
+  .quest-check__top {
+    flex-direction: column;
+  }
+
+  .quest-check__top .quest-readaloud {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .quest-watch__row .quest-btn {
+    flex: 1 1 auto;
+    padding-inline: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-hub .quest-rail__item,
+  .quest-lesson .quest-rail__item,
+  .quest-rating button,
+  .quest-readaloud,
+  .quest-quiz .quiz__choice,
+  .quest-quiz .quiz__next,
+  .quest-lesson__stage {
+    transition: none;
+  }
+}

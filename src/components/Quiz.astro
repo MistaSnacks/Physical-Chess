@@ -68,6 +68,7 @@ function photoFor(key?: string) {
         </svg>
       ))}
     </div>
+    <p class="quiz__progress-label" data-quiz-progress-label>Question 1 of {questions.length}</p>
     <div class="quest-quiz-progress quiz__progress" aria-hidden="true">
       {questions.map((_, i) => (
         <span class="quest-quiz-progress__seg" data-quiz-progress-seg data-state={i === 0 ? 'current' : 'upcoming'} />
@@ -141,6 +142,7 @@ function photoFor(key?: string) {
     const retryEl = root.querySelector('[data-quiz-retry]');
     const heartEls = Array.from(root.querySelectorAll('[data-quiz-heart]'));
     const segs = Array.from(root.querySelectorAll('[data-quiz-progress-seg]'));
+    const progressLabel = root.querySelector('[data-quiz-progress-label]');
     const total = questionEls.length;
     let score = 0;
     let hearts = HEARTS;
@@ -167,6 +169,7 @@ function photoFor(key?: string) {
       questionEls.forEach((el, i) => { el.hidden = i !== index; });
       root.dataset.index = String(index);
       root.dataset.state = 'active';
+      if (progressLabel) progressLabel.textContent = `Question ${index + 1} of ${total}`;
       paintSegs(index, 'current');
       const first = questionEls[index]?.querySelector('[data-quiz-choice]');
       first?.focus();
@@ -193,6 +196,7 @@ function photoFor(key?: string) {
       if (doneEl) doneEl.hidden = false;
       if (scoreEl) scoreEl.textContent = `${score} / ${total} correct`;
       root.dataset.state = 'done';
+      if (progressLabel) progressLabel.textContent = 'Quiz complete';
       paintSegs(total, 'answered');
       root.dispatchEvent(
         new CustomEvent('quiz:done', { detail: { score, total }, bubbles: true })
