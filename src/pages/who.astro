@@ -16,16 +16,16 @@ import '../directions/quest/theme.css';
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
     <Nav active="who" />
-    <main class="quest-screen">
+    <main id="main" class="quest-screen quest-who">
       <p class="quest-screen__eyebrow" data-quest-enter>Family</p>
       <h1 class="quest-screen__title" data-quest-enter>Who's playing?</h1>
-      <p class="quest-screen__sub" data-quest-enter>Tap your card to open your map. Grown-ups manage players in Family.</p>
-      <div class="quest-players" data-players data-quest-enter>
+      <p class="quest-screen__sub" data-quest-enter>Choose your card to open your map. Your next quest is waiting.</p>
+      <div class="quest-players quest-who__players" data-players data-quest-enter aria-busy="true">
         <PlayerCard />
       </div>
       <p class="quest-empty" data-empty hidden>No players yet. A grown-up can add the first card.</p>
       <p class="quest-who__grownups" data-quest-enter>
-        <button class="quest-btn quest-btn--ghost" type="button" data-grownups>Grown-ups</button>
+        <button class="quest-btn quest-btn--ghost" type="button" data-grownups>Grown-up controls</button>
       </p>
     </main>
     <Footer />
@@ -57,6 +57,7 @@ import '../directions/quest/theme.css';
         });
         grid.insertBefore(el, add);
       }
+      grid.setAttribute('aria-busy', 'false');
       document.querySelector('[data-grownups]')?.addEventListener('click', async () => {
         if (await requireGrownUp()) location.href = '/family';
       });

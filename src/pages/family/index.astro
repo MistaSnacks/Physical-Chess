@@ -15,16 +15,18 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="family" />
-    <main class="quest-screen">
+    <main id="main" class="quest-screen quest-family">
       <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
       <h1 class="quest-screen__title" data-quest-enter><span data-account-name>Family</span></h1>
-      <p class="quest-screen__sub" data-quest-enter>Your players, their report cards, and your settings.</p>
+      <p class="quest-screen__sub" data-quest-enter>Keep player cards, reports, and family choices in one place.</p>
 
-      <div class="quest-players" data-players data-quest-enter>
+      <h2 class="quest-section-title" data-quest-enter>Your players</h2>
+      <div class="quest-players quest-family__players" data-players data-quest-enter aria-busy="true">
         <PlayerCard />
       </div>
       <p class="quest-empty" data-empty hidden>No players yet. Add the first child to this family.</p>
 
+      <div class="quest-family__settings-grid">
       <section class="quest-card" data-quest-enter>
         <h2 class="quest-card__title">Settings</h2>
         <form data-settings-form>
@@ -41,7 +43,7 @@ import '../../directions/quest/theme.css';
           </div>
           <label class="quest-toggle">
             <input type="checkbox" name="leaderboardOptIn" />
-            <span>Show our apelidos on the turma board. Avatars only. Never last names or emails.</span>
+            <span>Show our <strong>apelidos</strong> and avatars on the turma board. Never last names or emails.</span>
           </label>
           <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="submit">Save settings</button></div>
         </form>
@@ -52,6 +54,7 @@ import '../../directions/quest/theme.css';
         <p class="quest-card__body">When a coach puts a tablet in class mode, only these players appear.</p>
         <div data-class-toggles></div>
       </section>
+      </div>
 
       <div class="quest-btn-row" data-print-hide>
         <button class="quest-btn quest-btn--ghost" type="button" data-signout>Sign out</button>
@@ -124,6 +127,7 @@ import '../../directions/quest/theme.css';
         wrap.append(card, report);
         grid.insertBefore(wrap, add);
       }
+      grid.setAttribute('aria-busy', 'false');
 
       const classBox = document.querySelector('[data-class-toggles]');
       classBox.innerHTML = '';
