@@ -271,6 +271,34 @@ function initGate() {
   });
 }
 
+let enterReady = false;
+
+function revealLateEnter(root) {
+  const els = root instanceof Element
+    ? [root, ...root.querySelectorAll('[data-quest-enter]')]
+    : [];
+  els.forEach((el) => {
+    if (!(el instanceof Element) || !el.hasAttribute('data-quest-enter')) return;
+    if (el.getAttribute('data-quest-enter') !== 'true') {
+      el.setAttribute('data-quest-enter', 'true');
+    }
+  });
+}
+
+function watchLateEnter() {
+  if (document.documentElement.dataset.enterWatch === '1') return;
+  document.documentElement.dataset.enterWatch = '1';
+  const obs = new MutationObserver((records) => {
+    if (!enterReady) return;
+    for (const rec of records) {
+      for (const node of rec.addedNodes) {
+        if (node instanceof Element) revealLateEnter(node);
+      }
+    }
+  });
+  obs.observe(document.documentElement, { childList: true, subtree: true });
+}
+
 let lastInitAt = 0;
 function init() {
   // Guard against a duplicate run: Astro fires 'astro:page-load' on the
@@ -280,8 +308,11 @@ function init() {
   if (now - lastInitAt < 50) return;
   lastInitAt = now;
 
+  enterReady = false;
+  watchLateEnter();
   initLessonDots();
   initEntrance();
+  enterReady = true;
   initTrailDraw();
   initXpBar();
   initMascotBreathing();
@@ -291,6 +322,7 @@ function init() {
   initRewards();
 }
 
+document.addEventListener('astro:before-swap', () => { enterReady = false; });
 document.addEventListener('astro:page-load', init);
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   init();
