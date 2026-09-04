@@ -1,34 +1,37 @@
 ---
-// learn/[module]/[lesson].astro — the lesson player (SPEC §5.2). One route,
-// four lesson types. Completion writes a ledger event through actions.js.
-// WP2 turns this skeleton into the finished player (DrillTimer with
-// metronome, Reading with read-aloud, richer Quiz, next-up flow).
+// learn/[module]/[lesson].astro — one route, four lesson types (SPEC §5.2).
+// Completion writes ledger events through actions.js. Locked modules bounce
+// back to the hub with a toast.
 import { ClientRouter } from 'astro:transitions';
 import Base from '../../../layouts/Base.astro';
 import Nav from '../../../directions/quest/Nav.astro';
 import Footer from '../../../directions/quest/Footer.astro';
 import YouTube from '../../../components/YouTube.astro';
 import Quiz from '../../../components/Quiz.astro';
-import { LESSONS, MODULES, moduleById } from '../../../content/index.js';
-import { wix, yt } from '../../../data/media.js';
+import LessonFrame from '../../../components/quest/LessonFrame.astro';
+import Reading from '../../../components/quest/Reading.astro';
+import Check from '../../../components/quest/Check.astro';
+import DrillTimer from '../../../components/quest/DrillTimer.astro';
+import { LESSONS, moduleById } from '../../../content/index.js';
+import { yt, video as wixVideo } from '../../../data/media.js';
 import '../../../directions/quest/tokens.css';
 import '../../../directions/quest/theme.css';
 
 export function getStaticPaths() {
   return LESSONS.map((l) => ({ params: { module: l.moduleId, lesson: l.id }, props: { lesson: l } }));
 }
+
 const { lesson } = Astro.props;
 const mod = moduleById(lesson.moduleId);
 const siblings = LESSONS.filter((l) => l.moduleId === lesson.moduleId);
 const index = siblings.findIndex((l) => l.id === lesson.id);
 const nextLesson = siblings[index + 1] || null;
 const TYPE_LABEL = { video: 'Watch', reading: 'Read', drill: 'Practice', quiz: 'Boss Quiz' };
-
-// Tiny markdown: paragraphs + **bold**. WP2 may swap in a real renderer.
-function md(s = '') {
-  return s.split(/\n\s*\n/).map((p) => `<p>${p.trim().replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>`).join('');
-}
-const navActive = lesson.moduleId === 'graduation' ? 'batizado' : lesson.moduleId;
+const navActive = lesson.moduleId === 'graduation' ? 'batizado' : lesson.moduleId === 'culture' ? 'music' : lesson.moduleId;
+const ytId = lesson.videoKey ? yt(lesson.videoKey) : '';
+const fileVideo = !lesson.videoKey && lesson.wixVideoKey ? wixVideo(lesson.wixVideoKey) : null;
+const nextHref = nextLesson ? `/learn/${mod.id}/${nextLesson.id}` : '/journey';
+const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
 ---
 
 <Base title={`${lesson.title} — Physical Chess`} direction="quest">
@@ -37,82 +40,97 @@ const navActive = lesson.moduleId === 'graduation' ? 'batizado' : lesson.moduleI
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
     <Nav active={navActive} />
-    <main class="quest-screen quest-lesson" data-lesson={lesson.id} data-module={lesson.moduleId} data-type={lesson.type}>
-      <aside class="quest-rail" data-quest-enter>
-        <a class="quest-rail__back" href={`/learn/${mod.id}`}>
-          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          {mod.title}
-        </a>
-        <p class="quest-rail__eyebrow">Lesson {index + 1} of {siblings.length}</p>
-        <div class="quest-rail__list">
-          {siblings.map((l, i) => (
-            <a class={`quest-rail__item ${l.id === lesson.id ? 'quest-rail__item--current' : ''}`} href={`/learn/${mod.id}/${l.id}`} data-rail-lesson={l.id}>
-              <span class="quest-rail__item-icon" data-rail-icon>{i + 1}</span>
-              <span class="quest-rail__item-body"><span class="quest-rail__item-title">{l.title}</span><span class="quest-rail__item-meta">{l.minutes} min · {l.type}</span></span>
-            </a>
-          ))}
-        </div>
-      </aside>
-
-      <section class="quest-lesson__stage" data-quest-enter>
+    <main
+      class="quest-screen quest-lesson"
+      data-lesson={lesson.id}
+      data-module={lesson.moduleId}
+      data-type={lesson.type}
+      data-next-href={nextHref}
+      data-next-label={nextLabel}
+    >
+      <LessonFrame
+        moduleId={mod.id}
+        moduleTitle={mod.title}
+        lessons={siblings}
+        currentId={lesson.id}
+        index={index}
+      >
         <span class="quest-lesson__type">{TYPE_LABEL[lesson.type]}</span>
         <h1 class="quest-lesson__title">{lesson.title}</h1>
         <p class="quest-lesson__summary">{lesson.summary}</p>
+        <p class="quest-already" data-already hidden>You already cleared this. Play again to raise stars.</p>
 
-        {lesson.type === 'video' && lesson.videoKey && (
-          <div>
-            <YouTube id={yt(lesson.videoKey)} title={lesson.title} />
-            <p class="quest-field__hint" style="margin:8px 0 18px">Video: SoChlo Productions</p>
-            <button class="quest-btn quest-btn--lime" type="button" data-complete data-payload='{}'>I watched it</button>
+        {lesson.type === 'video' && (
+          <div class="quest-watch" data-watch>
+            {ytId && <YouTube id={ytId} title={lesson.title} class="quest-video-frame" />}
+            {fileVideo && (
+              <div class="quest-video-frame">
+                <video src={fileVideo.mp4} poster={fileVideo.poster} controls playsinline preload="metadata" data-wix-video></video>
+              </div>
+            )}
+            <p class="quest-video-credit">Video: SoChlo Productions</p>
+            <div class="quest-watch__row">
+              <span class="quest-watch-ring" aria-hidden="true">
+                <svg viewBox="0 0 44 44">
+                  <circle cx="22" cy="22" r="18" class="quest-watch-ring__track" />
+                  <circle cx="22" cy="22" r="18" class="quest-watch-ring__fill" data-watch-ring />
+                </svg>
+              </span>
+              <button class="quest-btn quest-btn--lime" type="button" data-complete disabled aria-disabled="true">
+                I watched it
+              </button>
+              <span class="quest-watch__hint" data-watch-label>Watch 60s</span>
+            </div>
           </div>
         )}
 
         {lesson.type === 'reading' && (
           <div>
-            {lesson.photoKey && <img src={wix(lesson.photoKey, 1200, 640)} alt="" loading="lazy" style="border-radius:20px;margin-bottom:18px" />}
-            <div class="quest-reading" set:html={md(lesson.body)} />
+            <Reading body={lesson.body} photoKey={lesson.photoKey} glossary={Boolean(lesson.glossary)} />
             {lesson.check && (
-              <div class="quest-done" data-check>
-                <p class="quest-done__title" style="color:var(--quest-cream)">{lesson.check.prompt}</p>
-                <div class="quest-rating" data-check-choices>
-                  {lesson.check.choices.map((c, i) => (<button type="button" data-check-choice={i} data-correct={i === lesson.check.correctIndex}>{c}</button>))}
-                </div>
-                <p class="quest-field__hint" data-check-feedback aria-live="polite"></p>
-              </div>
+              <Check prompt={lesson.check.prompt} choices={lesson.check.choices} correctIndex={lesson.check.correctIndex} />
             )}
-            {!lesson.check && <button class="quest-btn quest-btn--lime" type="button" data-complete data-payload='{}'>I read it</button>}
+            {!lesson.check && (
+              <button class="quest-btn quest-btn--lime" type="button" data-complete data-payload="{}">I read it</button>
+            )}
           </div>
         )}
 
         {lesson.type === 'drill' && lesson.drill && (
-          <div data-drill data-seconds={lesson.drill.seconds}>
-            <ol class="quest-steps">{lesson.drill.steps.map((s) => (<li>{s.text}</li>))}</ol>
-            <div class="quest-timer" data-timer>{Math.floor(lesson.drill.seconds / 60)}:{String(lesson.drill.seconds % 60).padStart(2, '0')}</div>
-            <div class="quest-btn-row"><button class="quest-btn" type="button" data-timer-start>Start the timer</button></div>
-            <div class="quest-done" data-rating hidden>
-              <p class="quest-done__title">Time! How did it feel?</p>
-              <div class="quest-rating">
-                <button type="button" data-rate="1">Still learning</button>
-                <button type="button" data-rate="2">Getting it</button>
-                <button type="button" data-rate="3">Nailed it</button>
-              </div>
+          <div data-drill>
+            <DrillTimer
+              steps={lesson.drill.steps}
+              seconds={lesson.drill.seconds}
+              metronomeBpm={lesson.drill.metronomeBpm}
+            />
+            <div class="quest-practice" data-practice hidden>
+              <p class="quest-practice__copy">Ask a grown-up to tap here if they watched.</p>
+              <button class="quest-btn quest-btn--ghost" type="button" data-practice-confirm>I watched</button>
+              <p class="quest-practice__thanks" data-practice-thanks hidden>Thanks. Practice logged.</p>
             </div>
           </div>
         )}
 
         {lesson.type === 'quiz' && lesson.quiz && (
-          <div><Quiz questions={lesson.quiz} class="quest-quiz" /></div>
+          <div class="quest-boss-wrap">
+            <Quiz questions={lesson.quiz} class="quest-quiz" />
+          </div>
         )}
 
-        <div class="quest-done" data-finished hidden>
-          <p class="quest-done__title">Lesson cleared! <span data-earned></span></p>
+        <div class="quest-done quest-cleared" data-finished hidden tabindex="-1">
+          <p class="quest-cleared__kicker" data-cleared-kicker>Lesson cleared</p>
+          <p class="quest-done__title" data-cleared-title>Lesson cleared</p>
+          <div class="quest-cleared__stars" data-earned-stars aria-hidden="true"></div>
+          <p class="quest-cleared__xp" data-earned></p>
+          <p class="quest-cleared__patch" data-patch-note hidden></p>
           <div class="quest-btn-row">
-            {nextLesson ? <a class="quest-btn" href={`/learn/${mod.id}/${nextLesson.id}`}>Next: {nextLesson.title}</a> : <a class="quest-btn" href="/journey">Back to the map</a>}
+            <a class="quest-btn" data-next-link href={nextHref}>{nextLabel}</a>
+            <a class="quest-btn quest-btn--ghost" href={`/learn/${mod.id}`}>Back to {mod.title}</a>
           </div>
         </div>
-      </section>
+      </LessonFrame>
     </main>
-    <div class="quest-toast" data-toast role="status"></div>
+    <div class="quest-toast" data-toast role="status" aria-live="polite"></div>
     <Footer />
   </div>
 
@@ -121,86 +139,227 @@ const navActive = lesson.moduleId === 'graduation' ? 'batizado' : lesson.moduleI
     import { requireSession } from '../../../lib/auth-guard.js';
     import { recordEvent } from '../../../lib/actions.js';
     import { store } from '../../../lib/store.js';
-    import { EVENT } from '../../../lib/game/events.js';
+    import { EVENT, starsFor } from '../../../lib/game/events.js';
+    import { paintLessonRail, toast } from '../../../lib/lesson-ui.js';
 
-    const DONE_TYPE = { video: EVENT.VIDEO_DONE, reading: EVENT.READING_DONE, drill: EVENT.DRILL_DONE, quiz: EVENT.QUIZ_DONE };
-    const CHECK = '<svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#0B2E24" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const DONE_TYPE = {
+      video: EVENT.VIDEO_DONE,
+      reading: EVENT.READING_DONE,
+      drill: EVENT.DRILL_DONE,
+      quiz: EVENT.QUIZ_DONE,
+    };
 
-    function toast(msg) {
-      const t = document.querySelector('[data-toast]');
-      t.textContent = msg; t.dataset.show = 'true';
-      setTimeout(() => (t.dataset.show = 'false'), 2200);
+    function reduced() {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
-    function paintRail(snapshot) {
-      document.querySelectorAll('[data-rail-lesson]').forEach((el) => {
-        const st = snapshot.lessons[el.dataset.railLesson];
-        el.classList.toggle('quest-rail__item--done', st?.status === 'done');
-        if (st?.status === 'done') el.querySelector('[data-rail-icon]').innerHTML = CHECK;
+
+    function starSvgs(n) {
+      return [1, 2, 3].map((i) => (
+        `<svg class="quest-star${i <= n ? ' is-on' : ''}" data-star="${i}" width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z" fill="${i <= n ? '#FFB238' : 'none'}" stroke="#FFB238" stroke-width="2"/></svg>`
+      )).join('');
+    }
+
+    function fillStars(container, n) {
+      if (!container) return;
+      container.innerHTML = starSvgs(n);
+      if (reduced()) {
+        container.querySelectorAll('.quest-star').forEach((el) => el.classList.add('is-filled'));
+        return;
+      }
+      container.querySelectorAll('.quest-star').forEach((el, i) => {
+        setTimeout(() => el.classList.add('is-filled'), 180 * i);
       });
     }
+
+    function listenYoutubeEnded(iframe, onEnded) {
+      if (!iframe) return;
+      try {
+        const url = new URL(iframe.src);
+        url.searchParams.set('enablejsapi', '1');
+        url.searchParams.set('origin', location.origin);
+        iframe.src = url.toString();
+      } catch { return; }
+      const onMsg = (ev) => {
+        let data = ev.data;
+        if (typeof data === 'string') {
+          try { data = JSON.parse(data); } catch { return; }
+        }
+        if (!data || data.event !== 'onStateChange') return;
+        if (data.info === 0 || data.info === '0') onEnded();
+      };
+      window.addEventListener('message', onMsg);
+      const ping = () => {
+        try {
+          iframe.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1 }), '*');
+        } catch { /* ignore */ }
+      };
+      iframe.addEventListener('load', ping);
+      ping();
+    }
+
+    function armWatch(main, alreadyDone) {
+      const btn = main.querySelector('[data-complete]');
+      const ring = main.querySelector('[data-watch-ring]');
+      const label = main.querySelector('[data-watch-label]');
+      if (!btn) return;
+      const circ = 2 * Math.PI * 18;
+      const enable = () => {
+        btn.disabled = false;
+        btn.removeAttribute('aria-disabled');
+        if (label) label.textContent = 'Ready';
+        if (ring) {
+          ring.style.strokeDasharray = String(circ);
+          ring.style.strokeDashoffset = '0';
+        }
+      };
+      if (alreadyDone) { enable(); return; }
+      btn.disabled = true;
+      const started = Date.now();
+      const WAIT = 60;
+      const tick = () => {
+        const left = Math.max(0, WAIT - (Date.now() - started) / 1000);
+        if (label) label.textContent = left > 0 ? `Watch ${Math.ceil(left)}s` : 'Ready';
+        if (ring) {
+          ring.style.strokeDasharray = String(circ);
+          ring.style.strokeDashoffset = String(circ * (left / WAIT));
+        }
+        if (left <= 0) { clearInterval(id); enable(); }
+      };
+      const id = setInterval(tick, 250);
+      tick();
+      const iframe = main.querySelector('[data-yt-embed] iframe');
+      listenYoutubeEnded(iframe, () => { clearInterval(id); enable(); });
+      const file = main.querySelector('[data-wix-video]');
+      file?.addEventListener('ended', () => { clearInterval(id); enable(); }, { once: true });
+    }
+
     async function finish(main, payload) {
       const type = DONE_TYPE[main.dataset.type];
       const before = store.get().snapshot;
       const xpBefore = before?.xp || 0;
-      const after = await recordEvent(type, { moduleId: main.dataset.module, lessonId: main.dataset.lesson, payload });
+      const patchesBefore = new Set((before?.patches || []).map((p) => p.key));
+      const after = await recordEvent(type, {
+        moduleId: main.dataset.module,
+        lessonId: main.dataset.lesson,
+        payload,
+      });
       const earned = after.xp - xpBefore;
+      const stars = starsFor(type, payload);
       const done = main.querySelector('[data-finished]');
+      const kicker = done.querySelector('[data-cleared-kicker]');
+      const title = done.querySelector('[data-cleared-title]');
+      const moduleCleared = after.modules[main.dataset.module]?.cleared && !before?.modules[main.dataset.module]?.cleared;
+      if (moduleCleared) {
+        kicker.textContent = 'Module cleared';
+        title.textContent = 'Module cleared';
+        done.classList.add('quest-cleared--module');
+      } else {
+        kicker.textContent = 'Lesson cleared';
+        title.textContent = 'Lesson cleared';
+      }
+      fillStars(done.querySelector('[data-earned-stars]'), stars);
+      done.querySelector('[data-earned]').textContent = earned > 0 ? `+${earned} XP` : 'Stars only go up.';
+      const newPatch = after.patches.find((p) => !patchesBefore.has(p.key));
+      const patchNote = done.querySelector('[data-patch-note]');
+      if (newPatch && patchNote) {
+        patchNote.hidden = false;
+        patchNote.textContent = `New patch: ${newPatch.title}.`;
+        toast(`New patch: ${newPatch.title}.`);
+      } else {
+        toast(earned > 0 ? `+${earned} XP` : 'Nice. Stars only go up.');
+      }
+      const next = after.nextUp;
+      const link = done.querySelector('[data-next-link]');
+      if (link) {
+        if (next && next.lessonId !== main.dataset.lesson) {
+          link.href = `/learn/${next.moduleId}/${next.lessonId}`;
+          const titleEl = document.querySelector(`[data-rail-lesson="${next.lessonId}"] .quest-rail__item-title`);
+          link.textContent = titleEl ? `Next: ${titleEl.textContent}` : 'Next lesson';
+        } else {
+          link.href = '/journey';
+          link.textContent = 'Back to the map';
+        }
+      }
+      paintLessonRail(after, { currentId: main.dataset.lesson, moduleId: main.dataset.module });
       done.hidden = false;
-      done.querySelector('[data-earned]').textContent = earned > 0 ? `+${earned} XP` : 'Stars updated';
-      paintRail(after);
-      toast(earned > 0 ? `+${earned} XP` : 'Nice. Stars only go up.');
-      done.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      done.focus();
+      done.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'nearest' });
     }
 
     async function init() {
       const s = await requireSession({ player: true });
       if (!s) return;
       const main = document.querySelector('[data-lesson]');
-      if (!main || main.dataset.init) return;
+      if (!main || main.dataset.init === '1') return;
       main.dataset.init = '1';
-      paintRail(s.snapshot);
 
-      main.querySelectorAll('[data-complete]').forEach((btn) => btn.addEventListener('click', () => { btn.disabled = true; finish(main, JSON.parse(btn.dataset.payload || '{}')); }));
-
-      // Reading check: first try right = 2 stars.
-      const check = main.querySelector('[data-check]');
-      if (check) {
-        let tries = 0;
-        check.querySelectorAll('[data-check-choice]').forEach((b) => b.addEventListener('click', () => {
-          tries += 1;
-          const ok = b.dataset.correct === 'true';
-          b.setAttribute('aria-pressed', 'true');
-          check.querySelector('[data-check-feedback]').textContent = ok ? 'Boa!' : 'Not that one. Try again.';
-          if (ok) { check.querySelectorAll('button').forEach((x) => (x.disabled = true)); finish(main, { checkFirstTry: tries === 1 }); }
-        }));
+      const modState = s.snapshot.modules[main.dataset.module];
+      if (modState?.locked) {
+        location.replace(`/learn/${main.dataset.module}?locked=1`);
+        return;
       }
 
-      // Drill: timer then self-rating.
-      const drill = main.querySelector('[data-drill]');
-      if (drill) {
-        const total = Number(drill.dataset.seconds);
-        const out = drill.querySelector('[data-timer]');
-        drill.querySelector('[data-timer-start]').addEventListener('click', (e) => {
-          e.currentTarget.disabled = true;
-          let left = total;
-          const tick = setInterval(() => {
-            left -= 1;
-            out.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
-            if (left <= 0) { clearInterval(tick); drill.querySelector('[data-rating]').hidden = false; }
-          }, 1000);
+      const lessonState = s.snapshot.lessons[main.dataset.lesson];
+      const already = lessonState?.status === 'done';
+      paintLessonRail(s.snapshot, { currentId: main.dataset.lesson, moduleId: main.dataset.module });
+      if (already) {
+        const banner = main.querySelector('[data-already]');
+        if (banner) banner.hidden = false;
+      }
+
+      if (main.dataset.type === 'video') armWatch(main, already);
+
+      main.querySelectorAll('[data-complete]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          finish(main, JSON.parse(btn.dataset.payload || '{}'));
         });
-        drill.querySelectorAll('[data-rate]').forEach((b) => b.addEventListener('click', () => {
-          drill.querySelectorAll('[data-rate]').forEach((x) => { x.disabled = true; x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-          finish(main, { selfRating: Number(b.dataset.rate) });
-        }));
-      }
+      });
 
-      // Quiz: per-answer events, then quiz.done.
+      main.addEventListener('check:pass', (e) => {
+        finish(main, { checkFirstTry: Boolean(e.detail?.firstTry) });
+      });
+
+      main.addEventListener('drill:rated', (e) => {
+        finish(main, { selfRating: Number(e.detail?.selfRating) || 1 });
+        const practice = main.querySelector('[data-practice]');
+        if (practice) practice.hidden = false;
+      });
+
+      main.querySelector('[data-practice-confirm]')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        await recordEvent(EVENT.PRACTICE_CONFIRMED, {
+          moduleId: main.dataset.module,
+          lessonId: main.dataset.lesson,
+          payload: { by: 'guardian' },
+        });
+        const thanks = main.querySelector('[data-practice-thanks]');
+        if (thanks) thanks.hidden = false;
+        toast('Practice logged.');
+      });
+
       const quiz = main.querySelector('[data-quiz]');
       if (quiz) {
-        quiz.addEventListener('quiz:correct', (e) => recordEvent(EVENT.QUIZ_ANSWERED, { moduleId: main.dataset.module, lessonId: main.dataset.lesson, payload: { questionId: e.detail.id, correct: true } }));
-        quiz.addEventListener('quiz:wrong', (e) => recordEvent(EVENT.QUIZ_ANSWERED, { moduleId: main.dataset.module, lessonId: main.dataset.lesson, payload: { questionId: e.detail.id, correct: false } }));
-        quiz.addEventListener('quiz:done', (e) => finish(main, { score: e.detail.score, total: e.detail.total }));
+        const pending = [];
+        quiz.addEventListener('quiz:correct', (e) => {
+          pending.push({ questionId: e.detail.id, correct: true });
+        });
+        quiz.addEventListener('quiz:wrong', (e) => {
+          pending.push({ questionId: e.detail.id, correct: false });
+        });
+        quiz.addEventListener('quiz:restart', () => { pending.length = 0; });
+        quiz.addEventListener('quiz:done', async (e) => {
+          for (const a of pending) {
+            await recordEvent(EVENT.QUIZ_ANSWERED, {
+              moduleId: main.dataset.module,
+              lessonId: main.dataset.lesson,
+              payload: a,
+            });
+          }
+          pending.length = 0;
+          await finish(main, { score: e.detail.score, total: e.detail.total });
+        });
       }
     }
     document.addEventListener('astro:page-load', init);

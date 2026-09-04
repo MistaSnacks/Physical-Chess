@@ -1,0 +1,223 @@
+---
+// DrillTimer.astro — big countdown, optional metronome (off by default),
+// step list that highlights on a per-step cadence, pause/resume, then
+// a 3-button self rating. Dispatches `drill:rated` with { selfRating }.
+interface Step { text: string; photoKey?: string }
+
+interface Props {
+  steps: Step[];
+  seconds: number;
+  metronomeBpm?: number;
+}
+
+const { steps, seconds, metronomeBpm } = Astro.props;
+const mm = Math.floor(seconds / 60);
+const ss = String(seconds % 60).padStart(2, '0');
+const circ = (2 * Math.PI * 54).toFixed(2);
+---
+
+<div
+  class="quest-drill"
+  data-drill-timer
+  data-seconds={seconds}
+  data-bpm={metronomeBpm || ''}
+>
+  <ol class="quest-steps">
+    {steps.map((s) => (
+      <li data-drill-step>{s.text}</li>
+    ))}
+  </ol>
+
+  <div class="quest-drill-clock" aria-live="polite">
+    <svg class="quest-drill-ring" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="54" class="quest-drill-ring__track" />
+      <circle cx="60" cy="60" r="54" class="quest-drill-ring__fill" data-drill-ring
+        style={`stroke-dasharray:${circ};stroke-dashoffset:0`} />
+    </svg>
+    <div class="quest-timer" data-timer>{mm}:{ss}</div>
+  </div>
+
+  <div class="quest-btn-row">
+    <button class="quest-btn quest-btn--lime" type="button" data-drill-toggle>Start the timer</button>
+    {metronomeBpm ? (
+      <button class="quest-btn quest-btn--ghost" type="button" data-drill-mute aria-pressed="false">
+        Metronome off
+      </button>
+    ) : null}
+  </div>
+
+  <div class="quest-done" data-rating hidden>
+    <p class="quest-done__title">Time. How did it feel?</p>
+    <div class="quest-rating" role="group" aria-label="How the drill felt">
+      <button type="button" data-rate="1">Still learning</button>
+      <button type="button" data-rate="2">Getting it</button>
+      <button type="button" data-rate="3">Nailed it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function reduced() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function format(left) {
+    const s = Math.max(0, Math.ceil(left));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  function makeMetronome(bpm) {
+    let ctx = null;
+    let timer = null;
+    let muted = true;
+    const interval = 60000 / Math.max(40, Number(bpm) || 72);
+
+    function click() {
+      if (muted) return;
+      if (!ctx) ctx = new AudioContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 880;
+      g.gain.setValueAtTime(0.06, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.04);
+    }
+    return {
+      get muted() { return muted; },
+      setMuted(v) {
+        muted = v;
+        if (muted && timer) { clearInterval(timer); timer = null; }
+      },
+      start() {
+        if (muted || timer) return;
+        click();
+        timer = setInterval(click, interval);
+      },
+      stop() {
+        if (timer) { clearInterval(timer); timer = null; }
+      },
+    };
+  }
+
+  function initDrill(root) {
+    if (root.dataset.drillInit === '1') return;
+    root.dataset.drillInit = '1';
+
+    const total = Number(root.dataset.seconds) || 0;
+    const bpm = Number(root.dataset.bpm) || 0;
+    const out = root.querySelector('[data-timer]');
+    const ring = root.querySelector('[data-drill-ring]');
+    const toggle = root.querySelector('[data-drill-toggle]');
+    const muteBtn = root.querySelector('[data-drill-mute]');
+    const rating = root.querySelector('[data-rating]');
+    const steps = Array.from(root.querySelectorAll('[data-drill-step]'));
+    const circ = 2 * Math.PI * 54;
+    const metro = bpm ? makeMetronome(bpm) : null;
+
+    let running = false;
+    let finished = false;
+    let left = total;
+    let last = 0;
+    let raf = 0;
+
+    function paintSteps(elapsed) {
+      if (!steps.length) return;
+      const cadence = total / steps.length;
+      const idx = Math.min(steps.length - 1, Math.floor(elapsed / cadence));
+      steps.forEach((el, i) => el.classList.toggle('is-current', i === idx && running));
+    }
+
+    function paint() {
+      if (out) out.textContent = format(left);
+      if (ring) {
+        const spent = (total - left) / total;
+        ring.style.strokeDasharray = String(circ);
+        ring.style.strokeDashoffset = String(circ * spent);
+      }
+      paintSteps(total - left);
+    }
+
+    function end() {
+      running = false;
+      finished = true;
+      left = 0;
+      paint();
+      steps.forEach((el) => el.classList.remove('is-current'));
+      steps[steps.length - 1]?.classList.add('is-current');
+      metro?.stop();
+      if (toggle) { toggle.disabled = true; toggle.textContent = 'Time'; }
+      if (rating) {
+        rating.hidden = false;
+        const first = rating.querySelector('[data-rate]');
+        first?.focus();
+      }
+    }
+
+    function frame(now) {
+      if (!running) return;
+      const dt = (now - last) / 1000;
+      last = now;
+      left -= dt;
+      if (left <= 0) { end(); return; }
+      paint();
+      raf = requestAnimationFrame(frame);
+    }
+
+    toggle?.addEventListener('click', () => {
+      if (finished) return;
+      if (!running) {
+        running = true;
+        last = performance.now();
+        toggle.textContent = 'Pause';
+        metro?.start();
+        raf = requestAnimationFrame(frame);
+      } else {
+        running = false;
+        cancelAnimationFrame(raf);
+        metro?.stop();
+        toggle.textContent = 'Resume';
+        steps.forEach((el) => el.classList.remove('is-current'));
+      }
+    });
+
+    muteBtn?.addEventListener('click', () => {
+      if (!metro) return;
+      const next = !metro.muted;
+      metro.setMuted(next);
+      muteBtn.setAttribute('aria-pressed', next ? 'false' : 'true');
+      muteBtn.textContent = next ? 'Metronome off' : 'Metronome on';
+      if (!next && running) metro.start();
+      if (next) metro.stop();
+    });
+
+    root.querySelectorAll('[data-rate]').forEach((b) => {
+      b.addEventListener('click', () => {
+        if (root.dataset.rated === 'true') return;
+        root.dataset.rated = 'true';
+        root.querySelectorAll('[data-rate]').forEach((x) => {
+          x.disabled = true;
+          x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+        });
+        root.dispatchEvent(new CustomEvent('drill:rated', {
+          detail: { selfRating: Number(b.dataset.rate) },
+          bubbles: true,
+        }));
+      });
+    });
+
+    paint();
+    if (reduced() && ring) ring.style.transition = 'none';
+  }
+
+  function init() {
+    document.querySelectorAll('[data-drill-timer]').forEach(initDrill);
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

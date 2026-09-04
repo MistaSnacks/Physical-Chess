@@ -2,34 +2,36 @@
 // Quiz.astro — unstyled quiz markup + logic. One question shown at a time.
 //
 // Dispatches CustomEvents on the root `[data-quiz]` element (bubbles: true):
-//   'quiz:correct' — detail: { id, index }        (a right answer was picked)
-//   'quiz:wrong'   — detail: { id, index }         (a wrong answer was picked)
-//   'quiz:done'    — detail: { score, total }      (last question answered)
+//   'quiz:correct' — detail: { id, index }
+//   'quiz:wrong'   — detail: { id, index }
+//   'quiz:done'    — detail: { score, total }   (finished with hearts left)
+//   'quiz:restart' — detail: {}                 (0 hearts; try again, no XP)
 //
 // State is exposed via data attributes so each direction's theme.css /
 // motion.js can react without owning the logic:
-//   [data-quiz]                     data-state="active|correct|wrong|done"
-//                                    data-index="<current question index>"
-//                                    data-total="<question count>"
-//                                    data-score="<correct answers so far>"
+//   [data-quiz]                     data-state="active|correct|wrong|done|retry"
+//                                    data-index, data-total, data-score, data-hearts
 //   [data-quiz-question]            one per question; only the current one
 //                                    is visible (others get [hidden])
 //   [data-quiz-choice]               data-selected="true" once picked
 //                                    data-correct="true|false" after answering
 //   [data-quiz-next]                 advances to the next question / finish
 //
-// Class hooks only (no styling): .quiz, .quiz__question, .quiz__prompt,
-// .quiz__choices, .quiz__choice, .quiz__feedback, .quiz__next, .quiz__done.
+// Class hooks: .quiz, .quiz__question, .quiz__prompt, .quiz__photo,
+// .quiz__choices, .quiz__choice, .quiz__feedback, .quiz__next, .quiz__done,
+// .quiz__hearts, .quiz__progress.
 //
 // Props:
-//   questions — [{ id, prompt, choices: string[], correctIndex }]
+//   questions — [{ id, prompt, choices: string[], correctIndex, photoKey? }]
 //   title     — optional heading
+import { PHOTOS, wix } from '../data/media.js';
 
 interface QuizQuestion {
   id: string;
   prompt: string;
   choices: string[];
   correctIndex: number;
+  photoKey?: string;
 }
 
 interface Props {
@@ -39,6 +41,12 @@ interface Props {
 }
 
 const { questions, title, class: className } = Astro.props;
+const HEARTS = 3;
+
+function photoFor(key?: string) {
+  if (!key || !PHOTOS[key]) return null;
+  return { src: wix(key, 960, 540), caption: PHOTOS[key].caption };
+}
 ---
 
 <div
@@ -48,41 +56,68 @@ const { questions, title, class: className } = Astro.props;
   data-index="0"
   data-total={questions.length}
   data-score="0"
+  data-hearts={HEARTS}
 >
   {title && <h3 class="quiz__title">{title}</h3>}
 
+  <div class="quiz__chrome">
+    <div class="quest-hearts quiz__hearts" data-quiz-hearts aria-label={`${HEARTS} hearts`}>
+      {Array.from({ length: HEARTS }).map(() => (
+        <svg data-quiz-heart width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z" fill="#FF4F7A" stroke="#0B2E24" stroke-width="2"/>
+        </svg>
+      ))}
+    </div>
+    <div class="quest-quiz-progress quiz__progress" aria-hidden="true">
+      {questions.map((_, i) => (
+        <span class="quest-quiz-progress__seg" data-quiz-progress-seg data-state={i === 0 ? 'current' : 'upcoming'} />
+      ))}
+    </div>
+  </div>
+
   {
-    questions.map((q, qIndex) => (
-      <fieldset
-        class="quiz__question"
-        data-quiz-question
-        data-question-id={q.id}
-        data-question-index={qIndex}
-        hidden={qIndex !== 0}
-      >
-        <legend class="quiz__prompt">{q.prompt}</legend>
-        <div class="quiz__choices" role="radiogroup">
-          {q.choices.map((choice, cIndex) => (
-            <button
-              type="button"
-              class="quiz__choice"
-              data-quiz-choice
-              data-choice-index={cIndex}
-              data-is-correct={cIndex === q.correctIndex}
-              role="radio"
-              aria-checked="false"
-            >
-              {choice}
-            </button>
-          ))}
-        </div>
-        <p class="quiz__feedback" data-quiz-feedback aria-live="polite"></p>
-        <button type="button" class="quiz__next" data-quiz-next hidden>
-          {qIndex === questions.length - 1 ? 'Finish' : 'Next question'}
-        </button>
-      </fieldset>
-    ))
+    questions.map((q, qIndex) => {
+      const photo = photoFor(q.photoKey);
+      return (
+        <fieldset
+          class="quiz__question"
+          data-quiz-question
+          data-question-id={q.id}
+          data-question-index={qIndex}
+          hidden={qIndex !== 0}
+        >
+          {photo && (
+            <img class="quiz__photo" src={photo.src} alt={photo.caption} loading="lazy" width="960" height="540" />
+          )}
+          <legend class="quiz__prompt">{q.prompt}</legend>
+          <div class="quiz__choices" role="radiogroup">
+            {q.choices.map((choice, cIndex) => (
+              <button
+                type="button"
+                class="quiz__choice"
+                data-quiz-choice
+                data-choice-index={cIndex}
+                data-is-correct={cIndex === q.correctIndex}
+                role="radio"
+                aria-checked="false"
+              >
+                {choice}
+              </button>
+            ))}
+          </div>
+          <p class="quiz__feedback" data-quiz-feedback aria-live="polite"></p>
+          <button type="button" class="quiz__next" data-quiz-next hidden>
+            {qIndex === questions.length - 1 ? 'Finish' : 'Next question'}
+          </button>
+        </fieldset>
+      );
+    })
   }
+
+  <div class="quiz__retry" data-quiz-retry hidden>
+    <p class="quiz__retry-msg">Those hearts are gone. Try the quiz again. This try will not add XP.</p>
+    <button type="button" class="quiz__next" data-quiz-retry-btn>Try again</button>
+  </div>
 
   <div class="quiz__done" data-quiz-done hidden>
     <p class="quiz__done-message" data-quiz-score></p>
@@ -90,6 +125,12 @@ const { questions, title, class: className } = Astro.props;
 </div>
 
 <script>
+  const HEARTS = 3;
+
+  function reduced() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   function initQuiz(root) {
     if (root.dataset.quizInit === 'true') return;
     root.dataset.quizInit = 'true';
@@ -97,25 +138,88 @@ const { questions, title, class: className } = Astro.props;
     const questionEls = Array.from(root.querySelectorAll('[data-quiz-question]'));
     const doneEl = root.querySelector('[data-quiz-done]');
     const scoreEl = root.querySelector('[data-quiz-score]');
+    const retryEl = root.querySelector('[data-quiz-retry]');
+    const heartEls = Array.from(root.querySelectorAll('[data-quiz-heart]'));
+    const segs = Array.from(root.querySelectorAll('[data-quiz-progress-seg]'));
     const total = questionEls.length;
     let score = 0;
+    let hearts = HEARTS;
+
+    function paintHearts() {
+      heartEls.forEach((h, i) => {
+        const lost = i >= hearts;
+        h.classList.toggle('heart-lost', lost);
+      });
+      const wrap = root.querySelector('[data-quiz-hearts]');
+      if (wrap) wrap.setAttribute('aria-label', `${hearts} ${hearts === 1 ? 'heart' : 'hearts'} left`);
+      root.dataset.hearts = String(hearts);
+    }
+
+    function paintSegs(index, state) {
+      segs.forEach((seg, i) => {
+        if (i < index) seg.setAttribute('data-state', 'answered');
+        else if (i === index) seg.setAttribute('data-state', state || 'current');
+        else seg.setAttribute('data-state', 'upcoming');
+      });
+    }
 
     function showQuestion(index) {
-      questionEls.forEach((el, i) => {
-        el.hidden = i !== index;
-      });
+      questionEls.forEach((el, i) => { el.hidden = i !== index; });
       root.dataset.index = String(index);
       root.dataset.state = 'active';
+      paintSegs(index, 'current');
+      const first = questionEls[index]?.querySelector('[data-quiz-choice]');
+      first?.focus();
+    }
+
+    function resetQuestion(questionEl) {
+      const choices = Array.from(questionEl.querySelectorAll('[data-quiz-choice]'));
+      choices.forEach((c) => {
+        c.disabled = false;
+        c.removeAttribute('data-selected');
+        c.removeAttribute('data-correct');
+        c.setAttribute('aria-checked', 'false');
+      });
+      const feedbackEl = questionEl.querySelector('[data-quiz-feedback]');
+      if (feedbackEl) feedbackEl.textContent = '';
+      const nextEl = questionEl.querySelector('[data-quiz-next]');
+      if (nextEl) nextEl.hidden = true;
+      questionEl.dataset.answered = 'false';
     }
 
     function finish() {
       questionEls.forEach((el) => (el.hidden = true));
+      if (retryEl) retryEl.hidden = true;
       if (doneEl) doneEl.hidden = false;
       if (scoreEl) scoreEl.textContent = `${score} / ${total} correct`;
       root.dataset.state = 'done';
+      paintSegs(total, 'answered');
       root.dispatchEvent(
         new CustomEvent('quiz:done', { detail: { score, total }, bubbles: true })
       );
+    }
+
+    function restart() {
+      score = 0;
+      hearts = HEARTS;
+      root.dataset.score = '0';
+      questionEls.forEach(resetQuestion);
+      if (doneEl) doneEl.hidden = true;
+      if (retryEl) retryEl.hidden = true;
+      paintHearts();
+      showQuestion(0);
+      root.dispatchEvent(new CustomEvent('quiz:restart', { detail: {}, bubbles: true }));
+    }
+
+    function loseHeart() {
+      hearts = Math.max(0, hearts - 1);
+      const lost = heartEls[hearts];
+      if (lost && !reduced()) {
+        lost.classList.add('heart-shake');
+        setTimeout(() => lost.classList.remove('heart-shake'), 550);
+      }
+      paintHearts();
+      return hearts;
     }
 
     questionEls.forEach((questionEl, qIndex) => {
@@ -123,12 +227,11 @@ const { questions, title, class: className } = Astro.props;
       const choices = Array.from(questionEl.querySelectorAll('[data-quiz-choice]'));
       const feedbackEl = questionEl.querySelector('[data-quiz-feedback]');
       const nextEl = questionEl.querySelector('[data-quiz-next]');
-      let answered = false;
 
       choices.forEach((choiceEl) => {
         choiceEl.addEventListener('click', () => {
-          if (answered) return;
-          answered = true;
+          if (questionEl.dataset.answered === 'true') return;
+          questionEl.dataset.answered = 'true';
 
           const isCorrect = choiceEl.getAttribute('data-is-correct') === 'true';
           choices.forEach((c) => {
@@ -142,34 +245,44 @@ const { questions, title, class: className } = Astro.props;
             score += 1;
             root.dataset.score = String(score);
             root.dataset.state = 'correct';
-            if (feedbackEl) feedbackEl.textContent = 'Correct!';
+            if (feedbackEl) feedbackEl.textContent = 'Boa.';
+            paintSegs(qIndex, 'answered');
             root.dispatchEvent(
               new CustomEvent('quiz:correct', { detail: { id, index: qIndex }, bubbles: true })
             );
+            if (nextEl) nextEl.hidden = false;
           } else {
             root.dataset.state = 'wrong';
-            if (feedbackEl) feedbackEl.textContent = 'Not quite — try the next one.';
+            if (feedbackEl) feedbackEl.textContent = 'Not that one.';
+            const left = loseHeart();
+            paintSegs(qIndex, 'answered');
             root.dispatchEvent(
               new CustomEvent('quiz:wrong', { detail: { id, index: qIndex }, bubbles: true })
             );
+            if (left <= 0) {
+              if (nextEl) nextEl.hidden = true;
+              if (retryEl) retryEl.hidden = false;
+              root.dataset.state = 'retry';
+              retryEl?.querySelector('[data-quiz-retry-btn]')?.focus();
+            } else if (nextEl) {
+              nextEl.hidden = false;
+            }
           }
-
-          if (nextEl) nextEl.hidden = false;
         });
       });
 
       if (nextEl) {
         nextEl.addEventListener('click', () => {
           const isLast = qIndex === total - 1;
-          if (isLast) {
-            finish();
-          } else {
-            showQuestion(qIndex + 1);
-          }
+          if (isLast) finish();
+          else showQuestion(qIndex + 1);
         });
       }
     });
 
+    root.querySelector('[data-quiz-retry-btn]')?.addEventListener('click', restart);
+
+    paintHearts();
     showQuestion(0);
   }
 
