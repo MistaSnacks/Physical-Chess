@@ -233,10 +233,10 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
       file?.addEventListener('ended', () => { clearInterval(id); enable(); }, { once: true });
     }
 
-    async function finish(main, payload) {
+    async function finish(main, payload, opts = {}) {
       const type = DONE_TYPE[main.dataset.type];
       const before = store.get().snapshot;
-      const xpBefore = before?.xp || 0;
+      const xpBefore = opts.xpBefore ?? before?.xp ?? 0;
       const patchesBefore = new Set((before?.patches || []).map((p) => p.key));
       const after = await recordEvent(type, {
         moduleId: main.dataset.module,
@@ -287,11 +287,11 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
     }
 
     async function init() {
-      const s = await requireSession({ player: true });
-      if (!s) return;
       const main = document.querySelector('[data-lesson]');
       if (!main || main.dataset.init === '1') return;
       main.dataset.init = '1';
+      const s = await requireSession({ player: true });
+      if (!s) return;
 
       const modState = s.snapshot.modules[main.dataset.module];
       if (modState?.locked) {
@@ -302,6 +302,7 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
       const lessonState = s.snapshot.lessons[main.dataset.lesson];
       const already = lessonState?.status === 'done';
       paintLessonRail(s.snapshot, { currentId: main.dataset.lesson, moduleId: main.dataset.module });
+      document.querySelector('.quest-rail__item--current')?.scrollIntoView({ inline: 'center', block: 'nearest' });
       if (already) {
         const banner = main.querySelector('[data-already]');
         if (banner) banner.hidden = false;
@@ -350,6 +351,7 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
         });
         quiz.addEventListener('quiz:restart', () => { pending.length = 0; });
         quiz.addEventListener('quiz:done', async (e) => {
+          const xpBefore = store.get().snapshot?.xp || 0;
           for (const a of pending) {
             await recordEvent(EVENT.QUIZ_ANSWERED, {
               moduleId: main.dataset.module,
@@ -358,9 +360,12 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
             });
           }
           pending.length = 0;
-          await finish(main, { score: e.detail.score, total: e.detail.total });
+          await finish(main, { score: e.detail.score, total: e.detail.total }, { xpBefore });
         });
       }
+
+      const stage = main.querySelector('[data-lesson-stage]');
+      if (stage) stage.removeAttribute('inert');
     }
     document.addEventListener('astro:page-load', init);
     init();

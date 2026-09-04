@@ -62,7 +62,7 @@ export async function recordEvent(type, { moduleId = null, lessonId = null, payl
   store.set({ events, snapshot: after });
 
   queue([event, ...extra]);
-  flushOutbox();
+  await flushOutbox();
 
   if (event.xp > 0) emit('game:xp', { xp: event.xp, type });
   if (lessonId && after.lessons[lessonId]?.status === 'done' && before.lessons[lessonId]?.status !== 'done') emit('game:lesson-done', { lessonId, stars: after.lessons[lessonId].bestStars });
@@ -91,10 +91,19 @@ export async function flushOutbox() {
   flushing = true;
   try {
     const repo = await getRepo();
-    const byPlayer = new Map();
-    for (const e of box) { if (!byPlayer.has(e.playerId)) byPlayer.set(e.playerId, []); byPlayer.get(e.playerId).push(e); }
-    for (const [playerId, events] of byPlayer) await repo.appendEvents(playerId, events);
-    localStorage.setItem(OUTBOX_KEY, '[]');
+    while (true) {
+      const batch = readOutbox();
+      if (!batch.length) break;
+      const byPlayer = new Map();
+      for (const e of batch) {
+        if (!byPlayer.has(e.playerId)) byPlayer.set(e.playerId, []);
+        byPlayer.get(e.playerId).push(e);
+      }
+      for (const [playerId, events] of byPlayer) await repo.appendEvents(playerId, events);
+      const sent = new Set(batch.map((e) => e.clientEventId));
+      const leftover = readOutbox().filter((e) => !sent.has(e.clientEventId));
+      localStorage.setItem(OUTBOX_KEY, JSON.stringify(leftover));
+    }
   } catch (err) {
     console.warn('outbox flush failed, will retry', err);
   } finally {

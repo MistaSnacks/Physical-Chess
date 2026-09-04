@@ -66,7 +66,7 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
               <p class="quest-rail__group-title">{g.title}</p>
               <div class="quest-rail__list">
                 {g.lessons.map((l) => (
-                  <a class="quest-rail__item" href={`/learn/${mod.id}/${l.id}`} data-rail-lesson={l.id} data-lesson-link>
+                  <a class="quest-rail__item" href={`/learn/${mod.id}/${l.id}`} data-rail-lesson={l.id} data-lesson-link data-summary={l.summary}>
                     <span class="quest-rail__item-icon" data-rail-icon>{l.type === 'quiz' ? '?' : numberFor[l.id]}</span>
                     <span class="quest-rail__item-body">
                       <span class="quest-rail__item-title">{l.title}</span>
@@ -212,11 +212,11 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
   import { paintLessonRail, setHubRing, toast } from '../../../lib/lesson-ui.js';
 
   async function init() {
-    const s = await requireSession({ player: true });
-    if (!s) return;
     const main = document.querySelector('[data-hub]');
     if (!main || main.dataset.init === '1') return;
     main.dataset.init = '1';
+    const s = await requireSession({ player: true });
+    if (!s) return;
 
     const moduleId = main.dataset.module;
     const snap = s.snapshot;
@@ -224,10 +224,11 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
     const locked = Boolean(modState?.locked);
     const nextUp = snap.nextUp;
     const firstOpen = Array.from(main.querySelectorAll('[data-rail-lesson]')).find((el) => snap.lessons[el.dataset.railLesson]?.status !== 'done');
-    const currentId = nextUp?.moduleId === moduleId ? nextUp.lessonId : firstOpen?.dataset.railLesson;
+    const currentId = locked ? null : (nextUp?.moduleId === moduleId ? nextUp.lessonId : firstOpen?.dataset.railLesson);
 
     paintLessonRail(snap, { currentId, moduleId, lockLinks: locked });
     setHubRing(modState?.percent || 0);
+    document.querySelector('.quest-rail__item--current')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 
     const count = main.querySelector('[data-hub-count]');
     if (count) count.textContent = `${modState?.completed || 0} of ${modState?.total || 0} cleared`;
@@ -264,6 +265,7 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
       next.href = `/learn/${moduleId}/${currentId}`;
       next.textContent = lessonTitle ? `Next: ${lessonTitle}` : 'Next up';
       if (heading) heading.textContent = lessonTitle || heading.textContent;
+      if (summary && row?.dataset.summary) summary.textContent = row.dataset.summary;
     } else if (next) {
       next.hidden = false;
       next.href = '/journey';

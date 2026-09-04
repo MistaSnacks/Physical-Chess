@@ -123,8 +123,14 @@ const circ = (2 * Math.PI * 54).toFixed(2);
     let running = false;
     let finished = false;
     let left = total;
-    let last = 0;
-    let raf = 0;
+    let startedAt = 0;
+    let pausedMs = 0;
+    let tickId = 0;
+
+    function elapsedSec() {
+      if (!running) return pausedMs / 1000;
+      return (pausedMs + (Date.now() - startedAt)) / 1000;
+    }
 
     function paintSteps(elapsed) {
       if (!steps.length) return;
@@ -147,6 +153,8 @@ const circ = (2 * Math.PI * 54).toFixed(2);
       running = false;
       finished = true;
       left = 0;
+      if (tickId) clearInterval(tickId);
+      tickId = 0;
       paint();
       steps.forEach((el) => el.classList.remove('is-current'));
       steps[steps.length - 1]?.classList.add('is-current');
@@ -159,27 +167,27 @@ const circ = (2 * Math.PI * 54).toFixed(2);
       }
     }
 
-    function frame(now) {
+    function tick() {
       if (!running) return;
-      const dt = (now - last) / 1000;
-      last = now;
-      left -= dt;
+      left = total - elapsedSec();
       if (left <= 0) { end(); return; }
       paint();
-      raf = requestAnimationFrame(frame);
     }
 
     toggle?.addEventListener('click', () => {
       if (finished) return;
       if (!running) {
         running = true;
-        last = performance.now();
+        startedAt = Date.now();
         toggle.textContent = 'Pause';
         metro?.start();
-        raf = requestAnimationFrame(frame);
+        tick();
+        tickId = setInterval(tick, 100);
       } else {
         running = false;
-        cancelAnimationFrame(raf);
+        pausedMs += Date.now() - startedAt;
+        if (tickId) clearInterval(tickId);
+        tickId = 0;
         metro?.stop();
         toggle.textContent = 'Resume';
         steps.forEach((el) => el.classList.remove('is-current'));
