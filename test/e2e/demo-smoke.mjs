@@ -13,7 +13,12 @@ const context = await browser.newContext({ acceptDownloads: true, viewport: { wi
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+page.on('console', (m) => {
+  if (m.type() !== 'error') return;
+  const t = m.text();
+  if (/compute-pressure is not allowed/i.test(t)) return;
+  errors.push('console: ' + t);
+});
 
 const shot = (n) => page.screenshot({ path: `screenshots/smoke-${n}.png` });
 

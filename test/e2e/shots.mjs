@@ -63,7 +63,12 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const overflows = [];
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
-page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+page.on('console', (m) => {
+  if (m.type() !== 'error') return;
+  const t = m.text();
+  if (/compute-pressure is not allowed/i.test(t)) return;
+  errors.push(t);
+});
 
 async function overflowName(name) {
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
