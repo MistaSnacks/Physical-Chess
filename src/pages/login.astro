@@ -15,25 +15,34 @@ import '../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="home" />
-    <main class="quest-screen quest-screen--narrow">
-      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
-      <h1 class="quest-screen__title" data-quest-enter>Log in</h1>
-      <p class="quest-screen__sub" data-quest-enter>Use the same email and password you use on physicalchess.org.</p>
+    <main id="main" class="quest-screen quest-screen--narrow quest-auth">
+      <header class="quest-auth__intro">
+        <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+        <h1 class="quest-screen__title" data-quest-enter>Log in</h1>
+        <p class="quest-screen__sub" data-quest-enter>Use the grown-up email and password for your Physical Chess family account.</p>
+        <div class="quest-auth__reassurance" data-quest-enter>
+          <span class="quest-auth__shield" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M16 3.5 27 8v7.5c0 6.5-4.6 11.1-11 13-6.4-1.9-11-6.5-11-13V8l11-4.5Z"/><path d="m11.5 16 3 3 6.5-7"/></svg>
+          </span>
+          <p><strong>Made for family accounts.</strong> Kids choose their player card after you log in.</p>
+        </div>
+      </header>
 
-      <section class="quest-card" data-demo-card hidden data-quest-enter>
-        <h2 class="quest-card__title">Demo mode</h2>
-        <p class="quest-card__body">No Wix login is connected yet. Open the demo family and play as Maya or Leo.</p>
+      <section class="quest-card quest-auth__stage quest-auth__demo" data-demo-card hidden data-quest-enter>
+        <p class="quest-auth__kicker">Ready to explore</p>
+        <h2 class="quest-card__title">Meet the demo family</h2>
+        <p class="quest-card__body">Choose Maya or Leo, then see how Roda Quest works.</p>
         <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="button" data-demo-btn>Try the demo</button></div>
       </section>
 
-      <form class="quest-card" data-login-form hidden data-quest-enter>
-        <div class="quest-form__ok" data-notice hidden></div>
-        <div class="quest-form__error" data-error hidden></div>
+      <form class="quest-card quest-auth__stage quest-auth__form" data-login-form hidden data-quest-enter>
+        <div class="quest-form__ok" data-notice role="status" aria-live="polite" hidden></div>
+        <div class="quest-form__error" data-error role="alert" aria-live="assertive" hidden></div>
         <div class="quest-field"><label class="quest-field__label" for="email">Email</label><input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required /></div>
         <div class="quest-field"><label class="quest-field__label" for="password">Password</label><input class="quest-field__input" id="password" name="password" type="password" autocomplete="current-password" required /></div>
         <input type="hidden" name="recaptcha" data-recaptcha />
         <div class="quest-btn-row"><button class="quest-btn" type="submit">Log in</button><a class="quest-btn quest-btn--ghost" href="/signup">Sign up</a></div>
-        <p class="quest-field__hint" style="margin-top:14px"><a href="/forgot" style="color:var(--quest-mango)">Forgot your password?</a></p>
+        <a class="quest-auth__text-link" href="/forgot">Forgot your password?</a>
       </form>
     </main>
     <Footer />

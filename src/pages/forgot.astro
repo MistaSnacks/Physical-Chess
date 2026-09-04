@@ -13,20 +13,29 @@ import '../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="home" />
-    <main class="quest-screen quest-screen--narrow">
-      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
-      <h1 class="quest-screen__title" data-quest-enter>Forgot your password?</h1>
-      <p class="quest-screen__sub" data-quest-enter>We will email you a reset link from physicalchess. The email uses Wix’s template and cannot be restyled here.</p>
+    <main id="main" class="quest-screen quest-screen--narrow quest-auth">
+      <header class="quest-auth__intro">
+        <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+        <h1 class="quest-screen__title" data-quest-enter>Reset your password</h1>
+        <p class="quest-screen__sub" data-quest-enter>Enter the email for your family account. We’ll send you a reset link.</p>
+        <div class="quest-auth__reassurance" data-quest-enter>
+          <span class="quest-auth__shield" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M16 3.5 27 8v7.5c0 6.5-4.6 11.1-11 13-6.4-1.9-11-6.5-11-13V8l11-4.5Z"/><path d="m11.5 16 3 3 6.5-7"/></svg>
+          </span>
+          <p><strong>Your player progress is safe.</strong> Resetting the grown-up password will not change it.</p>
+        </div>
+      </header>
 
-      <section class="quest-card" data-demo-card hidden data-quest-enter>
-        <h2 class="quest-card__title">Needs the Wix connection</h2>
-        <p class="quest-card__body">Password reset works once ACE connects member login. For now, open the demo family from the log in page.</p>
+      <section class="quest-card quest-auth__stage quest-auth__demo" data-demo-card hidden data-quest-enter>
+        <p class="quest-auth__kicker">Demo mode</p>
+        <h2 class="quest-card__title">No password needed</h2>
+        <p class="quest-card__body">The demo family opens without an email or password.</p>
         <div class="quest-btn-row"><a class="quest-btn quest-btn--lime" href="/login">Log in to the demo</a></div>
       </section>
 
-      <form class="quest-card" data-forgot-form hidden data-quest-enter>
-        <div class="quest-form__ok" data-ok hidden></div>
-        <div class="quest-form__error" data-error hidden></div>
+      <form class="quest-card quest-auth__stage quest-auth__form" data-forgot-form hidden data-quest-enter>
+        <div class="quest-form__ok" data-ok role="status" aria-live="polite" hidden></div>
+        <div class="quest-form__error" data-error role="alert" aria-live="assertive" hidden></div>
         <div class="quest-field"><label class="quest-field__label" for="email">Email</label><input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required /></div>
         <div class="quest-btn-row"><button class="quest-btn" type="submit">Send reset link</button><a class="quest-btn quest-btn--ghost" href="/login">Back to log in</a></div>
       </form>

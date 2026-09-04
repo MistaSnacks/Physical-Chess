@@ -15,11 +15,14 @@ import '../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="home" />
-    <main class="quest-screen quest-screen--narrow quest-privacy">
-      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
-      <h1 class="quest-screen__title" data-quest-enter>Privacy</h1>
-      <p class="quest-screen__sub" data-quest-enter>This page is for parents and guardians. It says what we store about a child and how to erase it.</p>
+    <main id="main" class="quest-screen quest-screen--narrow quest-privacy">
+      <header class="quest-privacy__intro">
+        <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+        <h1 class="quest-screen__title" data-quest-enter>Your family’s privacy</h1>
+        <p class="quest-screen__sub" data-quest-enter>A plain-language guide to what we store about a child and how you can erase it.</p>
+      </header>
 
+      <div class="quest-privacy__grid">
       <section class="quest-card" data-quest-enter>
         <h2 class="quest-card__title">What we store about a child</h2>
         <p class="quest-card__body">A player is a child inside a grown-up’s account. Kids never enter an email or a password.</p>
@@ -49,12 +52,15 @@ import '../directions/quest/theme.css';
         <p class="quest-card__body">You can also email ACE and ask. We will delete the records by hand.</p>
       </section>
 
-      <section class="quest-card" data-quest-enter>
+      <section class="quest-card quest-privacy__contact" data-quest-enter>
         <h2 class="quest-card__title">Who to contact</h2>
         <p class="quest-card__body">ACE / Abadá Capoeira Brooklyn.</p>
-        <p class="quest-card__body"><a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`} style="color:var(--quest-mango)">{CONTACT.phone}</a></p>
-        <p class="quest-card__body"><a href={`mailto:${CONTACT.email}`} style="color:var(--quest-mango)">{CONTACT.email}</a></p>
+        <div class="quest-privacy__contact-links">
+          <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
+          <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+        </div>
       </section>
+      </div>
     </main>
     <Footer />
   </div>
