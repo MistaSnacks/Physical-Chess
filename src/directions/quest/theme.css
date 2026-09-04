@@ -2835,6 +2835,19 @@ body.quest-more-open {
   overflow: hidden;
 }
 
+.quest-hero__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.quest-hero__video {
+  opacity: 0;
+}
+.quest-hero__video[src] {
+  opacity: 0.55;
+}
 .quest-hero__contact {
   font-weight: 700;
   font-size: 14px;
@@ -2901,6 +2914,14 @@ body.quest-more-open {
 }
 .quest-public-stops--four {
   grid-template-columns: repeat(4, 1fr);
+}
+.quest-stop-card,
+.quest-educator,
+.quest-stop-card__img,
+.quest-educator__photo,
+.quest-public-heroimg {
+  min-width: 0;
+  max-width: 100%;
 }
 .quest-stop-card {
   display: flex;
@@ -3072,6 +3093,39 @@ select.quest-field__input {
   overflow: hidden;
   border: 4px solid var(--quest-ink);
 }
+.quest-yt-lite {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 4px solid var(--quest-ink);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--quest-deep-leaf);
+  color: var(--quest-cream);
+}
+.quest-yt-lite img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.quest-yt-lite__play {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--quest-mango);
+  color: var(--quest-ink);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 0 var(--quest-mango-shadow);
+}
+.quest-yt-lite:hover .quest-yt-lite__play {
+  background: var(--quest-lime);
+}
 .quest-latest .quest-video-card__credit {
   margin-top: 10px;
 }
@@ -3099,7 +3153,7 @@ select.quest-field__input {
   }
   .quest-more-panel {
     position: fixed;
-    top: auto;
+    top: unset;
     right: 0;
     left: 0;
     bottom: 0;

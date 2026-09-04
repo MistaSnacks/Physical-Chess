@@ -97,29 +97,41 @@ const moreCurrent = active === 'about' || active === 'shop' || active === 'gradu
 <script>
   import '../../lib/nav.js';
 
+  function moreParts(root) {
+    return {
+      btn: root.querySelector('[data-more-btn]'),
+      panel: document.getElementById('quest-more-panel'),
+      backdrop: document.querySelector('[data-more-backdrop]'),
+      closeBtn: document.querySelector('[data-more-close]'),
+    };
+  }
+
+  function isMobileMore() {
+    return window.matchMedia('(max-width: 600px)').matches;
+  }
+
   function closeMore(root) {
-    const btn = root.querySelector('[data-more-btn]');
-    const panel = root.querySelector('[data-more-panel]');
-    const backdrop = root.querySelector('[data-more-backdrop]');
+    const { btn, panel, backdrop } = moreParts(root);
     btn.setAttribute('aria-expanded', 'false');
     panel.hidden = true;
     backdrop.hidden = true;
     document.body.classList.remove('quest-more-open');
+    root.append(backdrop, panel);
   }
 
   function openMore(root) {
-    const btn = root.querySelector('[data-more-btn]');
-    const panel = root.querySelector('[data-more-panel]');
-    const backdrop = root.querySelector('[data-more-backdrop]');
+    const { btn, panel, backdrop } = moreParts(root);
     btn.setAttribute('aria-expanded', 'true');
+    if (isMobileMore()) document.body.append(backdrop, panel);
     panel.hidden = false;
     backdrop.hidden = false;
     document.body.classList.add('quest-more-open');
-    const first = panel.querySelector('a');
-    first?.focus();
+    panel.querySelector('a')?.focus();
   }
 
   function bindMore() {
+    document.body.classList.remove('quest-more-open');
+    document.querySelectorAll('body > [data-more-panel], body > [data-more-backdrop]').forEach((el) => el.remove());
     document.querySelectorAll('[data-nav-more]').forEach((root) => {
       if (root.dataset.bound === 'true') return;
       root.dataset.bound = 'true';

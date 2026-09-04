@@ -6,7 +6,6 @@ import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
 import Footer from '../directions/quest/Footer.astro';
-import YouTube from '../components/YouTube.astro';
 import { video, wix, yt } from '../data/media.js';
 import { CONTACT } from '../data/batizado.js';
 import { MODULES } from '../content/modules.js';
@@ -37,6 +36,7 @@ const LEARN = MODULES.map((m) => ({
   direction="quest"
 >
   <ClientRouter slot="head" />
+  <link slot="head" rel="preload" as="image" href={wix('heroRoda', 900, 1400)} />
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
@@ -46,15 +46,23 @@ const LEARN = MODULES.map((m) => ({
     <main>
       <section class="quest-hero">
         <div class="quest-hero__bg" aria-hidden="true">
+          <img
+            class="quest-hero__poster"
+            src={wix('heroRoda', 900, 1400)}
+            alt=""
+            width="900"
+            height="1400"
+            fetchpriority="high"
+            decoding="async"
+          />
           <video
             class="quest-hero__video"
-            src={hero.mp4}
-            poster={hero.poster}
-            autoplay
+            data-hero-video
+            data-src={hero.mp4}
             muted
             loop
             playsinline
-            preload="metadata"
+            preload="none"
           ></video>
           <div class="quest-hero__scrim"></div>
         </div>
@@ -101,7 +109,18 @@ const LEARN = MODULES.map((m) => ({
         <p class="quest-section__eyebrow" data-quest-enter>From the roda</p>
         <h2 class="quest-section__title" data-quest-enter>Latest from the roda.</h2>
         <div class="quest-latest" data-quest-enter>
-          <YouTube id={yt('acb2024')} title="Abadá Capoeira Brooklyn 2024" />
+          <button
+            type="button"
+            class="quest-yt-lite"
+            data-yt-lite
+            data-yt-id={yt('acb2024')}
+            aria-label="Play Abadá Capoeira Brooklyn 2024"
+          >
+            <img src={wix('heroRoda', 1280, 720)} alt="" width="1280" height="720" loading="lazy" />
+            <span class="quest-yt-lite__play" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l12-7z" fill="currentColor"/></svg>
+            </span>
+          </button>
           <p class="quest-video-card__credit">Video: SoChlo Productions</p>
         </div>
       </section>
@@ -113,4 +132,45 @@ const LEARN = MODULES.map((m) => ({
 
 <script>
   import '../directions/quest/motion.js';
+
+  function bootHeroVideo() {
+    const v = document.querySelector('[data-hero-video]');
+    if (!v || v.getAttribute('src')) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(max-width: 700px)').matches) return;
+    const src = v.getAttribute('data-src');
+    const start = () => {
+      v.src = src;
+      v.muted = true;
+      v.play().catch(() => {});
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 1800 });
+    else window.setTimeout(start, 800);
+  }
+
+  function bootLiteYouTube() {
+    document.querySelectorAll('[data-yt-lite]').forEach((btn) => {
+      if (btn.dataset.bound === 'true') return;
+      btn.dataset.bound = 'true';
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-yt-id');
+        const wrap = document.createElement('div');
+        wrap.className = 'yt-embed';
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+        iframe.title = btn.getAttribute('aria-label') || 'Video';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        wrap.appendChild(iframe);
+        btn.replaceWith(wrap);
+      });
+    });
+  }
+
+  function boot() {
+    bootHeroVideo();
+    bootLiteYouTube();
+  }
+  document.addEventListener('astro:page-load', boot);
+  boot();
 </script>
