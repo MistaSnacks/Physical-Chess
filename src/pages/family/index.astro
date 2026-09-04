@@ -1,10 +1,11 @@
 ---
-// family/index.astro — guardian home (SPEC §5.3). WP4 completes settings,
-// report card links, delete flows.
+// family/index.astro — guardian home (SPEC §5.3): players, report links,
+// settings, sign out, delete my account.
 import { ClientRouter } from 'astro:transitions';
 import Base from '../../layouts/Base.astro';
 import Nav from '../../directions/quest/Nav.astro';
 import Footer from '../../directions/quest/Footer.astro';
+import PlayerCard from '../../components/quest/PlayerCard.astro';
 import '../../directions/quest/tokens.css';
 import '../../directions/quest/theme.css';
 ---
@@ -16,30 +17,157 @@ import '../../directions/quest/theme.css';
     <Nav active="family" />
     <main class="quest-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
-      <h1 class="quest-screen__title" data-quest-enter><span data-bind="account.displayName">Family</span></h1>
+      <h1 class="quest-screen__title" data-quest-enter><span data-account-name>Family</span></h1>
       <p class="quest-screen__sub" data-quest-enter>Your players, their report cards, and your settings.</p>
-      <div class="quest-players" data-players data-quest-enter></div>
-      <section class="quest-card quest-card--note" style="margin-top:28px" data-quest-enter>
-        Report cards, CSV download, leaderboard opt-in and delete-player live here. Built in WP4.
+
+      <div class="quest-players" data-players data-quest-enter>
+        <PlayerCard />
+      </div>
+      <p class="quest-empty" data-empty hidden>No players yet. Add the first child to this family.</p>
+
+      <section class="quest-card" data-quest-enter>
+        <h2 class="quest-card__title">Settings</h2>
+        <form data-settings-form>
+          <div class="quest-form__ok" data-settings-ok hidden></div>
+          <div class="quest-form__error" data-settings-error hidden></div>
+          <div class="quest-field">
+            <label class="quest-field__label" for="displayName">Your name</label>
+            <input class="quest-field__input" id="displayName" name="displayName" maxlength="80" />
+          </div>
+          <div class="quest-field">
+            <label class="quest-field__label" for="email">Email</label>
+            <input class="quest-field__input" id="email" name="email" type="email" readonly />
+            <span class="quest-field__hint">This comes from your login. It is not shown to players.</span>
+          </div>
+          <label class="quest-toggle">
+            <input type="checkbox" name="leaderboardOptIn" />
+            <span>Show our apelidos on the turma board. Avatars only. Never last names or emails.</span>
+          </label>
+          <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="submit">Save settings</button></div>
+        </form>
       </section>
-      <div class="quest-btn-row"><button class="quest-btn quest-btn--ghost" type="button" data-signout>Sign out</button></div>
+
+      <section class="quest-card" data-quest-enter>
+        <h2 class="quest-card__title">May play in class</h2>
+        <p class="quest-card__body">When a coach puts a tablet in class mode, only these players appear.</p>
+        <div data-class-toggles></div>
+      </section>
+
+      <div class="quest-btn-row" data-print-hide>
+        <button class="quest-btn quest-btn--ghost" type="button" data-signout>Sign out</button>
+        <button class="quest-btn quest-btn--danger" type="button" data-delete-start>Delete my account</button>
+      </div>
+      <section class="quest-card quest-card--danger" data-delete-confirm hidden>
+        <h2 class="quest-card__title">Delete this family?</h2>
+        <p class="quest-card__body">This erases every player, their lessons, and this login. It cannot be undone.</p>
+        <div class="quest-form__error" data-delete-error hidden></div>
+        <div class="quest-field">
+          <label class="quest-field__label" for="delete-confirm">Type DELETE to confirm</label>
+          <input class="quest-field__input" id="delete-confirm" data-delete-typed autocomplete="off" />
+        </div>
+        <div class="quest-btn-row">
+          <button class="quest-btn quest-btn--danger" type="button" data-delete-go>Delete for good</button>
+          <button class="quest-btn quest-btn--ghost" type="button" data-delete-cancel>Keep this account</button>
+        </div>
+      </section>
     </main>
     <Footer />
   </div>
   <script>
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
-    import { signOut } from '../../lib/actions.js';
-    import { bindDom } from '../../lib/store.js';
-    import { avatarSvg } from '../../lib/avatar.js';
+    import { signOut, updateAccount, updatePlayer, deleteAccount, snapshotsForSession } from '../../lib/actions.js';
+    import { playerCardEl } from '../../lib/player-card.js';
+    import { requireGrownUp } from '../../lib/grown-up-gate.js';
+
     async function init() {
       const s = await requireSession();
       if (!s) return;
-      bindDom();
+      if (!(await requireGrownUp())) { location.replace('/who'); return; }
+      const main = document.querySelector('main');
+      if (main.dataset.wp4Bound) return;
+      main.dataset.wp4Bound = '1';
+
+      const account = s.session.account;
+      document.querySelector('[data-account-name]').textContent = account.displayName || 'Family';
+      const form = document.querySelector('[data-settings-form]');
+      form.displayName.value = account.displayName || '';
+      form.email.value = account.email || '';
+      form.leaderboardOptIn.checked = account.leaderboardOptIn !== false;
+
       const grid = document.querySelector('[data-players]');
-      grid.innerHTML = s.session.players.map((p) => `<a class="quest-player-card" href="/family/players/${p.id}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${p.firstName}</span><span class="quest-player-card__meta">${p.apelido || 'no apelido yet'}</span></a>`).join('') +
-        `<a class="quest-player-card quest-player-card--add" href="/family/players/new"><span class="quest-player-card__name">+ Add a player</span></a>`;
+      const add = grid.querySelector('[data-add-player]');
+      grid.querySelectorAll('.quest-family-card').forEach((n) => n.remove());
+      const cards = await snapshotsForSession();
+      document.querySelector('[data-empty]').hidden = cards.length > 0;
+      for (const { player, snapshot } of cards) {
+        const wrap = document.createElement('div');
+        wrap.className = 'quest-family-card';
+        const card = playerCardEl(player, {
+          href: `/family/players/edit?player=${encodeURIComponent(player.id)}`,
+          snapshot,
+        });
+        const report = document.createElement('a');
+        report.className = 'quest-family-card__report';
+        report.href = `/family/report?player=${encodeURIComponent(player.id)}`;
+        report.textContent = 'Report card';
+        wrap.append(card, report);
+        grid.insertBefore(wrap, add);
+      }
+
+      const classBox = document.querySelector('[data-class-toggles]');
+      classBox.innerHTML = '';
+      for (const { player } of cards) {
+        const label = document.createElement('label');
+        label.className = 'quest-toggle';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = player.mayPlayInClass !== false;
+        input.addEventListener('change', async () => {
+          await updatePlayer(player.id, { mayPlayInClass: input.checked });
+        });
+        const span = document.createElement('span');
+        span.textContent = `${player.firstName}${player.apelido ? ` (${player.apelido})` : ''} may play in class`;
+        label.append(input, span);
+        classBox.appendChild(label);
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const ok = form.querySelector('[data-settings-ok]');
+        const err = form.querySelector('[data-settings-error]');
+        ok.hidden = true; err.hidden = true;
+        try {
+          await updateAccount({
+            displayName: String(form.displayName.value).trim(),
+            leaderboardOptIn: form.leaderboardOptIn.checked,
+          });
+          document.querySelector('[data-account-name]').textContent = String(form.displayName.value).trim() || 'Family';
+          ok.textContent = 'Saved.';
+          ok.hidden = false;
+        } catch (ex) {
+          err.textContent = 'Could not save. Please try again.';
+          err.hidden = false;
+          console.error(ex);
+        }
+      });
+
       document.querySelector('[data-signout]').addEventListener('click', async () => { await signOut(); location.href = '/'; });
+      const confirm = document.querySelector('[data-delete-confirm]');
+      document.querySelector('[data-delete-start]').addEventListener('click', () => { confirm.hidden = false; confirm.scrollIntoView({ behavior: 'smooth' }); });
+      document.querySelector('[data-delete-cancel]').addEventListener('click', () => { confirm.hidden = true; });
+      document.querySelector('[data-delete-go]').addEventListener('click', async () => {
+        const typed = document.querySelector('[data-delete-typed]').value.trim();
+        const err = document.querySelector('[data-delete-error]');
+        if (typed !== 'DELETE') { err.textContent = 'Type DELETE in capital letters to confirm.'; err.hidden = false; return; }
+        const result = await deleteAccount();
+        if (result.contactAce) {
+          err.innerHTML = 'Contact ACE to delete your account. <a href="mailto:info@the-ace.org" style="color:var(--quest-cream)">info@the-ace.org</a>';
+          err.hidden = false;
+          return;
+        }
+        location.href = '/';
+      });
     }
     document.addEventListener('astro:page-load', init);
     init();

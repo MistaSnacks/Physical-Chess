@@ -42,20 +42,44 @@ export async function getMemberSession() {
   return sessionPromise;
 }
 
-export async function loginWithPassword(email, password) {
-  return wix.auth.login({ email, password });
+/**
+ * @param {string} email
+ * @param {string} password
+ * @param {{ invisibleRecaptchaToken?: string, recaptchaToken?: string } | null} captchaTokens
+ * reCAPTCHA tokens follow the Wix JS SDK custom login doc:
+ * https://dev.wix.com/docs/go-headless/authentication/members/custom-login-page/re-captcha/add-re-captcha-to-a-custom-login-page-js-sdk
+ */
+export async function loginWithPassword(email, password, captchaTokens = null) {
+  return wix.auth.login({
+    email,
+    password,
+    ...(captchaTokens ? { captchaTokens } : {}),
+  });
 }
 
-export async function registerWithPassword({ email, password, firstName, lastName }) {
-  return wix.auth.register({ email, password, profile: { firstName, lastName } });
+export async function registerWithPassword({ email, password, firstName, lastName, captchaTokens = null }) {
+  return wix.auth.register({
+    email,
+    password,
+    profile: { firstName, lastName },
+    ...(captchaTokens ? { captchaTokens } : {}),
+  });
 }
 
 export async function sendPasswordReset(email) {
   return wix.auth.sendPasswordResetEmail(email, `${location.origin}/login?reset=1`);
 }
 
-export async function processVerification(verificationCode) {
-  return wix.auth.processVerification({ verificationCode });
+export async function processVerification(verificationCode, state) {
+  return state
+    ? wix.auth.processVerification({ verificationCode }, state)
+    : wix.auth.processVerification({ verificationCode });
+}
+
+/** Persist the email-verification stateToken (SDK in-memory state dies on navigation) then go to /verify. */
+export function beginEmailVerification(stateToken, next = '/who') {
+  sessionStorage.setItem('pc.verify', JSON.stringify({ stateToken, next }));
+  location.href = `/verify?next=${encodeURIComponent(next)}`;
 }
 
 /**

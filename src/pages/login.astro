@@ -1,7 +1,7 @@
 ---
-// login.astro — guardian sign-in in the Quest look (SPEC §2.1). In demo
-// mode the form is replaced by "Try the demo". WP4 finishes error states,
-// reCAPTCHA, verification and reset screens.
+// login.astro — guardian sign-in in the Quest look (SPEC §2.1). Demo mode
+// shows "Try the demo". Live mode: email + password + reCAPTCHA v3 when
+// PUBLIC_RECAPTCHA_SITE_KEY is set. ?next= round-trips.
 import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
@@ -27,9 +27,11 @@ import '../directions/quest/theme.css';
       </section>
 
       <form class="quest-card" data-login-form hidden data-quest-enter>
+        <div class="quest-form__ok" data-notice hidden></div>
         <div class="quest-form__error" data-error hidden></div>
         <div class="quest-field"><label class="quest-field__label" for="email">Email</label><input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required /></div>
         <div class="quest-field"><label class="quest-field__label" for="password">Password</label><input class="quest-field__input" id="password" name="password" type="password" autocomplete="current-password" required /></div>
+        <input type="hidden" name="recaptcha" data-recaptcha />
         <div class="quest-btn-row"><button class="quest-btn" type="submit">Log in</button><a class="quest-btn quest-btn--ghost" href="/signup">Sign up</a></div>
         <p class="quest-field__hint" style="margin-top:14px"><a href="/forgot" style="color:var(--quest-mango)">Forgot your password?</a></p>
       </form>
@@ -40,27 +42,54 @@ import '../directions/quest/theme.css';
     import '../directions/quest/motion.js';
     import { IS_DEMO } from '../lib/repo/index.js';
     import { signInDemo, loadSession } from '../lib/actions.js';
+    import { authMessage, loginQueryMessage, recaptchaToken, fillRecaptchaField, continueAuth } from '../lib/auth-ui.js';
 
     async function init() {
       const next = new URLSearchParams(location.search).get('next') || '/who';
       const session = await loadSession();
       if (session) { location.replace(next); return; }
+      const form = document.querySelector('[data-login-form]');
+      if (form?.dataset.wp4Bound) return;
+      if (form) form.dataset.wp4Bound = '1';
       document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
       document.querySelector('[data-login-form]').hidden = IS_DEMO;
       document.querySelector('[data-demo-btn]')?.addEventListener('click', async () => { await signInDemo(); location.href = next; });
-      const form = document.querySelector('[data-login-form]');
+
+      const notice = form?.querySelector('[data-notice]');
+      const banner = loginQueryMessage();
+      if (notice && banner) { notice.textContent = banner; notice.hidden = false; }
+
       form?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const err = form.querySelector('[data-error]');
         err.hidden = true;
-        const { loginWithPassword, beginRedirectExchange } = await import('../lib/wix.js');
         const fd = new FormData(form);
+        const submit = form.querySelector('[type=submit]');
+        submit.disabled = true;
         try {
-          const res = await loginWithPassword(fd.get('email'), fd.get('password'));
-          if (res.loginState === 'SUCCESS') return beginRedirectExchange(res.data.sessionToken, next);
-          err.textContent = res.loginState === 'EMAIL_VERIFICATION_REQUIRED' ? 'Check your email for a verification code.' : res.errorCode === 'invalidPassword' ? 'That password does not match. Try again or reset it.' : 'We could not log you in. Check your email and password.';
+          const token = await recaptchaToken('login');
+          fillRecaptchaField(form, token);
+          const captcha = token ? { invisibleRecaptchaToken: token } : null;
+          const { loginWithPassword } = await import('../lib/wix.js');
+          let res = await loginWithPassword(fd.get('email'), fd.get('password'), captcha);
+          let kind = await continueAuth(res, { next });
+          if (kind === 'captcha-silent') {
+            const retry = await recaptchaToken('login');
+            fillRecaptchaField(form, retry);
+            res = await loginWithPassword(fd.get('email'), fd.get('password'), retry ? { invisibleRecaptchaToken: retry } : null);
+            kind = await continueAuth(res, { next, captchaKind: 'silent' });
+          }
+          if (kind === 'pending' || kind === 'error' || kind === 'captcha-visible') {
+            err.textContent = authMessage(res);
+            err.hidden = false;
+          }
+        } catch (ex) {
+          err.textContent = 'Something went wrong. Please try again.';
           err.hidden = false;
-        } catch (ex) { err.textContent = 'Something went wrong. Please try again.'; err.hidden = false; console.error(ex); }
+          console.error(ex);
+        } finally {
+          submit.disabled = false;
+        }
       });
     }
     document.addEventListener('astro:page-load', init);

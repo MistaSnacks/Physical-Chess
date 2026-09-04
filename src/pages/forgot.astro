@@ -1,0 +1,69 @@
+---
+// forgot.astro — send a Wix password-reset email (SPEC §2.1).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Reset password — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="home" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter>Forgot your password?</h1>
+      <p class="quest-screen__sub" data-quest-enter>We will email you a reset link from physicalchess. The email uses Wix’s template and cannot be restyled here.</p>
+
+      <section class="quest-card" data-demo-card hidden data-quest-enter>
+        <h2 class="quest-card__title">Needs the Wix connection</h2>
+        <p class="quest-card__body">Password reset works once ACE connects member login. For now, open the demo family from the log in page.</p>
+        <div class="quest-btn-row"><a class="quest-btn quest-btn--lime" href="/login">Log in to the demo</a></div>
+      </section>
+
+      <form class="quest-card" data-forgot-form hidden data-quest-enter>
+        <div class="quest-form__ok" data-ok hidden></div>
+        <div class="quest-form__error" data-error hidden></div>
+        <div class="quest-field"><label class="quest-field__label" for="email">Email</label><input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required /></div>
+        <div class="quest-btn-row"><button class="quest-btn" type="submit">Send reset link</button><a class="quest-btn quest-btn--ghost" href="/login">Back to log in</a></div>
+      </form>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../directions/quest/motion.js';
+    import { IS_DEMO } from '../lib/repo/index.js';
+
+    async function init() {
+      document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
+      document.querySelector('[data-forgot-form]').hidden = IS_DEMO;
+      const form = document.querySelector('[data-forgot-form]');
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = form.querySelector('[data-error]');
+        const ok = form.querySelector('[data-ok]');
+        err.hidden = true;
+        ok.hidden = true;
+        const submit = form.querySelector('[type=submit]');
+        submit.disabled = true;
+        try {
+          const { sendPasswordReset } = await import('../lib/wix.js');
+          await sendPasswordReset(new FormData(form).get('email'));
+          ok.textContent = 'Check your email for a reset link. Then come back here to log in.';
+          ok.hidden = false;
+        } catch (ex) {
+          err.textContent = 'We could not send that email. Check the address and try again.';
+          err.hidden = false;
+          console.error(ex);
+        } finally {
+          submit.disabled = false;
+        }
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

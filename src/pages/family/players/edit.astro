@@ -1,0 +1,169 @@
+---
+// family/players/edit.astro — edit / delete a player. Static route with
+// ?player= because output is static (unknown ids cannot be prerendered).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../../layouts/Base.astro';
+import Nav from '../../../directions/quest/Nav.astro';
+import Footer from '../../../directions/quest/Footer.astro';
+import AvatarPicker from '../../../components/quest/AvatarPicker.astro';
+import '../../../directions/quest/tokens.css';
+import '../../../directions/quest/theme.css';
+---
+
+<Base title="Edit player — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="family" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter>Edit player</h1>
+      <p class="quest-screen__sub" data-quest-enter>Change their name, apelido, avatar, or class. Players never see this page.</p>
+
+      <p class="quest-card quest-card--note" data-missing hidden>We could not find that player. <a href="/family" style="color:var(--quest-mango)">Back to Family</a></p>
+
+      <form class="quest-card" data-player-form hidden data-quest-enter>
+        <div class="quest-form__ok" data-ok hidden></div>
+        <div class="quest-form__error" data-error hidden></div>
+        <div class="quest-field"><label class="quest-field__label" for="firstName">First name</label><input class="quest-field__input" id="firstName" name="firstName" required maxlength="40" /></div>
+        <div class="quest-field"><label class="quest-field__label" for="apelido">Apelido (capoeira nickname)</label><input class="quest-field__input" id="apelido" name="apelido" maxlength="40" /></div>
+        <AvatarPicker />
+        <div class="quest-field">
+          <label class="quest-field__label" for="inviteCode">Class invite code</label>
+          <input class="quest-field__input" id="inviteCode" name="inviteCode" maxlength="24" autocomplete="off" />
+          <span class="quest-field__hint" data-program-hint></span>
+        </div>
+        <div class="quest-field"><label class="quest-field__label" for="birthYear">Birth year</label><input class="quest-field__input" id="birthYear" name="birthYear" type="number" min="2005" max="2022" /></div>
+        <label class="quest-toggle">
+          <input type="checkbox" name="mayPlayInClass" />
+          <span>May play in class on a shared tablet</span>
+        </label>
+        <div class="quest-btn-row">
+          <button class="quest-btn quest-btn--lime" type="submit">Save</button>
+          <a class="quest-btn quest-btn--ghost" href="/family">Back</a>
+          <a class="quest-btn quest-btn--ghost" data-report-link href="/family">Report card</a>
+        </div>
+      </form>
+
+      <section class="quest-card quest-card--danger" data-delete-box hidden>
+        <h2 class="quest-card__title">Delete this player</h2>
+        <p class="quest-card__body">This erases their lessons, stars, and patches. It cannot be undone.</p>
+        <button class="quest-btn quest-btn--danger" type="button" data-delete-start>Delete this player</button>
+        <div data-delete-confirm hidden>
+          <div class="quest-form__error" data-delete-error hidden></div>
+          <div class="quest-field" style="margin-top:16px">
+            <label class="quest-field__label" for="delete-name">Type their first name to confirm</label>
+            <input class="quest-field__input" id="delete-name" data-delete-typed autocomplete="off" />
+          </div>
+          <div class="quest-btn-row">
+            <button class="quest-btn quest-btn--danger" type="button" data-delete-go>Delete for good</button>
+            <button class="quest-btn quest-btn--ghost" type="button" data-delete-cancel>Keep this player</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../../../directions/quest/motion.js';
+    import { requireSession } from '../../../lib/auth-guard.js';
+    import { updatePlayer, deletePlayer } from '../../../lib/actions.js';
+    import { requireGrownUp } from '../../../lib/grown-up-gate.js';
+    import { programByInvite, programByKey } from '../../../content/programs.js';
+    import { avatarSvg } from '../../../lib/avatar.js';
+
+    function bindInvite(form, currentKey) {
+      const input = form.querySelector('[name=inviteCode]');
+      const hint = form.querySelector('[data-program-hint]');
+      const current = programByKey(currentKey);
+      if (current && !input.value) input.value = current.inviteCode;
+      const paint = () => {
+        const code = String(input.value || '').trim();
+        if (!code) { hint.textContent = 'Leave blank if they train at home.'; return null; }
+        const prog = programByInvite(code);
+        if (prog) { hint.textContent = `This places them in ${prog.name}.`; return prog; }
+        hint.textContent = 'That code does not match a class. Ask your coach.';
+        return false;
+      };
+      input.addEventListener('input', paint);
+      paint();
+      return paint;
+    }
+
+    async function init() {
+      const s = await requireSession();
+      if (!s) return;
+      if (!(await requireGrownUp())) { location.replace('/who'); return; }
+      const main = document.querySelector('main');
+      if (main.dataset.wp4Bound) return;
+      main.dataset.wp4Bound = '1';
+      const id = new URLSearchParams(location.search).get('player');
+      const player = s.session.players.find((p) => p.id === id);
+      if (!player) {
+        document.querySelector('[data-missing]').hidden = false;
+        return;
+      }
+      const form = document.querySelector('[data-player-form]');
+      const del = document.querySelector('[data-delete-box]');
+      form.hidden = false;
+      del.hidden = false;
+      form.firstName.value = player.firstName || '';
+      form.apelido.value = player.apelido || '';
+      form.birthYear.value = player.birthYear || '';
+      form.mayPlayInClass.checked = player.mayPlayInClass !== false;
+      const animal = form.querySelector(`[name=animal][value="${player.avatar?.animal || 'frog'}"]`);
+      const color = form.querySelector(`[name=color][value="${player.avatar?.color || 'mango'}"]`);
+      if (animal) animal.checked = true;
+      if (color) color.checked = true;
+      form.querySelectorAll('[data-animal]').forEach((el) => {
+        el.innerHTML = avatarSvg({ animal: el.dataset.animal, color: player.avatar?.color || 'mango' }, 56);
+      });
+      document.querySelector('[data-report-link]').href = `/family/report?player=${encodeURIComponent(player.id)}`;
+      const resolve = bindInvite(form, player.program);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = form.querySelector('[data-error]');
+        const ok = form.querySelector('[data-ok]');
+        err.hidden = true; ok.hidden = true;
+        const fd = new FormData(form);
+        const invite = String(fd.get('inviteCode') || '').trim();
+        const prog = resolve();
+        if (invite && prog === false) { err.textContent = 'That invite code does not match a class.'; err.hidden = false; return; }
+        try {
+          await updatePlayer(player.id, {
+            firstName: String(fd.get('firstName')).trim(),
+            apelido: String(fd.get('apelido') || '').trim(),
+            avatar: { animal: fd.get('animal'), color: fd.get('color') },
+            program: prog ? prog.key : null,
+            birthYear: fd.get('birthYear') ? Number(fd.get('birthYear')) : null,
+            mayPlayInClass: form.mayPlayInClass.checked,
+          });
+          ok.textContent = 'Saved.';
+          ok.hidden = false;
+        } catch (ex) {
+          err.textContent = 'Could not save. Please try again.';
+          err.hidden = false;
+          console.error(ex);
+        }
+      });
+
+      const confirm = del.querySelector('[data-delete-confirm]');
+      del.querySelector('[data-delete-start]').addEventListener('click', () => { confirm.hidden = false; });
+      del.querySelector('[data-delete-cancel]').addEventListener('click', () => { confirm.hidden = true; });
+      del.querySelector('[data-delete-go]').addEventListener('click', async () => {
+        const typed = del.querySelector('[data-delete-typed]').value.trim();
+        const err = del.querySelector('[data-delete-error]');
+        if (typed !== player.firstName) {
+          err.textContent = `Type ${player.firstName} exactly to confirm.`;
+          err.hidden = false;
+          return;
+        }
+        await deletePlayer(player.id);
+        location.href = '/family';
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

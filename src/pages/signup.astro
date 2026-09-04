@@ -1,5 +1,5 @@
 ---
-// signup.astro — guardian sign-up (SPEC §2.1). WP4 completes it.
+// signup.astro — guardian sign-up (SPEC §2.1). Demo: Wix-connection note.
 import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
@@ -16,13 +16,22 @@ import '../directions/quest/theme.css';
     <main class="quest-screen quest-screen--narrow">
       <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
       <h1 class="quest-screen__title" data-quest-enter>Create a family account</h1>
-      <p class="quest-screen__sub" data-quest-enter>One account for the whole family. You add each child as a player next.</p>
-      <form class="quest-card" data-signup-form data-quest-enter>
+      <p class="quest-screen__sub" data-quest-enter>One account for the whole family. You add each child as a player next. Kids never enter an email or password.</p>
+
+      <section class="quest-card" data-demo-card hidden data-quest-enter>
+        <h2 class="quest-card__title">Needs the Wix connection</h2>
+        <p class="quest-card__body">Sign-up works once ACE connects member login. For now, open the demo family from the log in page.</p>
+        <div class="quest-btn-row"><a class="quest-btn quest-btn--lime" href="/login">Log in to the demo</a></div>
+      </section>
+
+      <form class="quest-card" data-signup-form hidden data-quest-enter>
         <div class="quest-form__error" data-error hidden></div>
         <div class="quest-field"><label class="quest-field__label" for="firstName">Your first name</label><input class="quest-field__input" id="firstName" name="firstName" autocomplete="given-name" required /></div>
         <div class="quest-field"><label class="quest-field__label" for="lastName">Your last name</label><input class="quest-field__input" id="lastName" name="lastName" autocomplete="family-name" required /></div>
         <div class="quest-field"><label class="quest-field__label" for="email">Email</label><input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required /></div>
         <div class="quest-field"><label class="quest-field__label" for="password">Password</label><input class="quest-field__input" id="password" name="password" type="password" autocomplete="new-password" minlength="8" required /><span class="quest-field__hint">At least 8 characters.</span></div>
+        <input type="hidden" name="recaptcha" data-recaptcha />
+        <p class="quest-field__hint">By signing up you agree we may store your child’s first name, apelido, avatar, and lesson activity. Read <a href="/privacy" style="color:var(--quest-mango)">Privacy</a>.</p>
         <div class="quest-btn-row"><button class="quest-btn" type="submit">Sign up</button><a class="quest-btn quest-btn--ghost" href="/login">I have an account</a></div>
       </form>
     </main>
@@ -31,21 +40,55 @@ import '../directions/quest/theme.css';
   <script>
     import '../directions/quest/motion.js';
     import { IS_DEMO } from '../lib/repo/index.js';
+    import { authMessage, recaptchaToken, fillRecaptchaField, continueAuth } from '../lib/auth-ui.js';
+
     async function init() {
+      document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
+      document.querySelector('[data-signup-form]').hidden = IS_DEMO;
       const form = document.querySelector('[data-signup-form]');
       form?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const err = form.querySelector('[data-error]');
         err.hidden = true;
-        if (IS_DEMO) { err.textContent = 'Sign-up needs the Wix connection. Use "Try the demo" on the log in page for now.'; err.hidden = false; return; }
-        const { registerWithPassword, beginRedirectExchange } = await import('../lib/wix.js');
         const fd = new FormData(form);
+        const submit = form.querySelector('[type=submit]');
+        submit.disabled = true;
         try {
-          const res = await registerWithPassword({ email: fd.get('email'), password: fd.get('password'), firstName: fd.get('firstName'), lastName: fd.get('lastName') });
-          if (res.loginState === 'SUCCESS') return beginRedirectExchange(res.data.sessionToken, '/family/players/new');
-          err.textContent = res.loginState === 'EMAIL_VERIFICATION_REQUIRED' ? 'Check your email for a verification code.' : res.loginState === 'OWNER_APPROVAL_REQUIRED' ? 'Thanks! ACE will approve your account soon.' : res.errorCode === 'emailAlreadyExists' ? 'That email already has an account. Log in instead.' : 'We could not create the account. Check the details and try again.';
+          const token = await recaptchaToken('signup');
+          fillRecaptchaField(form, token);
+          const captcha = token ? { invisibleRecaptchaToken: token } : null;
+          const { registerWithPassword } = await import('../lib/wix.js');
+          let res = await registerWithPassword({
+            email: fd.get('email'),
+            password: fd.get('password'),
+            firstName: fd.get('firstName'),
+            lastName: fd.get('lastName'),
+            captchaTokens: captcha,
+          });
+          let kind = await continueAuth(res, { next: '/family/players/new' });
+          if (kind === 'captcha-silent') {
+            const retry = await recaptchaToken('signup');
+            fillRecaptchaField(form, retry);
+            res = await registerWithPassword({
+              email: fd.get('email'),
+              password: fd.get('password'),
+              firstName: fd.get('firstName'),
+              lastName: fd.get('lastName'),
+              captchaTokens: retry ? { invisibleRecaptchaToken: retry } : null,
+            });
+            kind = await continueAuth(res, { next: '/family/players/new', captchaKind: 'silent' });
+          }
+          if (kind === 'pending' || kind === 'error' || kind === 'captcha-visible') {
+            err.textContent = authMessage(res);
+            err.hidden = false;
+          }
+        } catch (ex) {
+          err.textContent = 'Something went wrong. Please try again.';
           err.hidden = false;
-        } catch (ex) { err.textContent = 'Something went wrong. Please try again.'; err.hidden = false; console.error(ex); }
+          console.error(ex);
+        } finally {
+          submit.disabled = false;
+        }
       });
     }
     document.addEventListener('astro:page-load', init);
