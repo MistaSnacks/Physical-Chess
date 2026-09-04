@@ -1,0 +1,14 @@
+WP3 is done on branch `wp3`. The map and HUD now read the live snapshot, and every SPEC §4 reward moment fires from real demo events.
+
+**What shipped**
+- **HUD** on `/journey` and `/me`: avatar (links to `/me`), apelido, level, XP bar, roda-weeks flame, stars, patches, readiness ring, corda swatch, Desafio ticket, Batizado countdown.
+- **Map** bound at runtime: node states, 0–3 star pips, trail fill, NEXT UP from `nextUp`. Gate is dim below 100% readiness, glows at 100%, opens when the corda is no longer Crua.
+- **Rewards** via `game:*` events (wired through `motion.js`, so the WP0 player at `/learn/<module>/<lesson>` triggers them): XP chip, star fill, level-up overlay, patch stitch toast, module-cleared flash, streak flame pop.
+- **`/me`**: avatar editor, level card, stats, patch wall, readiness checklist, corda empty state.
+
+**Verified:** `npm test` (9/9), `npm run build`, smoke on port 4403 prints `SMOKE OK`. Demo path: Maya Aú → Jogos (Boa Ginga + module clear) → Pandeiro (level 4 Cocorinha); Leo Ginga Basics (First Ginga + streak). Screenshots in `screenshots/wp3/`. Report: `agents/reports/WP3.md`.
+
+`src/data/student.js` and `src/data/curriculum.js` stay — Batizado and the WP2 hub pages still import them. Desafio remains a placeholder for WP6.
+
+🚨🚨🚨 WP3 gamification UI is complete, live-bound, and smoke-verified.The local preview server on port 4403 stopped with exit 143 because it was shut down after smoke and screenshots finished. WP3 is already committed on `wp3`; nothing else to do for that process.
+WP3 exit 0

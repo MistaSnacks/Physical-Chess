@@ -1,0 +1,24 @@
+---
+// ReadinessRing.astro — SVG ring bound to readiness.percent (SPEC §4.2).
+---
+
+<div class="quest-ring" data-readiness-ring>
+  <svg class="quest-ring__svg" viewBox="0 0 36 36" aria-hidden="true">
+    <circle class="quest-ring__track" cx="18" cy="18" r="15.5" fill="none" stroke-width="3" pathLength="100" />
+    <circle
+      class="quest-ring__fill"
+      cx="18"
+      cy="18"
+      r="15.5"
+      fill="none"
+      stroke-width="3"
+      pathLength="100"
+      stroke-dasharray="100"
+      stroke-dashoffset="100"
+      transform="rotate(-90 18 18)"
+      data-ring-fill
+    />
+  </svg>
+  <span class="quest-ring__value"><span data-bind="readiness.percent">0</span>%</span>
+  <span class="quest-ring__label" data-ring-label>Batizado readiness</span>
+</div>

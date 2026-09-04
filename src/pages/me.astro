@@ -1,12 +1,21 @@
 ---
-// me.astro — player profile skeleton (SPEC §5.2). WP3 builds the avatar
-// editor, patch wall and corda history on top of this.
+// me.astro — player profile: avatar editor, level card, patch wall,
+// readiness checklist, corda history (SPEC §5.2).
 import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
 import Footer from '../directions/quest/Footer.astro';
+import Hud from '../components/quest/Hud.astro';
+import Bira from '../components/quest/Bira.astro';
+import Patch from '../components/quest/Patch.astro';
+import LevelUp from '../components/quest/LevelUp.astro';
+import PatchUnlock from '../components/quest/PatchUnlock.astro';
+import { PATCHES } from '../content/patches.js';
+import { ANIMALS, AVATAR_COLORS } from '../lib/avatar.js';
 import '../directions/quest/tokens.css';
 import '../directions/quest/theme.css';
+
+const colors = Object.entries(AVATAR_COLORS);
 ---
 
 <Base title="Me — Physical Chess" direction="quest">
@@ -14,19 +23,210 @@ import '../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="me" />
-    <main class="quest-screen">
+    <main class="quest-screen quest-me">
       <p class="quest-screen__eyebrow" data-quest-enter>Level <span data-bind="level.level">1</span> · <span data-bind="level.title">Iniciante</span></p>
       <h1 class="quest-screen__title" data-quest-enter><span data-bind="player.apelido">Player</span></h1>
-      <p class="quest-screen__sub" data-quest-enter><span data-bind="xp">0</span> XP · <span data-bind="stars">0</span> stars · <span data-bind="streak.weeks">0</span> roda weeks · <span data-bind="patches.length">0</span> patches</p>
-      <section class="quest-card quest-card--note" data-quest-enter>Avatar editor, patch wall, readiness checklist and corda history land here in WP3.</section>
+      <p class="quest-screen__sub" data-quest-enter>Your <strong>apelido</strong> is how the roda knows you. This page is yours.</p>
+
+      <div data-quest-enter>
+        <Bira moment="welcome" compact />
+      </div>
+
+      <Hud />
+
+      <section class="quest-card quest-me__card" data-quest-enter data-avatar-editor>
+        <h2 class="quest-card__title">Your look</h2>
+        <p class="quest-card__body">Tap an animal and a color. It saves as you go.</p>
+        <form class="quest-me__avatar-form">
+          <div class="quest-field">
+            <span class="quest-field__label">Animal</span>
+            <div class="quest-avatar-grid" data-avatars>
+              {ANIMALS.map((a) => (
+                <label>
+                  <input type="radio" name="animal" value={a} />
+                  <span data-animal={a}></span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div class="quest-field">
+            <span class="quest-field__label">Color</span>
+            <div class="quest-swatches">
+              {colors.map(([k, hex]) => (
+                <label style={`background:${hex}`}>
+                  <input type="radio" name="color" value={k} />
+                  <span></span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <p class="quest-field__hint" data-avatar-status aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="quest-card quest-me__card" data-quest-enter>
+        <p class="quest-me__level-eye">Level <span data-bind="level.level">1</span></p>
+        <h2 class="quest-card__title" data-bind="level.title">Iniciante</h2>
+        <p class="quest-me__bira" data-bind="level.bira"></p>
+        <p class="quest-card__body"><span data-bind="xp">0</span> XP. <span data-bind="level.xpToNext">0</span> to the next title.</p>
+      </section>
+
+      <section class="quest-card quest-me__card" data-quest-enter>
+        <h2 class="quest-card__title">Stats</h2>
+        <ul class="quest-me__stats">
+          <li><span data-bind="lessonsDone">0</span> / <span data-bind="lessonsTotal">0</span> lessons</li>
+          <li><span data-bind="stars">0</span> stars</li>
+          <li><span data-bind="streak.weeks">0</span> roda weeks</li>
+          <li><span data-bind="practices">0</span> practices · <span data-bind="practicesConfirmed">0</span> seen</li>
+          <li><span data-bind="desafios">0</span> desafios</li>
+          <li><span data-bind="glossaryMastered">0</span> Portuguese words</li>
+        </ul>
+      </section>
+
+      <section class="quest-card quest-me__card" data-quest-enter>
+        <h2 class="quest-card__title">Patch wall</h2>
+        <p class="quest-card__body">Patches you earn stitch onto this wall.</p>
+        <ul class="quest-patch-wall">
+          {PATCHES.map((p) => (
+            <li class="quest-patch-wall__item" data-patch-tile={p.key}>
+              <Patch patch={p} earned={false} size={88} />
+              <p class="quest-patch-wall__title">{p.title}</p>
+              <p class="quest-patch-wall__rule">{p.subtitle}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="quest-card quest-me__card" data-quest-enter>
+        <h2 class="quest-card__title">Batizado readiness</h2>
+        <p class="quest-card__body">Your coach uses this list. XP does not award a corda.</p>
+        <ul class="quest-ready-list" data-readiness-list></ul>
+      </section>
+
+      <section class="quest-card quest-me__card" data-quest-enter>
+        <h2 class="quest-card__title">Corda history</h2>
+        <ol class="quest-corda-log" data-corda-history hidden></ol>
+        <p class="quest-card__body" data-corda-empty>Your first corda comes at Batizado.</p>
+      </section>
     </main>
     <Footer />
+    <LevelUp />
+    <PatchUnlock />
   </div>
   <script>
     import '../directions/quest/motion.js';
     import { requireSession } from '../lib/auth-guard.js';
-    import { bindDom } from '../lib/store.js';
-    async function init() { const s = await requireSession({ player: true }); if (s) bindDom(); }
+    import { bindDom, store } from '../lib/store.js';
+    import { bindHud } from '../lib/map.js';
+    import { updatePlayer } from '../lib/actions.js';
+    import { avatarSvg } from '../lib/avatar.js';
+    import { patchMarkup } from '../lib/patch-art.js';
+    import { PATCHES } from '../content/patches.js';
+    import { CORDAS } from '../data/batizado.js';
+    import { EVENT } from '../lib/game/events.js';
+
+    function paintAvatarGrid(form, avatar) {
+      form.querySelectorAll('[data-animal]').forEach((el) => {
+        el.innerHTML = avatarSvg({ animal: el.dataset.animal, color: avatar.color }, 56);
+      });
+      const animal = form.querySelector(`input[name="animal"][value="${avatar.animal}"]`);
+      const color = form.querySelector(`input[name="color"][value="${avatar.color}"]`);
+      if (animal) animal.checked = true;
+      if (color) color.checked = true;
+    }
+
+    function paintWall(snapshot) {
+      const earned = new Set((snapshot.patches || []).map((p) => p.key));
+      document.querySelectorAll('[data-patch-tile]').forEach((tile) => {
+        const key = tile.dataset.patchTile;
+        const patch = PATCHES.find((p) => p.key === key);
+        const on = earned.has(key);
+        tile.classList.toggle('is-earned', on);
+        const face = tile.querySelector('[data-patch-key], .quest-patch-wrap');
+        if (patch && face) {
+          face.innerHTML = patchMarkup({
+            art: patch.art,
+            tier: patch.tier,
+            title: patch.title,
+            earned: on,
+            size: 88,
+            stitching: false,
+          });
+        }
+      });
+    }
+
+    function paintReady(snapshot) {
+      const list = document.querySelector('[data-readiness-list]');
+      if (!list) return;
+      const items = snapshot.readiness?.items || [];
+      list.innerHTML = items.map((item) => {
+        const pct = Math.max(0, Math.min(100, item.progress || 0));
+        return `<li class="quest-ready-list__item${item.met ? ' is-met' : ''}">
+          <span class="quest-ready-list__label">${item.label}</span>
+          <span class="quest-ready-list__bar"><span class="quest-ready-list__fill" style="transform:scaleX(${pct / 100})"></span></span>
+          <span class="quest-ready-list__pct">${item.met ? 'Done' : pct + '%'}</span>
+        </li>`;
+      }).join('');
+    }
+
+    function paintCorda(events) {
+      const log = document.querySelector('[data-corda-history]');
+      const empty = document.querySelector('[data-corda-empty]');
+      const awards = (events || []).filter((e) => e.type === EVENT.CORDA_AWARDED);
+      if (!log || !empty) return;
+      if (!awards.length) {
+        log.hidden = true;
+        empty.hidden = false;
+        return;
+      }
+      empty.hidden = true;
+      log.hidden = false;
+      log.innerHTML = awards.map((e) => {
+        const id = e.payload?.corda;
+        const corda = CORDAS.find((c) => c.id === id);
+        const when = e.occurredAt ? new Date(e.occurredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const eventName = e.payload?.event || 'Batizado';
+        return `<li><span class="quest-corda-log__swatch" style="background:${corda?.color || '#E8DCC3'}"></span><span>${corda?.label || id} · ${eventName} · ${when}</span></li>`;
+      }).join('');
+    }
+
+    async function init() {
+      const s = await requireSession({ player: true });
+      if (!s) return;
+      bindDom();
+      bindHud();
+      const form = document.querySelector('[data-avatar-editor] form');
+      const player = store.get().player;
+      if (form && player) {
+        paintAvatarGrid(form, player.avatar || { animal: 'frog', color: 'lime' });
+        form.addEventListener('change', async () => {
+          const avatar = { animal: form.animal.value, color: form.color.value };
+          paintAvatarGrid(form, avatar);
+          const status = document.querySelector('[data-avatar-status]');
+          try {
+            await updatePlayer(player.id, { avatar });
+            if (status) status.textContent = 'Saved.';
+          } catch (err) {
+            if (status) status.textContent = 'Could not save. Try again.';
+            console.error(err);
+          }
+        });
+      }
+      const paint = (state) => {
+        if (!state.snapshot) return;
+        paintWall(state.snapshot);
+        paintReady(state.snapshot);
+        paintCorda(state.events);
+      };
+      store.subscribe(paint);
+      if (s.isDemo && !document.querySelector('.quest-demo-badge')) {
+        const b = document.createElement('div');
+        b.className = 'quest-demo-badge';
+        b.textContent = 'Demo';
+        document.body.appendChild(b);
+      }
+    }
     document.addEventListener('astro:page-load', init);
     init();
   </script>

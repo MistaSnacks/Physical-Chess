@@ -1,0 +1,10 @@
+WP6 is done on branch `wp6` (commit `3da2602`). Report: `agents/reports/WP6.md`.
+
+**Demo (no Wix secret).** Log in → Family → **Switch to coach view**. That loads an 8-player roster across Bushwick, Berkeley Carroll, and Prospect. From there you can stamp attendance, award patches/cordas/XP, set the berimbau goal, export CSV (UTF-8 BOM + CRLF, opens in Numbers), and start **Class mode** (apelido cards only, persistent “Class mode · … · End” bar, events tagged `source: 'class'`). `/desafio` is one task per NY day (22-item pool, 30 XP). `/turma` is apelido + avatar + weekly XP, plus the cooperative bar. Opted-out families stay off the names list.
+
+**Server.** Every cross-family route is written against Wix Data Items v2 and Delete Member. Without `WIX_CLIENT_SECRET` they return `501 { demo: true }` and the client uses `coachDemo`. Nightly recompute is `vercel.json` cron `30 7 * * *` (07:30 UTC ≈ 03:30 America/New_York in EDT). `lms-programs` now has `goalXp` / `goalLabel` — re-run collections once the secret exists.
+
+**Checks.** `npm test` (15), `npm run build`, smoke against port 4406 printed `SMOKE OK`. Screenshots: `screenshots/wp6/` at 1440 and 390.
+
+Student detail is `/coach/player?id=` so it works on the static demo server; the API is still `GET /api/coach/players/:id`. No new npm dependencies. Not pushed.Those port-4406 static servers were stopped on purpose after smoke and screenshots finished. WP6 is already committed on `wp6`; nothing else is waiting on them.
+WP6 exit 0

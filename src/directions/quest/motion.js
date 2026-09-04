@@ -10,6 +10,8 @@
 // Respects prefers-reduced-motion: reduce — every animated transform /
 // opacity change is skipped in favor of the final state.
 
+import { initRewards, fireConfetti } from '../../lib/rewards.js';
+
 function reduced() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -232,60 +234,7 @@ function initQuizReactions() {
   });
 }
 
-// ---------------------------------------------------------------------
-// Confetti — canvas + rAF only (per motion rule 5)
-// ---------------------------------------------------------------------
-function fireConfetti() {
-  const canvas = document.querySelector('.quest-confetti-canvas');
-  if (!(canvas instanceof HTMLCanvasElement)) return;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  ctx.scale(dpr, dpr);
-
-  const colors = ['#FF4F7A', '#FFB238', '#B9F26B'];
-  const pieces = Array.from({ length: 90 }, () => ({
-    x: Math.random() * window.innerWidth,
-    y: -20 - Math.random() * 200,
-    w: 6 + Math.random() * 6,
-    h: 8 + Math.random() * 8,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    vy: 3 + Math.random() * 4,
-    vx: -2 + Math.random() * 4,
-    rot: Math.random() * Math.PI,
-    vr: -0.2 + Math.random() * 0.4,
-  }));
-
-  const start = performance.now();
-  const duration = 1600;
-
-  function frame(now) {
-    const elapsed = now - start;
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    pieces.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rot += p.vr;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
-    });
-    if (elapsed < duration) {
-      requestAnimationFrame(frame);
-    } else {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    }
-  }
-  requestAnimationFrame(frame);
-}
+// Confetti lives in rewards.js so game:* moments and the quiz share one canvas.
 
 // ---------------------------------------------------------------------
 // Batizado gate reveal
@@ -339,6 +288,7 @@ function init() {
   initCompleteButtons();
   initQuizReactions();
   initGate();
+  initRewards();
 }
 
 document.addEventListener('astro:page-load', init);
@@ -347,3 +297,9 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
   document.addEventListener('DOMContentLoaded', init, { once: true });
 }
+
+let resizeTimer = 0;
+window.addEventListener('resize', () => {
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => initLessonDots(), 80);
+});

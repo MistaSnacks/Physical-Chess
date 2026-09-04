@@ -1,0 +1,28 @@
+---
+// Bira.astro — Mestre Bira mascot with a speech bubble (SPEC §4.9).
+import { biraLine } from '../../content/bira.js';
+
+interface Props {
+  moment?: string;
+  line?: string;
+  compact?: boolean;
+}
+
+const { moment = 'welcome', line, compact = false } = Astro.props;
+const text = line || biraLine(moment);
+---
+
+<figure class:list={['quest-mascot', 'quest-mascot--inline', compact && 'quest-mascot--compact']}>
+  <div class="quest-mascot__bubble-wrap">
+    <p class="quest-mascot__bubble" data-bira-line>{text}</p>
+    <svg class="quest-mascot__tail" width="26" height="16" viewBox="0 0 26 16" aria-hidden="true"><path d="M0 0h26L13 16z" fill="#FFF6E5" /></svg>
+  </div>
+  <div class="quest-mascot__figure">
+    <svg width="90" height="90" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="15" cy="4.5" r="2.2" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M3 21l5-6 3 1 2-6 4 3 4-5" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M8 15l-2 6" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </div>
+  <p class="quest-mascot__name">Mestre Bira</p>
+</figure>

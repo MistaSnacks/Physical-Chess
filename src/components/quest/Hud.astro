@@ -1,0 +1,69 @@
+---
+// Hud.astro — live-bound player HUD (SPEC §6). Used on /journey and /me.
+import ReadinessRing from './ReadinessRing.astro';
+import { BATIZADO_DATE, BATIZADO_DATE_TBC } from '../../data/batizado.js';
+
+const msPerDay = 1000 * 60 * 60 * 24;
+const daysToBatizado = Math.max(
+  0,
+  Math.ceil((new Date(BATIZADO_DATE).getTime() - Date.now()) / msPerDay)
+);
+const dateNote = BATIZADO_DATE_TBC ? ' (date TBC)' : '';
+---
+
+<aside class="quest-hud" data-quest-enter data-hud>
+  <div class="quest-hud__top">
+    <a class="quest-hud__avatar" href="/me" data-hud-avatar aria-label="Your profile"></a>
+    <div class="quest-hud__id">
+      <p class="quest-hud__name" data-bind="player.apelido"></p>
+      <div class="quest-hud__corda">
+        <span class="quest-hud__corda-swatch" data-hud-corda-swatch></span>
+        <span class="quest-hud__corda-label" data-hud-corda-label>CORDA CRUA</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quest-hud__xp">
+    <div class="quest-hud__xp-row">
+      <span class="quest-hud__xp-caption">LEVEL <span data-bind="level.level">1</span> · <span data-bind="level.title">Iniciante</span></span>
+      <span class="quest-hud__xp-value"><span data-bind="xp">0</span> XP · <span data-bind="level.xpToNext">0</span> to go</span>
+    </div>
+    <div class="quest-hud__xp-track" data-xp-target>
+      <div class="quest-hud__xp-fill" data-xp-fill="0" data-bind="level.percent" data-bind-attr="data-xp-fill"></div>
+    </div>
+  </div>
+
+  <div class="quest-hud__stats">
+    <div class="quest-hud__stat" data-hud-flame>
+      <span class="quest-hud__stat-value" data-bind="streak.weeks">0</span>
+      <span class="quest-hud__stat-label">
+        <svg class="quest-hud__flame" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-4 0-7-3.2-7-7.2C5 9 9 6 12 3c3 3 7 6 7 10.8 0 4-3 7.2-7 7.2z" fill="#FFB238"/><path d="M12 18c-1.8 0-3-1.4-3-3.2 0-1.6 1.4-3 3-4.8 1.6 1.8 3 3.2 3 4.8 0 1.8-1.2 3.2-3 3.2z" fill="#FF4F7A"/></svg>
+        RODA WEEKS
+      </span>
+    </div>
+    <div class="quest-hud__stat quest-hud__stat--pink" data-hud-stars>
+      <span class="quest-hud__stat-value" data-bind="stars">0</span>
+      <span class="quest-hud__stat-label">STARS</span>
+    </div>
+    <div class="quest-hud__stat quest-hud__stat--mango">
+      <span class="quest-hud__stat-value" data-bind="patches.length">0</span>
+      <span class="quest-hud__stat-label">PATCHES</span>
+    </div>
+  </div>
+
+  <div class="quest-hud__row">
+    <ReadinessRing />
+    <a class="quest-hud__ticket" href="/desafio">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#0B2E24" stroke-width="2.2"/><path d="M8 7v10M3 12h2M19 12h2" fill="none" stroke="#0B2E24" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <span>
+        <span class="quest-hud__ticket-eye">Desafio do Dia</span>
+        <span class="quest-hud__ticket-sub">Daily challenge</span>
+      </span>
+    </a>
+  </div>
+
+  <div class="quest-hud__batizado">
+    <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l2 7-8 11L4 10z" fill="none" stroke="#0B2E24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h16M9 3l3 7 3-7M9 10l3 11 3-11" fill="none" stroke="#0B2E24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Batizado is in {daysToBatizado} days{dateNote}. Your coach awards the corda.</span>
+  </div>
+</aside>

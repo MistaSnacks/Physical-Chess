@@ -1,0 +1,23 @@
+---
+// Patch.astro — embroidered-patch sticker. Six drawings by `art` key, color by tier.
+import { patchMarkup } from '../../lib/patch-art.js';
+
+interface Props {
+  patch: { key: string; title: string; art: string; tier: number };
+  earned?: boolean;
+  size?: number;
+  stitching?: boolean;
+}
+
+const { patch, earned = false, size = 88, stitching = false } = Astro.props;
+const html = patchMarkup({
+  art: patch.art,
+  tier: patch.tier,
+  title: patch.title,
+  earned,
+  size,
+  stitching,
+});
+---
+
+<span class="quest-patch-wrap" data-patch-key={patch.key} data-patch-earned={earned ? 'true' : 'false'} set:html={html} />
