@@ -29,13 +29,40 @@ function stagger(nodes, attr, delayStep, startDelay = 0) {
 }
 
 function initEntrance() {
-  const enterEls = Array.from(document.querySelectorAll('[data-quest-enter]'));
+  const enterEls = Array.from(document.querySelectorAll('[data-quest-enter]:not([data-quest-enter="true"])'));
   stagger(enterEls, 'data-quest-enter', 45, 20);
 
-  const nodeEls = Array.from(document.querySelectorAll('[data-quest-node]')).filter(
+  const nodeEls = Array.from(document.querySelectorAll('[data-quest-node]:not([data-quest-node="true"])')).filter(
     (el) => el.offsetParent !== null
   );
   stagger(nodeEls, 'data-quest-node', 60, 540);
+  observeInjectedEntrances();
+}
+
+// Screens render most of their content after the session loads, so elements
+// carrying data-quest-enter often arrive after the first entrance pass. Reveal
+// them as they land (short stagger) instead of leaving them at opacity 0.
+function observeInjectedEntrances() {
+  if (window.__questEnterObserver) return;
+  const pending = new Set();
+  let scheduled = false;
+  const flush = () => {
+    scheduled = false;
+    const els = Array.from(pending).filter((el) => el.isConnected && el.getAttribute('data-quest-enter') !== 'true');
+    pending.clear();
+    if (els.length) stagger(els, 'data-quest-enter', 35, 10);
+  };
+  const collect = (node) => {
+    if (!(node instanceof Element)) return;
+    if (node.hasAttribute('data-quest-enter')) pending.add(node);
+    node.querySelectorAll('[data-quest-enter]').forEach((el) => pending.add(el));
+  };
+  const obs = new MutationObserver((records) => {
+    for (const r of records) r.addedNodes.forEach(collect);
+    if (pending.size && !scheduled) { scheduled = true; requestAnimationFrame(flush); }
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+  window.__questEnterObserver = obs;
 }
 
 function initTrailDraw() {
