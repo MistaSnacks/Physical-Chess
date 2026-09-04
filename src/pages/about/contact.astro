@@ -18,8 +18,8 @@ import { CONTACT } from '../../data/batizado.js';
   </div>
 
   <form class="quest-card" data-contact-form data-quest-enter>
-    <div class="quest-form__error" data-error hidden></div>
-    <div class="quest-form__ok" data-ok hidden></div>
+    <div class="quest-form__error" data-error role="alert" hidden></div>
+    <div class="quest-form__ok" data-ok role="status" aria-live="polite" hidden></div>
     <div class="quest-field">
       <label class="quest-field__label" for="name">Name</label>
       <input class="quest-field__input" id="name" name="name" type="text" autocomplete="name" required />
@@ -30,7 +30,7 @@ import { CONTACT } from '../../data/batizado.js';
     </div>
     <div class="quest-field">
       <label class="quest-field__label" for="message">Message</label>
-      <textarea class="quest-field__input quest-field__input--area" id="message" name="message" rows="5" required></textarea>
+      <textarea class="quest-field__input quest-field__input--area" id="message" name="message" rows="5" autocomplete="off" required></textarea>
     </div>
     <div class="quest-btn-row">
       <button class="quest-btn quest-btn--lime" type="submit" data-submit>Send</button>
@@ -54,6 +54,9 @@ import { CONTACT } from '../../data/batizado.js';
       err.hidden = true;
       ok.hidden = true;
       btn.disabled = true;
+      form.setAttribute('aria-busy', 'true');
+      const buttonLabel = btn.textContent;
+      btn.textContent = 'Sending…';
       const fd = new FormData(form);
       const payload = { name: fd.get('name'), email: fd.get('email'), message: fd.get('message') };
       try {
@@ -86,6 +89,8 @@ import { CONTACT } from '../../data/batizado.js';
         }
       }
       btn.disabled = false;
+      btn.textContent = buttonLabel;
+      form.removeAttribute('aria-busy');
     });
   }
   document.addEventListener('astro:page-load', init);

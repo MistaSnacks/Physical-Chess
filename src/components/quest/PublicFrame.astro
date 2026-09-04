@@ -23,7 +23,7 @@ const { title, description, active, narrow = false } = Astro.props;
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
     <Nav active={active} />
-    <main class:list={['quest-screen', narrow && 'quest-screen--narrow']}>
+    <main id="main" class:list={['quest-screen', 'quest-screen--public', narrow && 'quest-screen--narrow']}>
       <slot />
     </main>
     <Footer />

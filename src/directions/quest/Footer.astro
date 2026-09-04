@@ -2,41 +2,67 @@
 // Footer.astro — Roda Quest footer with the ACE contact info and a public sitemap.
 import { CONTACT } from '../../data/batizado.js';
 
-const LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/about/educators', label: 'Educators' },
-  { href: '/about/the-ace', label: 'the ACE' },
-  { href: '/about/abada', label: 'ABADÁ' },
-  { href: '/about/faq', label: 'F.A.Q.' },
-  { href: '/about/contact', label: 'Contact' },
-  { href: '/graduation', label: 'Graduation' },
-  { href: '/graduation/what-is-batizado', label: 'What is it?' },
-  { href: '/graduation/cordas', label: 'Cordas' },
-  { href: '/graduation/media', label: 'Batizado Media' },
-  { href: '/batizado', label: 'Batizado 2026' },
-  { href: '/shop', label: 'Shop' },
-  { href: '/login', label: 'Log in' },
-  { href: '/privacy', label: 'Privacy' },
+const GROUPS = [
+  {
+    label: 'Explore',
+    links: [
+      { href: '/', label: 'Home' },
+      { href: '/about', label: 'About' },
+      { href: '/shop', label: 'Shop' },
+    ],
+  },
+  {
+    label: 'Meet ACE',
+    links: [
+      { href: '/about/educators', label: 'Educators' },
+      { href: '/about/the-ace', label: 'the ACE' },
+      { href: '/about/abada', label: 'ABADÁ' },
+      { href: '/about/faq', label: 'F.A.Q.' },
+      { href: '/about/contact', label: 'Contact' },
+    ],
+  },
+  {
+    label: 'Graduation',
+    links: [
+      { href: '/graduation', label: 'Graduation hub' },
+      { href: '/graduation/what-is-batizado', label: 'What is it?' },
+      { href: '/graduation/cordas', label: 'Cordas' },
+      { href: '/graduation/media', label: 'Batizado Media' },
+      { href: '/batizado', label: 'Batizado 2026' },
+    ],
+  },
+  {
+    label: 'Account',
+    links: [
+      { href: '/login', label: 'Log in' },
+      { href: '/privacy', label: 'Privacy' },
+    ],
+  },
 ];
 ---
 
 <footer class="quest-footer" data-quest-enter>
-  <div class="quest-footer__brand">Physical Chess &middot; Roda Quest</div>
+  <div class="quest-footer__identity">
+    <div class="quest-footer__brand">Physical Chess &middot; Roda Quest</div>
+    <div class="quest-footer__note">
+      A program of ACE / Abad&aacute; Capoeira Brooklyn.
+      <span class="quest-footer__credit">Video: SoChlo Productions</span>
+    </div>
+  </div>
   <div class="quest-footer__contact">
+    <strong>Train with ACE</strong>
     <span>{CONTACT.ageLine}</span>
     <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
     <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
   </div>
   <nav class="quest-footer__links" aria-label="Public pages">
     {
-      LINKS.map((l) => (
-        <a href={l.href}>{l.label}</a>
+      GROUPS.map((group) => (
+        <div class="quest-footer__group">
+          <p class="quest-footer__group-title">{group.label}</p>
+          {group.links.map((link) => <a href={link.href}>{link.label}</a>)}
+        </div>
       ))
     }
   </nav>
-  <div class="quest-footer__note">
-    A program of ACE / Abad&aacute; Capoeira Brooklyn.
-    <span class="quest-footer__credit">Video: SoChlo Productions</span>
-  </div>
 </footer>
