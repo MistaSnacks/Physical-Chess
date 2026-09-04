@@ -13,7 +13,7 @@ const dateNote = BATIZADO_DATE_TBC ? ' (date TBC)' : '';
 
 <aside class="quest-hud" data-quest-enter data-hud>
   <div class="quest-hud__top">
-    <div class="quest-hud__avatar" data-hud-avatar></div>
+    <a class="quest-hud__avatar" href="/me" data-hud-avatar aria-label="Your profile"></a>
     <div class="quest-hud__id">
       <p class="quest-hud__name" data-bind="player.apelido"></p>
       <div class="quest-hud__corda">
@@ -37,7 +37,7 @@ const dateNote = BATIZADO_DATE_TBC ? ' (date TBC)' : '';
     <div class="quest-hud__stat" data-hud-flame>
       <span class="quest-hud__stat-value" data-bind="streak.weeks">0</span>
       <span class="quest-hud__stat-label">
-        <svg class="quest-hud__flame" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2s4 4 4 8c0 2.2-1.2 4-3 5 2 .2 5-1 7-4 0 6-4 11-8 11s-8-5-8-11c3 3 5 2 5 2S8 7 12 2z" fill="#FFB238"/></svg>
+        <svg class="quest-hud__flame" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-4 0-7-3.2-7-7.2C5 9 9 6 12 3c3 3 7 6 7 10.8 0 4-3 7.2-7 7.2z" fill="#FFB238"/><path d="M12 18c-1.8 0-3-1.4-3-3.2 0-1.6 1.4-3 3-4.8 1.6 1.8 3 3.2 3 4.8 0 1.8-1.2 3.2-3 3.2z" fill="#FF4F7A"/></svg>
         RODA WEEKS
       </span>
     </div>

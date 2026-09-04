@@ -2970,6 +2970,7 @@ body.direction-quest :focus-visible {
   100% { transform: scale(1); opacity: 1; }
 }
 .quest-levelup__bira { font-weight: 800; color: var(--quest-cream); }
+.quest-levelup__panel:has([data-bira-line]) .quest-levelup__bira { display: none; }
 .quest-levelup__hint { color: var(--quest-muted); font-size: 14px; }
 
 .quest-patch-unlock {

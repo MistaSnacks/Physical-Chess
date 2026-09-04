@@ -297,3 +297,9 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
   document.addEventListener('DOMContentLoaded', init, { once: true });
 }
+
+let resizeTimer = 0;
+window.addEventListener('resize', () => {
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => initLessonDots(), 80);
+});

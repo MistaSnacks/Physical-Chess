@@ -38,6 +38,19 @@ function ensureHosts() {
     el.dataset.levelup = '';
     el.hidden = true;
     el.innerHTML = `<button class="quest-levelup__panel" type="button" data-levelup-dismiss>
+      <figure class="quest-mascot quest-mascot--inline quest-mascot--compact">
+        <div class="quest-mascot__bubble-wrap">
+          <p class="quest-mascot__bubble" data-bira-line></p>
+          <svg class="quest-mascot__tail" width="26" height="16" viewBox="0 0 26 16" aria-hidden="true"><path d="M0 0h26L13 16z" fill="#FFF6E5" /></svg>
+        </div>
+        <div class="quest-mascot__figure">
+          <svg width="90" height="90" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="15" cy="4.5" r="2.2" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M3 21l5-6 3 1 2-6 4 3 4-5" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M8 15l-2 6" fill="none" stroke="#0B2E24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+      </figure>
       <p class="quest-levelup__eyebrow">New level</p>
       <h2 class="quest-levelup__title" data-levelup-title></h2>
       <p class="quest-levelup__bira" data-levelup-bira></p>
