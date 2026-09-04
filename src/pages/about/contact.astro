@@ -1,0 +1,93 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import { CONTACT } from '../../data/batizado.js';
+---
+
+<PublicFrame title="Contact — Physical Chess" description="Call or email ACE / Abadá Capoeira Brooklyn, or send a note from this page." active="about" narrow>
+  <p class="quest-screen__eyebrow" data-quest-enter>About Us</p>
+  <h1 class="quest-screen__title" data-quest-enter>Contact</h1>
+  <p class="quest-screen__sub" data-quest-enter>{CONTACT.ageLine}</p>
+
+  <div class="quest-card" data-quest-enter>
+    <p class="quest-card__title">Reach ACE</p>
+    <p class="quest-card__body">
+      <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
+      <br />
+      <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+    </p>
+  </div>
+
+  <form class="quest-card" data-contact-form data-quest-enter>
+    <div class="quest-form__error" data-error hidden></div>
+    <div class="quest-form__ok" data-ok hidden></div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="name">Name</label>
+      <input class="quest-field__input" id="name" name="name" type="text" autocomplete="name" required />
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="email">Email</label>
+      <input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required />
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="message">Message</label>
+      <textarea class="quest-field__input quest-field__input--area" id="message" name="message" rows="5" required></textarea>
+    </div>
+    <div class="quest-btn-row">
+      <button class="quest-btn quest-btn--lime" type="submit" data-submit>Send</button>
+    </div>
+  </form>
+</PublicFrame>
+
+<script>
+  import { IS_DEMO } from '../../lib/repo/index.js';
+
+  async function init() {
+    const form = document.querySelector('[data-contact-form]');
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+    const err = form.querySelector('[data-error]');
+    const ok = form.querySelector('[data-ok]');
+    const btn = form.querySelector('[data-submit]');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      ok.hidden = true;
+      btn.disabled = true;
+      const fd = new FormData(form);
+      const payload = { name: fd.get('name'), email: fd.get('email'), message: fd.get('message') };
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          form.reset();
+          ok.textContent = data.demo ? 'Demo: nothing was sent.' : 'Got it. ACE will write back.';
+          ok.hidden = false;
+        } else if (IS_DEMO && (!res.ok || data.ok === undefined)) {
+          form.reset();
+          ok.textContent = 'Demo: nothing was sent.';
+          ok.hidden = false;
+        } else {
+          err.textContent = data.error || 'Could not send. Email info@the-ace.org instead.';
+          err.hidden = false;
+        }
+      } catch {
+        if (IS_DEMO) {
+          form.reset();
+          ok.textContent = 'Demo: nothing was sent.';
+          ok.hidden = false;
+        } else {
+          err.textContent = 'Could not send. Email info@the-ace.org instead.';
+          err.hidden = false;
+        }
+      }
+      btn.disabled = false;
+    });
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

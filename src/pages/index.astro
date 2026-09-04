@@ -1,45 +1,42 @@
 ---
 // index.astro — Roda Quest home / "Enter the Roda".
-// Wix home port: night-sky hero, age line, contact, Batizado 2026 CTA,
-// nav into the app. Per SPEC §2 row 1 + §5.2.
+// Wix home port: night-sky hero, age line, contact, auth CTAs, Batizado 2026,
+// what you'll learn, latest from the roda. SPEC §5.1 + WP5.
 import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
 import Footer from '../directions/quest/Footer.astro';
-import { video } from '../data/media.js';
+import { video, wix, yt } from '../data/media.js';
 import { CONTACT } from '../data/batizado.js';
+import { MODULES } from '../content/modules.js';
 
 import '../directions/quest/tokens.css';
 import '../directions/quest/theme.css';
 
 const hero = video('videoProject1');
 
-const SCREENS = [
-  {
-    href: '/journey',
-    title: 'My Journey',
-    sub: 'The map — see your stops, your streak and what’s next.',
-  },
-  {
-    href: '/learn/movements',
-    title: 'Movements',
-    sub: 'Ginga, kicks and escapes with real class video.',
-  },
-  {
-    href: '/learn/music',
-    title: 'Music',
-    sub: 'Instruments, Portuguese words and the Boss Quiz.',
-  },
-  {
-    href: '/batizado',
-    title: 'Batizado',
-    sub: 'The gate opens on the ceremony, cordas and the gallery.',
-  },
-];
+const LEARN = MODULES.map((m) => ({
+  href: `/learn/${m.id}`,
+  title: m.title,
+  photoKey: m.photoKey,
+  sub:
+    m.id === 'movements'
+      ? 'Ginga, kicks, and escapes with real class video.'
+      : m.id === 'music'
+        ? 'Berimbau, pandeiro, songs, and the Boss Quiz.'
+        : m.id === 'culture'
+          ? 'Portuguese, ABADÁ, folklore, and the maps.'
+          : 'What Batizado is, cordas, and the Roda Ready check.',
+}));
 ---
 
-<Base title="Roda Quest — Physical Chess" direction="quest">
+<Base
+  title="Roda Quest — Physical Chess"
+  description="A kids capoeira adventure from ACE / Abadá Capoeira Brooklyn. Classes for 7–13. Log in, try the demo, or meet us at Batizado 2026."
+  direction="quest"
+>
   <ClientRouter slot="head" />
+  <link slot="head" rel="preload" as="image" href={wix('heroRoda', 900, 1400)} />
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
@@ -49,14 +46,23 @@ const SCREENS = [
     <main>
       <section class="quest-hero">
         <div class="quest-hero__bg" aria-hidden="true">
+          <img
+            class="quest-hero__poster"
+            src={wix('heroRoda', 900, 1400)}
+            alt=""
+            width="900"
+            height="1400"
+            fetchpriority="high"
+            decoding="async"
+          />
           <video
             class="quest-hero__video"
-            src={hero.mp4}
-            poster={hero.poster}
-            autoplay
+            data-hero-video
+            data-src={hero.mp4}
             muted
             loop
             playsinline
+            preload="none"
           ></video>
           <div class="quest-hero__scrim"></div>
         </div>
@@ -69,27 +75,53 @@ const SCREENS = [
             Capoeira Brooklyn.
           </p>
           <p class="quest-hero__age" data-quest-enter>{CONTACT.ageLine}</p>
+          <p class="quest-hero__contact" data-quest-enter>
+            <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
+            ·
+            <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+          </p>
           <div class="quest-hero__actions" data-quest-enter>
-            <a class="quest-btn quest-btn--mango" href="/login">Log in &amp; play &rarr;</a>
+            <a class="quest-btn quest-btn--mango" href="/login">Log in &amp; play</a>
             <a class="quest-btn quest-btn--ghost" href="/login?demo=1" data-demo-cta>Try the demo</a>
-            <a class="quest-btn quest-btn--hibiscus" href="/batizado">Batizado 2026</a>
+            <a class="quest-btn quest-btn--hibiscus" href="/graduation">Batizado 2026</a>
           </div>
           <p class="quest-hero__credit" data-quest-enter>Video: SoChlo Productions</p>
         </div>
       </section>
 
       <section class="quest-section">
-        <p class="quest-section__eyebrow" data-quest-enter>The quest</p>
+        <p class="quest-section__eyebrow" data-quest-enter>What you&rsquo;ll learn</p>
         <h2 class="quest-section__title" data-quest-enter>Four stops on the road to the roda.</h2>
-        <div class="quest-screens">
+        <div class="quest-public-stops quest-public-stops--four">
           {
-            SCREENS.map((s) => (
-              <a class="quest-screen-card" href={s.href} data-quest-enter>
-                <span class="quest-screen-card__title">{s.title}</span>
-                <span class="quest-screen-card__sub">{s.sub}</span>
+            LEARN.map((s) => (
+              <a class="quest-stop-card" href={s.href} data-quest-enter>
+                <img class="quest-stop-card__img" src={wix(s.photoKey, 640, 400)} alt="" width="640" height="400" loading="lazy" />
+                <span class="quest-stop-card__title">{s.title}</span>
+                <span class="quest-stop-card__sub">{s.sub}</span>
               </a>
             ))
           }
+        </div>
+      </section>
+
+      <section class="quest-section quest-section--latest">
+        <p class="quest-section__eyebrow" data-quest-enter>From the roda</p>
+        <h2 class="quest-section__title" data-quest-enter>Latest from the roda.</h2>
+        <div class="quest-latest" data-quest-enter>
+          <button
+            type="button"
+            class="quest-yt-lite"
+            data-yt-lite
+            data-yt-id={yt('acb2024')}
+            aria-label="Play Abadá Capoeira Brooklyn 2024"
+          >
+            <img src={wix('heroRoda', 1280, 720)} alt="" width="1280" height="720" loading="lazy" />
+            <span class="quest-yt-lite__play" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l12-7z" fill="currentColor"/></svg>
+            </span>
+          </button>
+          <p class="quest-video-card__credit">Video: SoChlo Productions</p>
         </div>
       </section>
     </main>
@@ -100,4 +132,45 @@ const SCREENS = [
 
 <script>
   import '../directions/quest/motion.js';
+
+  function bootHeroVideo() {
+    const v = document.querySelector('[data-hero-video]');
+    if (!v || v.getAttribute('src')) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(max-width: 700px)').matches) return;
+    const src = v.getAttribute('data-src');
+    const start = () => {
+      v.src = src;
+      v.muted = true;
+      v.play().catch(() => {});
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 1800 });
+    else window.setTimeout(start, 800);
+  }
+
+  function bootLiteYouTube() {
+    document.querySelectorAll('[data-yt-lite]').forEach((btn) => {
+      if (btn.dataset.bound === 'true') return;
+      btn.dataset.bound = 'true';
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-yt-id');
+        const wrap = document.createElement('div');
+        wrap.className = 'yt-embed';
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+        iframe.title = btn.getAttribute('aria-label') || 'Video';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        wrap.appendChild(iframe);
+        btn.replaceWith(wrap);
+      });
+    });
+  }
+
+  function boot() {
+    bootHeroVideo();
+    bootLiteYouTube();
+  }
+  document.addEventListener('astro:page-load', boot);
+  boot();
 </script>

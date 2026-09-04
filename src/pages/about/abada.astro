@@ -1,0 +1,24 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import Copy from '../../components/quest/Copy.astro';
+import { ABADA } from '../../content/site.js';
+import { wix } from '../../data/media.js';
+---
+
+<PublicFrame title="ABADÁ-Capoeira — Physical Chess" description="ABADÁ-Capoeira, founded by Mestre Camisa in Rio de Janeiro in 1988." active="about">
+  <p class="quest-screen__eyebrow" data-quest-enter>About Us</p>
+  <h1 class="quest-screen__title" data-quest-enter>{ABADA.title}</h1>
+  <img
+    class="quest-public-heroimg"
+    src={wix('mestraMarciaBerimbau', 1200, 675)}
+    alt="Mestra Marcia on the berimbau"
+    width="1200"
+    height="675"
+    loading="lazy"
+    data-quest-enter
+  />
+  <div class="quest-prose" data-quest-enter>
+    {ABADA.paragraphs.map((p) => <Copy text={p} />)}
+  </div>
+  {import.meta.env.DEV && ABADA.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
+</PublicFrame>

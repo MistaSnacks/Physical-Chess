@@ -1,0 +1,33 @@
+---
+// about/educators.astro — portraits from media.js, bios from site.js.
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import { EDUCATORS } from '../../content/site.js';
+import { wix } from '../../data/media.js';
+---
+
+<PublicFrame title="Educators — Physical Chess" description="Mestres and mestras who teach with ACE / Abadá Capoeira Brooklyn." active="about">
+  <p class="quest-screen__eyebrow" data-quest-enter>About Us</p>
+  <h1 class="quest-screen__title" data-quest-enter>Educators</h1>
+  <p class="quest-screen__sub" data-quest-enter>The people you will meet in class and at Batizado.</p>
+
+  <ul class="quest-educators">
+    {
+      EDUCATORS.map((e) => (
+        <li class="quest-educator" data-quest-enter>
+          <img
+            class="quest-educator__photo"
+            src={wix(e.portraitKey, 480, 480)}
+            alt={e.name}
+            width="480"
+            height="480"
+            loading="lazy"
+          />
+          <p class="quest-educator__title">{e.title}</p>
+          <h2 class="quest-educator__name">{e.name}</h2>
+          <p class="quest-educator__bio">{e.bio}</p>
+          {import.meta.env.DEV && e.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
+        </li>
+      ))
+    }
+  </ul>
+</PublicFrame>

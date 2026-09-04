@@ -1,0 +1,100 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import YouTube from '../../components/YouTube.astro';
+import { wix, yt } from '../../data/media.js';
+
+/** Captions from the public Wix "Batizado Media" page. Skip any with no photo in media.js. */
+const YEARS = [
+  {
+    year: 2016,
+    photos: [
+      { key: 'kidsParents', caption: 'Kids playing with Parents' },
+      { key: 'cocoTubarao', caption: 'Prof. Coco e Tubarão' },
+      { key: 'trocaDeCordas', caption: 'Troca de Cordas' },
+      { key: 'toroMindinha', caption: 'Toro e Mindinha' },
+      { key: 'voltaAdults', caption: 'Adults receiving their first rank' },
+      { key: 'voltaDoMundo', caption: 'Volta Do Mundo' },
+    ],
+  },
+  {
+    year: 2018,
+    photos: [
+      { key: 'cordsTable2018', caption: 'Cords Table 2018' },
+      { key: 'celebration2018', caption: 'Final Celebration 2018' },
+    ],
+  },
+  {
+    year: 2019,
+    photos: [
+      { key: 'batizado2019b', caption: 'ABADA Capoeira Brooklyn Batizado 2019' },
+      { key: 'groupFoto2019', caption: 'Group Foto 2019' },
+      { key: 'xampuGasparzinho', caption: 'Xampu e Gasparzinho' },
+      { key: 'troca2019', caption: 'Troca de Cordas' },
+    ],
+  },
+  {
+    year: 2022,
+    photos: [
+      { key: 'cordsTable2022', caption: 'Cords Table 2022' },
+      { key: 'heroWorkshop', caption: 'Curso para crianças com Professor Coco' },
+      { key: 'pastorPerigoCiborg', caption: 'Pastor com Perigo e Ciborg' },
+      { key: 'guindasteTubarao', caption: 'Tubarão e Guindaste' },
+    ],
+  },
+];
+
+const VIDEOS = [
+  { key: 'batizado2026', label: 'Batizado 2026' },
+  { key: 'batizado2025', label: 'Batizado 2025' },
+  { key: 'batizado2024', label: 'Batizado 2024' },
+];
+---
+
+<PublicFrame title="Batizado Media — Physical Chess" description="Batizado gallery 2016–2022 and SoChlo Productions videos from 2024, 2025, and 2026." active="graduation">
+  <p class="quest-screen__eyebrow" data-quest-enter>Graduation</p>
+  <h1 class="quest-screen__title" data-quest-enter>Batizado Media</h1>
+  <p class="quest-screen__sub" data-quest-enter>Photos from the public Wix gallery, grouped by year. Videos: SoChlo Productions.</p>
+
+  {
+    YEARS.map((group) => (
+      <section class="quest-media-year" data-quest-enter>
+        <h2 class="quest-media-year__title">{group.year}</h2>
+        <ul class="quest-gallery gallery">
+          {
+            group.photos.map((p, i) => (
+              <li class="gallery__item">
+                <figure class="gallery__figure">
+                  <img
+                    class="gallery__img"
+                    src={wix(p.key, 500, 500)}
+                    alt={p.caption}
+                    width="500"
+                    height="500"
+                    loading={group.year === 2016 && i < 2 ? 'eager' : 'lazy'}
+                  />
+                  <figcaption class="gallery__caption">{p.caption}</figcaption>
+                </figure>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    ))
+  }
+
+  <section data-quest-enter>
+    <p class="quest-section__eyebrow">YouTube</p>
+    <h2 class="quest-section__title">Watch 2024, 2025, and 2026</h2>
+    <div class="quest-videos">
+      {
+        VIDEOS.map((v) => (
+          <div class="quest-video-card">
+            <YouTube id={yt(v.key)} title={v.label} />
+            <span class="quest-video-card__title">{v.label}</span>
+            <span class="quest-video-card__credit">Video: SoChlo Productions</span>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</PublicFrame>

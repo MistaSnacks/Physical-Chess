@@ -1,0 +1,25 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import Copy from '../../components/quest/Copy.astro';
+import { FAQ } from '../../content/site.js';
+
+const needsReview = FAQ.some((item) => item.reviewNeeded);
+---
+
+<PublicFrame title="F.A.Q. — Physical Chess" description="Ages, uniforms, Batizado, cost, safety, missed classes, and how the Physical Chess app works." active="about">
+  <p class="quest-screen__eyebrow" data-quest-enter>About Us</p>
+  <h1 class="quest-screen__title" data-quest-enter>F.A.Q.</h1>
+  <p class="quest-screen__sub" data-quest-enter>Short answers a grown-up usually asks before the first class.</p>
+  {import.meta.env.DEV && needsReview && <p class="quest-review-note">copy pending ACE review</p>}
+
+  <div class="quest-faq">
+    {
+      FAQ.map((item) => (
+        <details class="quest-faq__item" data-quest-enter>
+          <summary class="quest-faq__q">{item.q}</summary>
+          <Copy text={item.a} class="quest-faq__a" />
+        </details>
+      ))
+    }
+  </div>
+</PublicFrame>

@@ -45,9 +45,15 @@ import '../directions/quest/theme.css';
     import { authMessage, loginQueryMessage, recaptchaToken, fillRecaptchaField, continueAuth } from '../lib/auth-ui.js';
 
     async function init() {
-      const next = new URLSearchParams(location.search).get('next') || '/who';
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next') || '/who';
       const session = await loadSession();
       if (session) { location.replace(next); return; }
+      if (IS_DEMO && params.get('demo') === '1') {
+        await signInDemo();
+        location.href = next;
+        return;
+      }
       const form = document.querySelector('[data-login-form]');
       if (form?.dataset.wp4Bound) return;
       if (form) form.dataset.wp4Bound = '1';

@@ -1,0 +1,124 @@
+---
+import PublicFrame from '../components/quest/PublicFrame.astro';
+import Copy from '../components/quest/Copy.astro';
+import { SHOP } from '../content/site.js';
+import { PROGRAMS } from '../content/programs.js';
+---
+
+<PublicFrame title="Shop — Physical Chess" description="Order an ACE uniform top. Sizes YS to AL. Price: ask ACE." active="shop" narrow>
+  <p class="quest-screen__eyebrow" data-quest-enter>Shop</p>
+  <h1 class="quest-screen__title" data-quest-enter>{SHOP.title}</h1>
+  <div class="quest-prose" data-quest-enter>
+    <Copy text={SHOP.intro} />
+  </div>
+  <p class="quest-chip quest-shop-price" data-quest-enter>Price: {SHOP.price}</p>
+  {import.meta.env.DEV && SHOP.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
+
+  <form class="quest-card" data-shop-form data-quest-enter>
+    <div class="quest-form__error" data-error hidden></div>
+    <div class="quest-form__ok" data-ok hidden></div>
+
+    <div class="quest-field">
+      <label class="quest-field__label" for="parentsName">{SHOP.fields.parentsName}</label>
+      <input class="quest-field__input" id="parentsName" name="parentsName" type="text" autocomplete="name" required />
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="childName">{SHOP.fields.childsName}</label>
+      <input class="quest-field__input" id="childName" name="childName" type="text" required />
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="shirtSize">{SHOP.fields.shirtSize}</label>
+      <select class="quest-field__input" id="shirtSize" name="shirtSize" required>
+        <option value="">Choose a size</option>
+        {SHOP.sizes.map((s) => <option value={s}>{s}</option>)}
+      </select>
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="pantSize">{SHOP.fields.pantSize}</label>
+      <select class="quest-field__input" id="pantSize" name="pantSize" required>
+        <option value="">Choose a size</option>
+        {SHOP.sizes.map((s) => <option value={s}>{s}</option>)}
+      </select>
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="email">{SHOP.fields.email}</label>
+      <input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required />
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="schoolProgram">{SHOP.fields.schoolProgramAndChild}</label>
+      <select class="quest-field__input" id="schoolProgram" name="schoolProgram" required>
+        <option value="">Choose a program</option>
+        {PROGRAMS.filter((p) => p.active).map((p) => <option value={p.name}>{p.name}</option>)}
+      </select>
+    </div>
+    <div class="quest-field">
+      <label class="quest-field__label" for="contact">{SHOP.fields.contact}</label>
+      <input class="quest-field__input" id="contact" name="contact" type="tel" autocomplete="tel" required />
+    </div>
+    <div class="quest-btn-row">
+      <button class="quest-btn quest-btn--mango" type="submit" data-submit>Request a top</button>
+    </div>
+  </form>
+</PublicFrame>
+
+<script>
+  import { IS_DEMO } from '../lib/repo/index.js';
+
+  async function init() {
+    const form = document.querySelector('[data-shop-form]');
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+    const err = form.querySelector('[data-error]');
+    const ok = form.querySelector('[data-ok]');
+    const btn = form.querySelector('[data-submit]');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      ok.hidden = true;
+      btn.disabled = true;
+      const fd = new FormData(form);
+      const payload = {
+        parentsName: fd.get('parentsName'),
+        childName: fd.get('childName'),
+        shirtSize: fd.get('shirtSize'),
+        pantSize: fd.get('pantSize'),
+        email: fd.get('email'),
+        schoolProgram: fd.get('schoolProgram'),
+        contact: fd.get('contact'),
+      };
+      try {
+        const res = await fetch('/api/shop/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          form.reset();
+          ok.textContent = data.demo ? 'Demo: nothing was sent.' : 'Got it. ACE will confirm size, program, and price.';
+          ok.hidden = false;
+        } else if (IS_DEMO && (!res.ok || data.ok === undefined)) {
+          form.reset();
+          ok.textContent = 'Demo: nothing was sent.';
+          ok.hidden = false;
+        } else {
+          err.textContent = data.error || 'Could not send. Email info@the-ace.org instead.';
+          err.hidden = false;
+        }
+      } catch {
+        if (IS_DEMO) {
+          form.reset();
+          ok.textContent = 'Demo: nothing was sent.';
+          ok.hidden = false;
+        } else {
+          err.textContent = 'Could not send. Email info@the-ace.org instead.';
+          err.hidden = false;
+        }
+      }
+      btn.disabled = false;
+    });
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

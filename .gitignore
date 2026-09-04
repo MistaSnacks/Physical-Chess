@@ -2,7 +2,8 @@
 dist/
 .astro/
 
-# dependencies
+# dependencies (no trailing slash: this worktree's node_modules is a symlink)
+node_modules
 node_modules/
 
 # deploy

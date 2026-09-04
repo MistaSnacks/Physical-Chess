@@ -1,0 +1,27 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import Copy from '../../components/quest/Copy.astro';
+import { CORDAS } from '../../data/batizado.js';
+import { CORDAS_PAGE } from '../../content/site.js';
+---
+
+<PublicFrame title="Cordas — Physical Chess" description="The kids’ corda ladder at ACE: Crua through Laranja. Coaches award rank at Batizado." active="graduation">
+  <p class="quest-screen__eyebrow" data-quest-enter>Graduation</p>
+  <h1 class="quest-screen__title" data-quest-enter>Cordas</h1>
+  <div class="quest-prose" data-quest-enter>
+    <Copy text={CORDAS_PAGE.intro} />
+    {CORDAS_PAGE.paragraphs.map((p) => <Copy text={p} />)}
+  </div>
+  {import.meta.env.DEV && CORDAS_PAGE.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
+
+  <div class="quest-cordas-track quest-cordas-track--page" data-quest-enter>
+    {
+      CORDAS.map((c) => (
+        <div class="quest-corda">
+          <span class="quest-corda__swatch" style={`background:${c.color}`}></span>
+          <span class="quest-corda__label">{c.label}</span>
+        </div>
+      ))
+    }
+  </div>
+</PublicFrame>

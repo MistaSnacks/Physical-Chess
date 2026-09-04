@@ -2,9 +2,11 @@
 // Nav.astro — Roda Quest header. Highlights the active screen via
 // aria-current so theme.css can style it. The right-hand slot is a player
 // chip once a session exists (filled by src/lib/nav.js), else "Log in".
+// WP5 adds a "More" menu for public pages; the four main links and session
+// chip stay as they are.
 
 interface Props {
-  active?: 'home' | 'journey' | 'movements' | 'music' | 'culture' | 'graduation' | 'batizado' | 'me' | 'family' | 'coach' | 'who';
+  active?: 'home' | 'journey' | 'movements' | 'music' | 'culture' | 'graduation' | 'batizado' | 'me' | 'family' | 'coach' | 'who' | 'about' | 'shop';
 }
 
 const { active } = Astro.props;
@@ -15,6 +17,15 @@ const LINKS = [
   { id: 'music', href: '/learn/music', label: 'Music' },
   { id: 'batizado', href: '/batizado', label: 'Batizado' },
 ];
+
+const MORE = [
+  { id: 'about', href: '/about', label: 'About' },
+  { id: 'graduation', href: '/graduation', label: 'Graduation' },
+  { id: 'shop', href: '/shop', label: 'Shop' },
+  { id: 'privacy', href: '/privacy', label: 'Privacy' },
+];
+
+const moreCurrent = active === 'about' || active === 'shop' || active === 'graduation';
 ---
 
 <header class="quest-nav" data-quest-enter>
@@ -39,6 +50,40 @@ const LINKS = [
     }
   </nav>
 
+  <div class="quest-nav__more" data-nav-more>
+    <button
+      type="button"
+      class="quest-nav__more-btn"
+      data-more-btn
+      aria-expanded="false"
+      aria-controls="quest-more-panel"
+      aria-haspopup="true"
+      data-current={moreCurrent ? 'true' : undefined}
+    >
+      More
+      <svg class="quest-nav__more-caret" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    <div class="quest-more-backdrop" data-more-backdrop hidden></div>
+    <div id="quest-more-panel" class="quest-more-panel" data-more-panel hidden role="menu" aria-label="More pages">
+      <p class="quest-more-panel__title">Visit</p>
+      {
+        MORE.map((link) => (
+          <a
+            class="quest-more-panel__link"
+            href={link.href}
+            role="menuitem"
+            aria-current={active === link.id ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <button type="button" class="quest-more-panel__close" data-more-close>Close</button>
+    </div>
+  </div>
+
   <div class="quest-nav__session" data-nav-session>
     <a class="quest-nav__cta" href="/login" data-nav-login>Log in</a>
     <a class="quest-nav__chip" href="/who" data-nav-chip hidden>
@@ -51,4 +96,89 @@ const LINKS = [
 
 <script>
   import '../../lib/nav.js';
+
+  function moreParts(root) {
+    return {
+      btn: root.querySelector('[data-more-btn]'),
+      panel: document.getElementById('quest-more-panel'),
+      backdrop: document.querySelector('[data-more-backdrop]'),
+      closeBtn: document.querySelector('[data-more-close]'),
+    };
+  }
+
+  function isMobileMore() {
+    return window.matchMedia('(max-width: 600px)').matches;
+  }
+
+  function closeMore(root) {
+    const { btn, panel, backdrop } = moreParts(root);
+    btn.setAttribute('aria-expanded', 'false');
+    panel.hidden = true;
+    backdrop.hidden = true;
+    document.body.classList.remove('quest-more-open');
+    root.append(backdrop, panel);
+  }
+
+  function openMore(root) {
+    const { btn, panel, backdrop } = moreParts(root);
+    btn.setAttribute('aria-expanded', 'true');
+    if (isMobileMore()) document.body.append(backdrop, panel);
+    panel.hidden = false;
+    backdrop.hidden = false;
+    document.body.classList.add('quest-more-open');
+    panel.querySelector('a')?.focus();
+  }
+
+  function bindMore() {
+    document.body.classList.remove('quest-more-open');
+    document.querySelectorAll('body > [data-more-panel], body > [data-more-backdrop]').forEach((el) => el.remove());
+    document.querySelectorAll('[data-nav-more]').forEach((root) => {
+      if (root.dataset.bound === 'true') return;
+      root.dataset.bound = 'true';
+      const btn = root.querySelector('[data-more-btn]');
+      const panel = root.querySelector('[data-more-panel]');
+      const backdrop = root.querySelector('[data-more-backdrop]');
+      const closeBtn = root.querySelector('[data-more-close]');
+
+      btn.addEventListener('click', () => {
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        if (open) closeMore(root);
+        else openMore(root);
+      });
+      backdrop.addEventListener('click', () => closeMore(root));
+      closeBtn.addEventListener('click', () => {
+        closeMore(root);
+        btn.focus();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+          closeMore(root);
+          btn.focus();
+        }
+      });
+      panel.addEventListener('keydown', (e) => {
+        const items = Array.from(panel.querySelectorAll('[role="menuitem"]'));
+        const i = items.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          items[(i + 1) % items.length]?.focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          items[(i - 1 + items.length) % items.length]?.focus();
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          items[0]?.focus();
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          items[items.length - 1]?.focus();
+        } else if (e.key === 'Tab' && btn.getAttribute('aria-expanded') === 'true' && window.matchMedia('(max-width: 600px)').matches) {
+          e.preventDefault();
+          if (e.shiftKey) items[(i - 1 + items.length) % items.length]?.focus();
+          else items[(i + 1) % items.length]?.focus();
+        }
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', bindMore);
+  bindMore();
 </script>
