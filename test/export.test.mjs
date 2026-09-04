@@ -16,7 +16,8 @@ test('eventsToCsv writes the spec columns and escapes quotes', () => {
   assert.equal(header, CSV_COLUMNS.join(','));
   assert.match(row, /lesson\.drill\.done/);
   assert.match(row, /esquiva-cocorinha/);
-  assert.match(row, /""boa""/);
+  assert.match(row, /""selfRating""/);
+  assert.match(row, /boa/);
 });
 
 test('playerExportPayload never lists other players', () => {

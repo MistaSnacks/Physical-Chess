@@ -39,6 +39,9 @@ import '../directions/quest/theme.css';
     async function init() {
       const s = await requireSession();
       if (!s) return;
+      const main = document.querySelector('main');
+      if (main.dataset.wp4Bound) return;
+      main.dataset.wp4Bound = '1';
       const grid = document.querySelector('[data-players]');
       const add = grid.querySelector('[data-add-player]');
       const next = new URLSearchParams(location.search).get('next') || '/journey';

@@ -78,40 +78,40 @@ import '../../directions/quest/theme.css';
       const fileBase = `physical-chess-${(player.apelido || player.firstName || 'player').toLowerCase().replace(/\s+/g, '-')}`;
 
       root.innerHTML = `
-        <section class="quest-card quest-report__hero" data-quest-enter>
+        <section class="quest-card quest-report__hero">
           <span class="quest-report__avatar">${avatarSvg(player.avatar, 88)}</span>
           <div>
             <h2 class="quest-card__title">${escapeHtml(player.apelido || player.firstName)}</h2>
             <p class="quest-card__body">${escapeHtml(player.firstName)}${program ? ` · ${escapeHtml(program.name)}` : ''}</p>
           </div>
         </section>
-        <section class="quest-report__stats" data-quest-enter>
+        <section class="quest-report__stats">
           <div class="quest-stat"><span class="quest-stat__label">Level</span><span class="quest-stat__value">${snapshot.level.level}</span><span class="quest-stat__hint">${escapeHtml(snapshot.level.title)}</span></div>
           <div class="quest-stat"><span class="quest-stat__label">XP</span><span class="quest-stat__value">${snapshot.xp}</span><span class="quest-stat__hint">${snapshot.level.xpToNext ? snapshot.level.xpToNext + ' to next' : 'max'}</span></div>
           <div class="quest-stat"><span class="quest-stat__label">Stars</span><span class="quest-stat__value">${snapshot.stars}</span><span class="quest-stat__hint">${snapshot.lessonsDone} lessons</span></div>
           <div class="quest-stat"><span class="quest-stat__label">Roda weeks</span><span class="quest-stat__value">${snapshot.streak.weeks}</span><span class="quest-stat__hint">${snapshot.streak.activeThisWeek ? 'active this week' : 'resting'}</span></div>
           <div class="quest-stat"><span class="quest-stat__label">Corda</span><span class="quest-stat__value">${escapeHtml(cordaLabel(snapshot.cordaCurrent))}</span><span class="quest-stat__hint">Coach awarded</span></div>
         </section>
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card">
           <h2 class="quest-card__title">Batizado readiness</h2>
           <p class="quest-card__body">${snapshot.readiness.percent}% · ${snapshot.readiness.metCount} of ${snapshot.readiness.total}</p>
           <ul class="quest-checklist">
             ${snapshot.readiness.items.map((item) => `<li class="${item.met ? 'is-met' : ''}"><span class="quest-check" aria-hidden="true"></span>${escapeHtml(item.label)}</li>`).join('')}
           </ul>
         </section>
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card">
           <h2 class="quest-card__title">Lessons done</h2>
           ${lessonsDone.length ? `<table class="quest-table"><thead><tr><th>Lesson</th><th>Stars</th></tr></thead><tbody>${lessonsDone.map((l) => `<tr><td>${escapeHtml(lessonTitle(l.lessonId))}</td><td>${starRow(l.bestStars)}</td></tr>`).join('')}</tbody></table>` : '<p class="quest-card__body">No lessons finished yet.</p>'}
         </section>
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card">
           <h2 class="quest-card__title">Patches</h2>
           ${snapshot.patches.length ? `<ul class="quest-patch-list">${snapshot.patches.map((p) => `<li><strong>${escapeHtml(p.title)}</strong> · ${escapeHtml(p.subtitle || '')}</li>`).join('')}</ul>` : '<p class="quest-card__body">No patches yet.</p>'}
         </section>
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card">
           <h2 class="quest-card__title">Corda history</h2>
           ${cordaHist.length ? `<ol class="quest-timeline">${cordaHist.map((e) => `<li><span>${fmt(e.occurredAt)}</span> ${escapeHtml(cordaLabel(e.payload?.corda))}${e.payload?.event ? ` · ${escapeHtml(e.payload.event)}` : ''}</li>`).join('')}</ol>` : `<p class="quest-card__body">Starting corda: ${escapeHtml(cordaLabel(snapshot.cordaCurrent))}. A coach awards the next one at Batizado.</p>`}
         </section>
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card">
           <h2 class="quest-card__title">Practice log</h2>
           <p class="quest-card__body">Tap I saw it when you watched them train at home.</p>
           <div data-practice>
@@ -124,7 +124,7 @@ import '../../directions/quest/theme.css';
             }).join('')}</ul>` : '<p class="quest-card__body">No drills logged yet.</p>'}
           </div>
         </section>
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card">
           <h2 class="quest-card__title">Activity</h2>
           <ol class="quest-timeline">
             ${timeline.map((e) => `<li><span>${fmt(e.occurredAt)}</span> ${escapeHtml(LABELS[e.type] || e.type)}${e.lessonId ? ` · ${escapeHtml(lessonTitle(e.lessonId))}` : ''}${e.xp ? ` · +${e.xp} XP` : ''}</li>`).join('') || '<li>Nothing recorded yet.</li>'}
@@ -160,6 +160,9 @@ import '../../directions/quest/theme.css';
       const s = await requireSession();
       if (!s) return;
       if (!(await requireGrownUp())) { location.replace('/who'); return; }
+      const main = document.querySelector('main');
+      if (main.dataset.wp4Bound) return;
+      main.dataset.wp4Bound = '1';
       const id = new URLSearchParams(location.search).get('player');
       const row = s.session.players.find((p) => p.id === id);
       if (!row) { document.querySelector('[data-missing]').hidden = false; return; }

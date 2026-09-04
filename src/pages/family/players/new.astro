@@ -65,6 +65,9 @@ import '../../../directions/quest/theme.css';
       const s = await requireSession();
       if (!s) return;
       if (!(await requireGrownUp())) { location.replace('/who'); return; }
+      const main = document.querySelector('main');
+      if (main.dataset.wp4Bound) return;
+      main.dataset.wp4Bound = '1';
       const form = document.querySelector('[data-player-form]');
       const resolve = bindInvite(form);
       form.addEventListener('submit', async (e) => {

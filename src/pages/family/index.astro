@@ -84,6 +84,9 @@ import '../../directions/quest/theme.css';
       const s = await requireSession();
       if (!s) return;
       if (!(await requireGrownUp())) { location.replace('/who'); return; }
+      const main = document.querySelector('main');
+      if (main.dataset.wp4Bound) return;
+      main.dataset.wp4Bound = '1';
 
       const account = s.session.account;
       document.querySelector('[data-account-name]').textContent = account.displayName || 'Family';
@@ -94,6 +97,7 @@ import '../../directions/quest/theme.css';
 
       const grid = document.querySelector('[data-players]');
       const add = grid.querySelector('[data-add-player]');
+      grid.querySelectorAll('.quest-family-card').forEach((n) => n.remove());
       const cards = await snapshotsForSession();
       document.querySelector('[data-empty]').hidden = cards.length > 0;
       for (const { player, snapshot } of cards) {

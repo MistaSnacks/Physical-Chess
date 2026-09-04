@@ -48,11 +48,13 @@ import '../directions/quest/theme.css';
       const next = new URLSearchParams(location.search).get('next') || '/who';
       const session = await loadSession();
       if (session) { location.replace(next); return; }
+      const form = document.querySelector('[data-login-form]');
+      if (form?.dataset.wp4Bound) return;
+      if (form) form.dataset.wp4Bound = '1';
       document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
       document.querySelector('[data-login-form]').hidden = IS_DEMO;
       document.querySelector('[data-demo-btn]')?.addEventListener('click', async () => { await signInDemo(); location.href = next; });
 
-      const form = document.querySelector('[data-login-form]');
       const notice = form?.querySelector('[data-notice]');
       const banner = loginQueryMessage();
       if (notice && banner) { notice.textContent = banner; notice.hidden = false; }
