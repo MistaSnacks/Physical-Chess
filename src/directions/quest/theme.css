@@ -4402,3 +4402,267 @@ body.has-class-mode .quest-page { padding-top: 0; }
 .quest-footer__note {
   color: var(--quest-cream);
 }
+
+/* === POLISH: me-family === */
+.quest-who,
+.quest-family,
+.quest-player-form-screen,
+.quest-me,
+.quest-report {
+  position: relative;
+  z-index: 1;
+}
+.quest-nav__brand,
+.quest-nav__link,
+.quest-nav__more-btn,
+.quest-nav__cta,
+.quest-nav__chip { min-height: 44px; }
+.quest-who__players,
+.quest-family__players {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+.quest-who__players { max-width: 800px; }
+.quest-who__players .quest-player-card,
+.quest-family__players > .quest-player-card,
+.quest-family-card .quest-player-card {
+  min-height: 228px;
+}
+.quest-section-title {
+  margin: 0 0 12px;
+  color: var(--quest-cream);
+  font-family: var(--quest-font-display);
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.quest-family-card {
+  gap: 0;
+  overflow: hidden;
+  border: 3px solid var(--quest-leaf-border);
+  border-radius: var(--quest-radius-lg);
+  background: var(--quest-deep-leaf);
+  transition: transform .18s var(--quest-ease), box-shadow .18s var(--quest-ease), border-color .18s var(--quest-ease);
+}
+.quest-family-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--quest-lime);
+  box-shadow: 0 8px 0 var(--quest-palm-shadow);
+}
+.quest-family-card:focus-within {
+  border-color: var(--quest-lime);
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+}
+.quest-family-card .quest-player-card {
+  border: 0;
+  border-radius: 0;
+}
+.quest-family-card .quest-player-card:hover,
+.quest-family-card .quest-player-card:focus-visible {
+  transform: none;
+  border-color: transparent;
+  outline: none;
+}
+.quest-family-card__report {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-top: 2px solid var(--quest-leaf-border);
+  background: var(--quest-palm-shadow);
+  transition: background .18s var(--quest-ease), color .18s var(--quest-ease);
+}
+.quest-family-card__report:hover,
+.quest-family-card__report:focus-visible {
+  background: var(--quest-mango);
+  color: var(--quest-ink);
+  outline: none;
+}
+.quest-family__settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+  gap: 18px;
+  align-items: start;
+  margin-top: 24px;
+}
+.quest-family__settings-grid > .quest-card { margin-top: 0; }
+.quest-family > [data-print-hide] { margin-top: 24px; }
+.quest-family [data-class-toggles] {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+}
+.quest-family [data-class-toggles] .quest-toggle { margin: 0; }
+
+.quest-toggle {
+  min-height: 44px;
+  align-items: center;
+}
+.quest-toggle input { margin-top: 0; }
+.quest-toggle:has(input:focus-visible) {
+  border-radius: 10px;
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+}
+.quest-field__label strong { color: var(--quest-mango); }
+.quest-player-form-screen { max-width: 680px; }
+.quest-player-form-screen > .quest-card { padding: 28px; }
+.quest-avatar-grid label { min-width: 44px; min-height: 44px; }
+.quest-avatar-grid input:focus-visible + span {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+  border-radius: 50%;
+}
+.quest-swatches { flex-wrap: wrap; }
+.quest-swatches label { width: 44px; height: 44px; }
+.quest-swatches input:focus-visible + span {
+  position: absolute;
+  inset: -6px;
+  border: 3px solid var(--quest-lime);
+  border-radius: 50%;
+}
+
+.quest-me { max-width: 1100px; }
+.quest-me > .quest-mascot { max-width: 680px; }
+.quest-me .quest-hud { margin-bottom: 24px; }
+.quest-me__overview,
+.quest-me__progress {
+  display: grid;
+  gap: 18px;
+  align-items: start;
+}
+.quest-me__overview { grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); }
+.quest-me__progress { grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr); margin-top: 18px; }
+.quest-me__summary,
+.quest-me__milestones { display: grid; gap: 18px; }
+.quest-me__overview .quest-me__card,
+.quest-me__progress .quest-me__card { margin-top: 0; }
+.quest-me__save-status { min-height: 20px; }
+.quest-me__stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.quest-me__stats li {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--quest-palm-shadow);
+}
+.quest-me__stats strong {
+  flex: 0 0 auto;
+  color: var(--quest-mango);
+  font-family: var(--quest-font-display);
+  font-size: 22px;
+  line-height: 1;
+}
+.quest-me__stats li > span {
+  min-width: 0;
+  color: var(--quest-cream);
+  font-size: 13px;
+  line-height: 1.25;
+}
+.quest-me__patches .quest-patch-wall {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.quest-report { max-width: 1100px; }
+.quest-report__hero {
+  padding: 20px 24px;
+  border-color: var(--quest-mango);
+}
+.quest-report__stats { margin: 16px 0 20px; }
+.quest-report__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.quest-report__grid > .quest-card { margin-top: 0; }
+.quest-report__practice,
+.quest-report__activity { grid-column: 1 / -1; }
+.quest-report__activity .quest-timeline {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+}
+.quest-report .quest-timeline li {
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--quest-leaf-border);
+  font-size: 16px;
+  line-height: 1.45;
+}
+.quest-report .quest-timeline li span {
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+.quest-report-stars {
+  position: static;
+  display: inline-flex;
+  gap: 4px;
+  vertical-align: middle;
+}
+.quest-report-stars svg { width: 22px; height: 22px; }
+.quest-report__actions {
+  padding-top: 4px;
+  justify-content: flex-end;
+}
+
+.quest-btn:focus-visible,
+.quest-player-card:focus-visible,
+.quest-family-card__report:focus-visible {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+}
+.quest-btn--lime:focus-visible,
+.quest-family-card__report:focus-visible { outline-color: var(--quest-mango); }
+
+@media (max-width: 860px) {
+  .quest-family__settings-grid,
+  .quest-me__overview,
+  .quest-me__progress,
+  .quest-report__grid { grid-template-columns: 1fr; }
+  .quest-report__practice,
+  .quest-report__activity { grid-column: auto; }
+  .quest-report__activity .quest-timeline { grid-template-columns: 1fr; }
+  .quest-me__patches .quest-patch-wall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .quest-who__players,
+  .quest-family__players { grid-template-columns: 1fr; gap: 16px; }
+  .quest-who__players .quest-player-card,
+  .quest-family__players > .quest-player-card,
+  .quest-family-card .quest-player-card { min-height: 0; }
+  .quest-player-form-screen > .quest-card { padding: 24px; }
+  .quest-me__stats { grid-template-columns: 1fr 1fr; }
+  .quest-me__stats li { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .quest-report__hero { flex-wrap: nowrap; padding: 18px; }
+  .quest-report__avatar { flex: 0 0 72px; }
+  .quest-report__avatar svg { width: 72px; height: 72px; }
+  .quest-report__stats { gap: 10px; }
+  .quest-report__stats .quest-stat:last-child { grid-column: 1 / -1; }
+  .quest-report__actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .quest-report__actions .quest-btn { min-width: 0; padding-inline: 14px; }
+}
+
+@media (max-width: 430px) {
+  .quest-player-form-screen > .quest-card { padding: 22px 20px; }
+  .quest-me__patches .quest-patch-wall { gap: 12px 8px; }
+  .quest-me__stats li > span { font-size: 12px; }
+  .quest-report__hero { gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-family-card,
+  .quest-family-card__report { transition: none; }
+  .quest-family-card:hover { transform: none; }
+}
+
+@media print {
+  .quest-report__grid { display: block; }
+  .quest-report__grid > .quest-card { margin-top: 12px; }
+  .quest-report__activity .quest-timeline { grid-template-columns: 1fr; }
+}

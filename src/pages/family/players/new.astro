@@ -15,14 +15,14 @@ import '../../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="family" />
-    <main class="quest-screen quest-screen--narrow">
+    <main id="main" class="quest-screen quest-screen--narrow quest-player-form-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
       <h1 class="quest-screen__title" data-quest-enter>Add a player</h1>
-      <p class="quest-screen__sub" data-quest-enter>Only a first name is needed. We never ask a child for an email or password.</p>
+      <p class="quest-screen__sub" data-quest-enter>Start with a first name. Children never need an email or password.</p>
       <form class="quest-card" data-player-form data-quest-enter>
         <div class="quest-form__error" data-error hidden></div>
         <div class="quest-field"><label class="quest-field__label" for="firstName">First name</label><input class="quest-field__input" id="firstName" name="firstName" required maxlength="40" /></div>
-        <div class="quest-field"><label class="quest-field__label" for="apelido">Apelido (capoeira nickname)</label><input class="quest-field__input" id="apelido" name="apelido" maxlength="40" /><span class="quest-field__hint">Optional. Their mestre may give one later.</span></div>
+        <div class="quest-field"><label class="quest-field__label" for="apelido"><strong>Apelido</strong> (capoeira nickname)</label><input class="quest-field__input" id="apelido" name="apelido" maxlength="40" /><span class="quest-field__hint">Optional. Their mestre may give one later.</span></div>
         <AvatarPicker />
         <div class="quest-field">
           <label class="quest-field__label" for="inviteCode">Class invite code</label>

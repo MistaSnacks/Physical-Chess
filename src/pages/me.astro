@@ -23,7 +23,7 @@ const colors = Object.entries(AVATAR_COLORS);
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="me" />
-    <main class="quest-screen quest-me">
+    <main id="main" class="quest-screen quest-me">
       <p class="quest-screen__eyebrow" data-quest-enter>Level <span data-bind="level.level">1</span> · <span data-bind="level.title">Iniciante</span></p>
       <h1 class="quest-screen__title" data-quest-enter><span data-bind="player.apelido">Player</span></h1>
       <p class="quest-screen__sub" data-quest-enter>Your <strong>apelido</strong> is how the roda knows you. This page is yours.</p>
@@ -34,56 +34,61 @@ const colors = Object.entries(AVATAR_COLORS);
 
       <Hud />
 
-      <section class="quest-card quest-me__card" data-quest-enter data-avatar-editor>
-        <h2 class="quest-card__title">Your look</h2>
-        <p class="quest-card__body">Tap an animal and a color. It saves as you go.</p>
-        <form class="quest-me__avatar-form">
-          <div class="quest-field">
-            <span class="quest-field__label" id="me-animal-label">Animal</span>
-            <div class="quest-avatar-grid" data-avatars role="radiogroup" aria-labelledby="me-animal-label">
-              {ANIMALS.map((a) => (
-                <label>
-                  <input type="radio" name="animal" value={a} aria-label={a} />
-                  <span data-animal={a}></span>
-                </label>
-              ))}
+      <div class="quest-me__overview">
+        <section class="quest-card quest-me__card quest-me__look" data-quest-enter data-avatar-editor>
+          <h2 class="quest-card__title">Your look</h2>
+          <p class="quest-card__body">Choose an animal and color. We save each change.</p>
+          <form class="quest-me__avatar-form">
+            <div class="quest-field">
+              <span class="quest-field__label" id="me-animal-label">Animal</span>
+              <div class="quest-avatar-grid" data-avatars role="radiogroup" aria-labelledby="me-animal-label">
+                {ANIMALS.map((a) => (
+                  <label>
+                    <input type="radio" name="animal" value={a} aria-label={a} />
+                    <span data-animal={a}></span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-          <div class="quest-field">
-            <span class="quest-field__label" id="me-color-label">Color</span>
-            <div class="quest-swatches" role="radiogroup" aria-labelledby="me-color-label">
-              {colors.map(([k, hex]) => (
-                <label style={`background:${hex}`}>
-                  <input type="radio" name="color" value={k} aria-label={k} />
-                  <span></span>
-                </label>
-              ))}
+            <div class="quest-field">
+              <span class="quest-field__label" id="me-color-label">Color</span>
+              <div class="quest-swatches" role="radiogroup" aria-labelledby="me-color-label">
+                {colors.map(([k, hex]) => (
+                  <label style={`background:${hex}`}>
+                    <input type="radio" name="color" value={k} aria-label={k} />
+                    <span></span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-          <p class="quest-field__hint" data-avatar-status aria-live="polite"></p>
-        </form>
-      </section>
+            <p class="quest-field__hint quest-me__save-status" data-avatar-status aria-live="polite"></p>
+          </form>
+        </section>
 
-      <section class="quest-card quest-me__card" data-quest-enter>
-        <p class="quest-me__level-eye">Level <span data-bind="level.level">1</span></p>
-        <h2 class="quest-card__title" data-bind="level.title">Iniciante</h2>
-        <p class="quest-me__bira" data-bind="level.bira"></p>
-        <p class="quest-card__body"><span data-bind="xp">0</span> XP. <span data-bind="level.xpToNext">0</span> to the next title.</p>
-      </section>
+        <div class="quest-me__summary">
+          <section class="quest-card quest-me__card" data-quest-enter>
+            <p class="quest-me__level-eye">Level <span data-bind="level.level">1</span></p>
+            <h2 class="quest-card__title" data-bind="level.title">Iniciante</h2>
+            <p class="quest-me__bira" data-bind="level.bira"></p>
+            <p class="quest-card__body"><span data-bind="xp">0</span> XP · <span data-bind="level.xpToNext">0</span> to your next title.</p>
+          </section>
 
-      <section class="quest-card quest-me__card" data-quest-enter>
-        <h2 class="quest-card__title">Stats</h2>
-        <ul class="quest-me__stats">
-          <li><span data-bind="lessonsDone">0</span> / <span data-bind="lessonsTotal">0</span> lessons</li>
-          <li><span data-bind="stars">0</span> stars</li>
-          <li><span data-bind="streak.weeks">0</span> roda weeks</li>
-          <li><span data-bind="practices">0</span> practices · <span data-bind="practicesConfirmed">0</span> seen</li>
-          <li><span data-bind="desafios">0</span> desafios</li>
-          <li><span data-bind="glossaryMastered">0</span> Portuguese words</li>
-        </ul>
-      </section>
+          <section class="quest-card quest-me__card" data-quest-enter>
+            <h2 class="quest-card__title">Your stats</h2>
+            <ul class="quest-me__stats">
+              <li><strong data-bind="lessonsDone">0</strong><span>of <span data-bind="lessonsTotal">0</span> lessons</span></li>
+              <li><strong data-bind="stars">0</strong><span>stars</span></li>
+              <li><strong data-bind="streak.weeks">0</strong><span>roda weeks</span></li>
+              <li><strong data-bind="practices">0</strong><span>practices · <span data-bind="practicesConfirmed">0</span> seen</span></li>
+              <li><strong data-bind="desafios">0</strong><span>desafios</span></li>
+              <li><strong data-bind="glossaryMastered">0</strong><span>Portuguese words</span></li>
+            </ul>
+          </section>
+        </div>
+      </div>
 
-      <section class="quest-card quest-me__card" data-quest-enter>
+      <div class="quest-me__progress">
+        <section class="quest-card quest-me__card quest-me__patches" data-quest-enter>
         <h2 class="quest-card__title">Patch wall</h2>
         <p class="quest-card__body">Patches you earn stitch onto this wall.</p>
         <ul class="quest-patch-wall">
@@ -95,19 +100,22 @@ const colors = Object.entries(AVATAR_COLORS);
             </li>
           ))}
         </ul>
-      </section>
+        </section>
 
-      <section class="quest-card quest-me__card" data-quest-enter>
-        <h2 class="quest-card__title">Batizado readiness</h2>
-        <p class="quest-card__body">Your coach uses this list. XP does not award a corda.</p>
-        <ul class="quest-ready-list" data-readiness-list></ul>
-      </section>
+        <div class="quest-me__milestones">
+          <section class="quest-card quest-me__card" data-quest-enter>
+            <h2 class="quest-card__title">Batizado readiness</h2>
+            <p class="quest-card__body">Your coach uses this list. XP does not award a corda.</p>
+            <ul class="quest-ready-list" data-readiness-list></ul>
+          </section>
 
-      <section class="quest-card quest-me__card" data-quest-enter>
-        <h2 class="quest-card__title">Corda history</h2>
-        <ol class="quest-corda-log" data-corda-history hidden></ol>
-        <p class="quest-card__body" data-corda-empty>Your first corda comes at Batizado.</p>
-      </section>
+          <section class="quest-card quest-me__card" data-quest-enter>
+            <h2 class="quest-card__title">Corda history</h2>
+            <ol class="quest-corda-log" data-corda-history hidden></ol>
+            <p class="quest-card__body" data-corda-empty>Your first corda comes at Batizado.</p>
+          </section>
+        </div>
+      </div>
     </main>
     <Footer />
     <LevelUp />
