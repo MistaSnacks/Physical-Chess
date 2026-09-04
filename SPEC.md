@@ -238,7 +238,7 @@ One 60-second task per day from a rotating pool: Portuguese flashcard (word ↔ 
 
 ### 4.7 Turma leaderboard + community goal (P1)
 
-- Per program (school), current week, opted-in players only, **apelido + avatar only**, top 10 plus "you". Guardian toggle in settings (default on; confirm with client, §10).
+- Per program (school), current week, opted-in players only, **apelido + avatar only**, **top 3 plus "you"** (a podium, not a rank list), plus a second board that is not about volume (roda-week streaks or stars this week). Guardian toggle in settings, **default off** until the client answers §10 q6; the community berimbau shows for everyone regardless.
 - **Community goal**: the whole roda's XP this month fills a berimbau-shaped bar toward a target the coach sets ("Fill the berimbau by Batizado"). Cooperative, visible to everyone.
 
 ### 4.8 Read-aloud (a seven-year-old cannot read a lesson) — P1
