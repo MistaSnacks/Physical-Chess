@@ -3,6 +3,7 @@
 //   node test/e2e/shots.mjs http://localhost:4407
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { LESSONS } from '../../src/content/lessons.js';
 
 const base = process.argv[2] || 'http://localhost:4407';
 mkdirSync('screenshots/final', { recursive: true });
@@ -35,10 +36,7 @@ const PLAYER_ROUTES = [
   ['learn-music', '/learn/music'],
   ['learn-culture', '/learn/culture'],
   ['learn-graduation', '/learn/graduation'],
-  ['lesson-video', '/learn/movements/ginga-basics'],
-  ['lesson-reading', '/learn/movements/roda-etiquette'],
-  ['lesson-drill', '/learn/movements/esquiva-cocorinha'],
-  ['lesson-quiz', '/learn/music/music-quiz'],
+  ...LESSONS.map((l) => [`lesson-${l.id}`, `/learn/${l.moduleId}/${l.id}`]),
   ['me', '/me'],
   ['desafio', '/desafio'],
   ['turma', '/turma'],
@@ -58,7 +56,6 @@ const COACH_ROUTES = [
   ['coach-class', '/coach/class'],
   ['coach-export', '/coach/export'],
   ['coach-goal', '/coach/goal'],
-  ['admin-roles', '/admin/roles'],
 ];
 
 const browser = await chromium.launch();
@@ -66,6 +63,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const overflows = [];
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 
 async function overflowName(name) {
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
@@ -73,14 +71,34 @@ async function overflowName(name) {
 }
 
 async function shot(name) {
-  await page.waitForTimeout(450);
+  await page.waitForTimeout(700);
   await overflowName(name);
   await page.screenshot({ path: `screenshots/final/${name}.png`, fullPage: true });
+}
+
+async function waitInjectedPaint(path) {
+  const pathname = path.split('?')[0];
+  const byPath = {
+    '/coach': '.quest-stat-card, [data-empty-programs]',
+    '/coach/player': '.quest-coach-hero',
+    '/coach/attendance': '[data-grid] .quest-player-card',
+    '/coach/class': '[data-grid] .quest-player-card',
+    '/turma': '.quest-berimbau',
+    '/desafio': '[data-stage] .quest-card',
+    '/admin/roles': '.quest-role-card',
+  };
+  const sel = byPath[pathname];
+  if (!sel) return;
+  await page.waitForFunction((s) => {
+    const el = document.querySelector(s);
+    return el && getComputedStyle(el).opacity !== '0';
+  }, sel);
 }
 
 async function both(name, path) {
   await page.goto(`${base}${path}`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(500);
+  await waitInjectedPaint(path);
   await page.setViewportSize({ width: 1440, height: 900 });
   await shot(`${name}-1440`);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -150,10 +168,23 @@ await page.waitForSelector('[data-to-coach]');
 await page.click('[data-to-coach]');
 await page.waitForURL('**/coach**');
 await page.waitForSelector('.quest-stat-card, [data-empty-programs]');
+await page.waitForFunction(() => {
+  const el = document.querySelector('.quest-stat-card, [data-empty-programs]');
+  return el && getComputedStyle(el).opacity !== '0';
+});
 
 for (const [name, path] of COACH_ROUTES) {
   await both(name, path);
 }
+
+await page.evaluate(() => {
+  const db = JSON.parse(localStorage.getItem('pc.demo.v1') || '{}');
+  if (db.account) {
+    db.account.role = 'admin';
+    localStorage.setItem('pc.demo.v1', JSON.stringify(db));
+  }
+});
+await both('admin-roles', '/admin/roles');
 
 await page.goto(`${base}/coach/class`);
 await page.waitForSelector('[data-grid] .quest-player-card');
@@ -179,6 +210,10 @@ await page.evaluate(() => {
 });
 await page.goto(`${base}/coach`);
 await page.waitForSelector('[data-empty-programs], .quest-stat-card');
+await page.waitForFunction(() => {
+  const el = document.querySelector('[data-empty-programs], .quest-stat-card');
+  return el && getComputedStyle(el).opacity !== '0';
+});
 await page.setViewportSize({ width: 1440, height: 900 });
 await shot('coach-no-program-1440');
 await page.setViewportSize({ width: 390, height: 844 });

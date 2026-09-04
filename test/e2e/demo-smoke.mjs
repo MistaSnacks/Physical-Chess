@@ -122,6 +122,11 @@ function fail(msg) {
   process.exit(1);
 }
 
+await page.goto(`${base}/`);
+await page.waitForSelector('.skip-link');
+const skipHref = await page.locator('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])').first().getAttribute('href');
+if (skipHref !== '#main') fail('skip-to-content is not the first focusable: ' + skipHref);
+
 await page.goto(`${base}/login`);
 await page.evaluate(() => {
   localStorage.clear();
@@ -191,6 +196,17 @@ const xp1 = Number(await page.textContent('[data-bind="xp"]'));
 const name = await page.textContent('[data-bind="player.apelido"]');
 await shot('journey');
 
+await page.emulateMedia({ reducedMotion: 'reduce' });
+await page.reload({ waitUntil: 'domcontentloaded' });
+await page.waitForFunction(() => document.querySelector('[data-bind="xp"]')?.textContent !== '');
+const hiddenEnter = await page.evaluate(
+  () => [...document.querySelectorAll('[data-quest-enter]')].filter((el) => el.getAttribute('data-quest-enter') !== 'true').length
+);
+if (hiddenEnter) fail('reduced-motion left ' + hiddenEnter + ' entrance nodes hidden');
+await page.emulateMedia({ reducedMotion: null });
+await page.reload({ waitUntil: 'domcontentloaded' });
+await page.waitForFunction(() => document.querySelector('[data-bind="xp"]')?.textContent !== '');
+
 await completeReading('/learn/movements/roda-etiquette');
 await shot('lesson-reading');
 await completeDrill('/learn/movements/kick-combo');
@@ -240,6 +256,10 @@ await page.click('[data-to-coach]');
 await page.waitForURL('**/coach**');
 await page.waitForSelector('.quest-stat-card, [data-empty-programs]');
 if (await page.locator('[data-empty-programs]').count()) fail('demo coach should have programs assigned');
+await page.waitForFunction(() => {
+  const el = document.querySelector('.quest-stat-card');
+  return !!(el && getComputedStyle(el).opacity !== '0');
+});
 await shot('coach');
 
 await page.goto(`${base}/coach/class`);
