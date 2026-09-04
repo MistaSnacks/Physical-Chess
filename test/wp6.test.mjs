@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { makeEvent, EVENT, derivePlayer, nyDate, isoWeek } from '../src/lib/game/index.js';
 import { DESAFIO_POOL } from '../src/content/desafio.js';
 import { desafioForDate, shuffle } from '../src/lib/desafio.js';
-import { overviewFromRoster, toCsv, buildLeaderboard, csvEscape, READINESS_BUCKETS } from '../src/lib/coach.js';
+import { overviewFromRoster, toCsv, buildLeaderboard, csvEscape, READINESS_BUCKETS, programsForAccount } from '../src/lib/coach.js';
 
 const P = { playerId: 'p1', accountId: 'a1' };
 
@@ -86,4 +86,13 @@ test('shuffle is deterministic for a seed', () => {
 
 test('nyDate uses America/New_York', () => {
   assert.equal(nyDate(new Date('2026-09-04T02:00:00Z')), '2026-09-03');
+});
+
+test('programsForAccount: empty coach stays empty, admin sees all', () => {
+  assert.deepEqual(programsForAccount({ role: 'coach', programs: [] }).map((p) => p.key), []);
+  assert.deepEqual(programsForAccount({ role: 'coach' }).map((p) => p.key), []);
+  assert.deepEqual(programsForAccount({ role: 'coach', programs: ['bushwick'] }).map((p) => p.key), ['bushwick']);
+  const admin = programsForAccount({ role: 'admin', programs: [] }).map((p) => p.key);
+  assert.ok(admin.includes('bushwick'));
+  assert.ok(admin.length >= 3);
 });

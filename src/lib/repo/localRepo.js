@@ -71,9 +71,11 @@ export const localRepo = {
   async updateAccount(patch) {
     const d = db();
     const safe = { ...patch };
-    delete safe.role;
     delete safe.memberId;
     delete safe.demo;
+    // Demo Family may preview coach/admin screens from /family. Live wixRepo
+    // still refuses role patches; only guardian·coach·admin are accepted here.
+    if (safe.role && !['guardian', 'coach', 'admin'].includes(safe.role)) delete safe.role;
     d.account = { ...d.account, ...safe };
     save(d);
     return d.account;

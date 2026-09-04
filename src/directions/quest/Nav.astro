@@ -157,7 +157,7 @@ const moreCurrent = active === 'about' || active === 'shop' || active === 'gradu
         }
       });
       panel.addEventListener('keydown', (e) => {
-        const items = Array.from(panel.querySelectorAll('[role="menuitem"]'));
+        const items = Array.from(panel.querySelectorAll('[role="menuitem"], [data-more-close]'));
         const i = items.indexOf(document.activeElement);
         if (e.key === 'ArrowDown') {
           e.preventDefault();

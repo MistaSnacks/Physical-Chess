@@ -192,10 +192,15 @@ export function writeClassMode(value) {
   else sessionStorage.setItem(CLASS_MODE_KEY, JSON.stringify(value));
 }
 
+export const NO_PROGRAMS_COPY =
+  'No program is assigned to this login yet. Ask an admin to add your turmas.';
+
 export function programsForAccount(account) {
   if (!account) return [];
-  if (account.role === 'admin' || !account.programs?.length) return PROGRAMS.filter((p) => p.active);
-  return account.programs.map(programByKey).filter(Boolean);
+  if (account.role === 'admin') return PROGRAMS.filter((p) => p.active);
+  const keys = account.programs || [];
+  if (!keys.length) return [];
+  return keys.map(programByKey).filter(Boolean);
 }
 
 export function snapshotFields(snapshot) {

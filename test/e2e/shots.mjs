@@ -1,31 +1,258 @@
-// Screenshot every main route at 1440 and 390 in demo mode.
+// Screenshot every player-facing route at 1440 and 390 into screenshots/final/.
+// Also flags horizontal overflow. Run against a static server of dist/client:
+//   node test/e2e/shots.mjs http://localhost:4407
 import { chromium } from 'playwright';
-const base = process.argv[2] || 'http://localhost:4398';
-const out = process.argv[3] || 'screenshots/merged';
-const routes = ['/', '/login', '/who', '/journey', '/learn/movements', '/learn/music', '/learn/culture', '/learn/graduation', '/learn/movements/esquiva-cocorinha', '/learn/music/meet-the-berimbau', '/learn/music/music-quiz', '/me', '/desafio', '/turma', '/family', '/family/report?player=player-maya', '/about', '/about/educators', '/graduation', '/graduation/media', '/shop', '/batizado', '/coach', '/coach/class', '/privacy'];
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { LESSONS } from '../../src/content/lessons.js';
+
+const base = process.argv[2] || 'http://localhost:4407';
+mkdirSync('screenshots/final', { recursive: true });
+
+const PUBLIC_ROUTES = [
+  ['home', '/'],
+  ['about', '/about'],
+  ['about-educators', '/about/educators'],
+  ['about-the-ace', '/about/the-ace'],
+  ['about-abada', '/about/abada'],
+  ['about-faq', '/about/faq'],
+  ['about-contact', '/about/contact'],
+  ['graduation', '/graduation'],
+  ['graduation-what-is-batizado', '/graduation/what-is-batizado'],
+  ['graduation-cordas', '/graduation/cordas'],
+  ['graduation-media', '/graduation/media'],
+  ['shop', '/shop'],
+  ['login', '/login'],
+  ['signup', '/signup'],
+  ['forgot', '/forgot'],
+  ['verify', '/verify'],
+  ['privacy', '/privacy'],
+  ['batizado', '/batizado'],
+];
+
+const PLAYER_ROUTES = [
+  ['who', '/who'],
+  ['journey', '/journey'],
+  ['learn-movements', '/learn/movements'],
+  ['learn-music', '/learn/music'],
+  ['learn-culture', '/learn/culture'],
+  ['learn-graduation', '/learn/graduation'],
+  ...LESSONS.map((l) => [`lesson-${l.id}`, `/learn/${l.moduleId}/${l.id}`]),
+  ['me', '/me'],
+  ['desafio', '/desafio'],
+  ['turma', '/turma'],
+];
+
+const FAMILY_ROUTES = [
+  ['family', '/family'],
+  ['family-player-new', '/family/players/new'],
+  ['family-player-edit', '/family/players/edit?player=player-maya'],
+  ['family-report', '/family/report?player=player-maya'],
+];
+
+const COACH_ROUTES = [
+  ['coach', '/coach'],
+  ['coach-player', '/coach/player?id=player-maya'],
+  ['coach-attendance', '/coach/attendance'],
+  ['coach-class', '/coach/class'],
+  ['coach-export', '/coach/export'],
+  ['coach-goal', '/coach/goal'],
+];
+
 const browser = await chromium.launch();
-const errors = {};
-for (const [label, vp] of [['desktop', { width: 1440, height: 900 }], ['mobile', { width: 390, height: 844 }]]) {
-  const ctx = await browser.newContext({ viewport: vp });
-  const page = await ctx.newPage();
-  page.on('pageerror', (e) => { (errors[label] ||= []).push(e.message.slice(0, 120)); });
-  await page.goto(`${base}/login?demo=1`); await page.waitForTimeout(800);
-  await page.goto(`${base}/who`); await page.waitForTimeout(600);
-  const maya = page.locator('.quest-player-card:has-text("Gatinha")').first();
-  if (await maya.count()) { await maya.click(); await page.waitForTimeout(600); }
-  for (const r of routes) {
-    if (r === '/coach' || r === '/coach/class') {
-      await page.goto(`${base}/family`); await page.waitForTimeout(600);
-      const btn = page.locator('[data-to-coach]');
-      if (await btn.count() && await btn.isVisible()) { await btn.click(); await page.waitForTimeout(1200); }
-    }
-    await page.goto(`${base}${r}`); await page.waitForTimeout(1400);
-    const w = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
-    const name = r.replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') || 'home';
-    await page.screenshot({ path: `${out}/${name}-${label}.png`, fullPage: false });
-    if (w) (errors[label] ||= []).push(`HSCROLL ${r}`);
-  }
-  await ctx.close();
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+const overflows = [];
+const errors = [];
+page.on('pageerror', (e) => errors.push(e.message));
+page.on('console', (m) => {
+  if (m.type() !== 'error') return;
+  const t = m.text();
+  if (/compute-pressure is not allowed/i.test(t)) return;
+  errors.push(t);
+});
+
+async function overflowName(name) {
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  if (wide) overflows.push(`${name}@${page.viewportSize().width}`);
 }
+
+async function shot(name) {
+  await page.waitForTimeout(700);
+  await overflowName(name);
+  await page.screenshot({ path: `screenshots/final/${name}.png`, fullPage: true });
+}
+
+async function waitInjectedPaint(path) {
+  const pathname = path.split('?')[0];
+  const byPath = {
+    '/coach': '.quest-stat-card, [data-empty-programs]',
+    '/coach/player': '.quest-coach-hero',
+    '/coach/attendance': '[data-grid] .quest-player-card',
+    '/coach/class': '[data-grid] .quest-player-card',
+    '/turma': '.quest-berimbau',
+    '/desafio': '[data-stage] .quest-card',
+    '/admin/roles': '.quest-role-card',
+  };
+  const sel = byPath[pathname];
+  if (!sel) return;
+  await page.waitForFunction((s) => {
+    const el = document.querySelector(s);
+    return el && getComputedStyle(el).opacity !== '0';
+  }, sel);
+}
+
+async function both(name, path) {
+  await page.goto(`${base}${path}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(500);
+  await waitInjectedPaint(path);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await shot(`${name}-1440`);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await shot(`${name}-390`);
+  await page.setViewportSize({ width: 1440, height: 900 });
+}
+
+async function passGrownUp() {
+  const overlay = page.locator('.quest-grownup');
+  try {
+    await overlay.waitFor({ timeout: 1500 });
+  } catch {
+    return;
+  }
+  const text = await overlay.locator('.quest-grownup__body').textContent();
+  const m = String(text).match(/(\d+)\s*\+\s*(\d+)/);
+  if (!m) return;
+  await overlay.locator('#quest-grownup-answer').fill(String(Number(m[1]) + Number(m[2])));
+  await overlay.locator('button[type=submit]').click();
+  await overlay.waitFor({ state: 'detached' });
+}
+
+for (const [name, path] of PUBLIC_ROUTES) {
+  await both(name, path);
+}
+
+await page.goto(`${base}/login`);
+await page.evaluate(() => {
+  localStorage.clear();
+  sessionStorage.clear();
+});
+await page.reload();
+await page.waitForSelector('[data-demo-btn]');
+await page.click('[data-demo-btn]');
+await page.waitForURL('**/who**');
+await page.waitForSelector('.quest-player-card:has-text("Gatinha")');
+await page.click('.quest-player-card:has-text("Gatinha")');
+await page.waitForURL('**/journey**');
+await page.waitForFunction(() => document.querySelector('[data-bind="xp"]')?.textContent !== '');
+
+for (const [name, path] of PLAYER_ROUTES) {
+  await both(name, path);
+}
+
+await page.goto(`${base}/who`);
+await page.click('.quest-player-card:has-text("Tubarão")');
+await page.waitForURL('**/journey**');
+await page.waitForTimeout(800);
+await page.setViewportSize({ width: 1440, height: 900 });
+await shot('journey-new-player-1440');
+await page.setViewportSize({ width: 390, height: 844 });
+await shot('journey-new-player-390');
+await page.setViewportSize({ width: 1440, height: 900 });
+
+await page.goto(`${base}/who`);
+await page.click('[data-grownups]');
+await passGrownUp();
+await page.waitForURL('**/family**');
+
+for (const [name, path] of FAMILY_ROUTES) {
+  await both(name, path);
+  await passGrownUp();
+}
+
+await page.goto(`${base}/family`);
+await page.waitForSelector('[data-to-coach]');
+await page.click('[data-to-coach]');
+await page.waitForURL('**/coach**');
+await page.waitForSelector('.quest-stat-card, [data-empty-programs]');
+await page.waitForFunction(() => {
+  const el = document.querySelector('.quest-stat-card, [data-empty-programs]');
+  return el && getComputedStyle(el).opacity !== '0';
+});
+
+for (const [name, path] of COACH_ROUTES) {
+  await both(name, path);
+}
+
+await page.evaluate(() => {
+  const db = JSON.parse(localStorage.getItem('pc.demo.v1') || '{}');
+  if (db.account) {
+    db.account.role = 'admin';
+    localStorage.setItem('pc.demo.v1', JSON.stringify(db));
+  }
+});
+await both('admin-roles', '/admin/roles');
+
+await page.goto(`${base}/coach/class`);
+await page.waitForSelector('[data-grid] .quest-player-card');
+await page.locator('[data-grid] .quest-player-card').first().click();
+await page.waitForURL('**/journey**');
+await page.waitForSelector('[data-class-mode-bar]');
+await page.setViewportSize({ width: 1440, height: 900 });
+await shot('class-mode-journey-1440');
+await page.setViewportSize({ width: 390, height: 844 });
+await shot('class-mode-journey-390');
+await page.setViewportSize({ width: 1440, height: 900 });
+await page.click('[data-end-class]');
+await page.waitForURL('**/coach/class**');
+
+// Already in a coach session. Clear assigned programs for the empty state.
+await page.evaluate(() => {
+  const db = JSON.parse(localStorage.getItem('pc.demo.v1') || '{}');
+  if (db.account) {
+    db.account.role = 'coach';
+    db.account.programs = [];
+    localStorage.setItem('pc.demo.v1', JSON.stringify(db));
+  }
+});
+await page.goto(`${base}/coach`);
+await page.waitForSelector('[data-empty-programs], .quest-stat-card');
+await page.waitForFunction(() => {
+  const el = document.querySelector('[data-empty-programs], .quest-stat-card');
+  return el && getComputedStyle(el).opacity !== '0';
+});
+await page.setViewportSize({ width: 1440, height: 900 });
+await shot('coach-no-program-1440');
+await page.setViewportSize({ width: 390, height: 844 });
+await shot('coach-no-program-390');
+
+await page.evaluate(() => {
+  const db = JSON.parse(localStorage.getItem('pc.demo.v1') || '{}');
+  if (db.account) {
+    db.account.role = 'guardian';
+    db.account.programs = [];
+    db.players = [];
+    localStorage.setItem('pc.demo.v1', JSON.stringify(db));
+  }
+  sessionStorage.removeItem('pc.activePlayer');
+});
+await page.goto(`${base}/who`);
+await page.waitForSelector('[data-empty]');
+await page.setViewportSize({ width: 1440, height: 900 });
+await shot('who-no-players-1440');
+await page.setViewportSize({ width: 390, height: 844 });
+await shot('who-no-players-390');
+await page.goto(`${base}/family`);
+await page.waitForSelector('[data-empty]');
+await page.setViewportSize({ width: 1440, height: 900 });
+await shot('family-no-players-1440');
+await page.setViewportSize({ width: 390, height: 844 });
+await shot('family-no-players-390');
+
 await browser.close();
-console.log(JSON.stringify(errors, null, 1));
+
+const report = { overflows, errors: [...new Set(errors)] };
+writeFileSync('screenshots/final/_overflow.json', JSON.stringify(report, null, 2));
+console.log(`shots written to screenshots/final/ · overflow flags: ${overflows.length} · pageerrors: ${report.errors.length}`);
+if (overflows.length) {
+  console.error('horizontal overflow:', overflows.join(', '));
+  process.exit(1);
+}

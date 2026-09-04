@@ -23,6 +23,7 @@ import '../directions/quest/theme.css';
       <div class="quest-players" data-players data-quest-enter>
         <PlayerCard />
       </div>
+      <p class="quest-empty" data-empty hidden>No players yet. A grown-up can add the first card.</p>
       <p class="quest-who__grownups" data-quest-enter>
         <button class="quest-btn quest-btn--ghost" type="button" data-grownups>Grown-ups</button>
       </p>
@@ -47,6 +48,8 @@ import '../directions/quest/theme.css';
       const next = new URLSearchParams(location.search).get('next') || '/journey';
       const cards = await snapshotsForSession();
       grid.querySelectorAll('[data-player]').forEach((n) => n.remove());
+      const empty = document.querySelector('[data-empty]');
+      if (empty) empty.hidden = cards.length > 0;
       for (const { player, snapshot } of cards) {
         const el = playerCardEl(player, {
           snapshot,

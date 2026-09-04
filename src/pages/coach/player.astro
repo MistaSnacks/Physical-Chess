@@ -75,7 +75,7 @@ import '../../directions/quest/theme.css';
         const { player, snapshot, events } = data;
         title.textContent = player.apelido;
         if (snapshot.nextCorda) select.value = snapshot.nextCorda;
-        const items = snapshot.readiness.items.map((it) => `<li class="quest-check ${it.met ? 'is-met' : ''}"><span class="quest-check__mark" aria-hidden="true"></span>${esc(it.label)}</li>`).join('');
+        const items = snapshot.readiness.items.map((it) => `<li class="quest-checks__item ${it.met ? 'is-met' : ''}"><span class="quest-check__mark" aria-hidden="true"></span>${esc(it.label)}</li>`).join('');
         const timeline = events.map((e) => {
           const label = EVENT_LABELS[e.type] || e.type;
           const extra = e.payload?.note || e.payload?.patchKey || e.payload?.corda || '';

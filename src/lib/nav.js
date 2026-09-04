@@ -54,21 +54,15 @@ function paintClassBar() {
 }
 
 function paintDesafioTicket(s) {
-  const hud = document.querySelector('.quest-hud');
-  if (!hud || !s.player) return;
-  let ticket = hud.querySelector('[data-desafio-ticket]');
-  if (!ticket) {
-    ticket = document.createElement('a');
-    ticket.className = 'quest-desafio-ticket';
-    ticket.dataset.desafioTicket = '';
-    hud.appendChild(ticket);
-  }
+  const ticket = document.querySelector('[data-desafio-ticket]');
+  if (!ticket || !s.player) return;
   const done = Boolean(s.snapshot?.desafioDoneToday);
   ticket.href = '/desafio';
   ticket.dataset.done = done ? 'true' : 'false';
-  ticket.innerHTML = done
-    ? '<span class="quest-desafio-ticket__label">Desafio</span><span class="quest-desafio-ticket__state">Done today</span>'
-    : '<span class="quest-desafio-ticket__label">Desafio do Dia</span><span class="quest-desafio-ticket__state">+30 XP</span>';
+  const eye = ticket.querySelector('.quest-hud__ticket-eye');
+  const sub = ticket.querySelector('.quest-hud__ticket-sub');
+  if (eye) eye.textContent = 'Desafio do Dia';
+  if (sub) sub.textContent = done ? 'Done today' : '+30 XP';
 }
 
 function escapeHtml(s) {
@@ -76,8 +70,16 @@ function escapeHtml(s) {
 }
 
 let booted = false;
+function markPageA11y() {
+  const main = document.querySelector('main');
+  if (main && !main.id) main.id = 'main';
+  document.querySelectorAll('.quest-form__error, .quest-form__ok, .quest-empty, [data-toast]').forEach((el) => {
+    if (!el.hasAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+  });
+}
 function boot() {
   if (!booted) { booted = true; store.subscribe(paint); }
+  markPageA11y();
   if (!store.get().ready) loadSession().catch(() => paint(store.get()));
   else paint(store.get());
 }

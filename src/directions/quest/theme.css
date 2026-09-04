@@ -3764,14 +3764,14 @@ body.direction-quest :focus-visible {
   color: var(--quest-muted);
 }
 .quest-checklist li.is-met { color: var(--quest-cream); }
-.quest-check {
+.quest-checklist__mark {
   flex: 0 0 22px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
   border: 3px solid var(--quest-leaf-border);
 }
-.quest-checklist li.is-met .quest-check {
+.quest-checklist li.is-met .quest-checklist__mark {
   background: var(--quest-lime);
   border-color: var(--quest-lime);
 }
@@ -4326,10 +4326,10 @@ select.quest-field__input {
 .quest-coach-hero { display: flex; gap: 18px; align-items: center; margin-bottom: 18px; }
 .quest-coach-hero__apelido { font-family: var(--quest-font-display); font-size: 36px; color: var(--quest-cream); margin: 0; }
 .quest-checks { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
-.quest-check { display: flex; gap: 10px; align-items: flex-start; color: var(--quest-muted); }
+.quest-checks__item { display: flex; gap: 10px; align-items: flex-start; color: var(--quest-muted); }
 .quest-check__mark { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--quest-leaf-border); flex: 0 0 18px; margin-top: 2px; }
-.quest-check.is-met { color: var(--quest-cream); }
-.quest-check.is-met .quest-check__mark { background: var(--quest-lime); border-color: var(--quest-lime); }
+.quest-checks__item.is-met { color: var(--quest-cream); }
+.quest-checks__item.is-met .quest-check__mark { background: var(--quest-lime); border-color: var(--quest-lime); }
 .quest-xp-form, .quest-note-form { margin-top: 18px; }
 .quest-xp-row { display: grid; grid-template-columns: 100px 1fr auto; gap: 10px; align-items: center; }
 .quest-timeline { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
@@ -4379,4 +4379,26 @@ body.has-class-mode .quest-page { padding-top: 0; }
 @media (prefers-reduced-motion: reduce) {
   .quest-berimbau__svg circle:nth-of-type(2) { transition: none; }
   .quest-desafio-ticket { transition: none; }
+}
+
+/* === WP7: qa === */
+.quest-hud__ticket[data-done="true"] { background: var(--quest-lime); }
+.quest-player-card:focus-visible {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+}
+.yt-with-credit { width: 100%; }
+.yt-with-credit .quest-video-credit { margin: 8px 0 0; }
+/* Home "latest" is a full-width lite YouTube, not the map's 112px chip. */
+.quest-section--latest .quest-latest {
+  display: block;
+  grid-template-columns: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.quest-video-credit,
+.quest-video-card__credit,
+.quest-footer__note {
+  color: var(--quest-cream);
 }

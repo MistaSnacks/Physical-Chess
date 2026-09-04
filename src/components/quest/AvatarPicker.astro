@@ -15,10 +15,10 @@ const colors = Object.entries(AVATAR_COLORS);
 <div class="quest-avatar-picker" data-avatar-picker>
   <div class="quest-field">
     <span class="quest-field__label" id="avatar-animal-label">Avatar</span>
-    <div class="quest-avatar-grid" data-avatars role="radiogroup" aria-labelledby="avatar-animal-label">
+            <div class="quest-avatar-grid" data-avatars role="radiogroup" aria-labelledby="avatar-animal-label">
       {ANIMALS.map((a) => (
         <label>
-          <input type="radio" name="animal" value={a} checked={a === animal} />
+          <input type="radio" name="animal" value={a} checked={a === animal} aria-label={a} />
           <span data-animal={a}></span>
         </label>
       ))}

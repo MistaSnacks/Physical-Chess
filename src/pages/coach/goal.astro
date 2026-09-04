@@ -40,7 +40,7 @@ import '../../directions/quest/theme.css';
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
     import { getCoach } from '../../lib/repo/coachRepo.js';
-    import { programsForAccount } from '../../lib/coach.js';
+    import { programsForAccount, NO_PROGRAMS_COPY } from '../../lib/coach.js';
 
     async function init() {
       const s = await requireSession({ role: 'coach' });
@@ -50,6 +50,11 @@ import '../../directions/quest/theme.css';
       const programs = programsForAccount(s.session.account);
       const form = document.querySelector('[data-form]');
       const sel = form.querySelector('[data-program]');
+      if (!programs.length) {
+        form.hidden = true;
+        form.insertAdjacentHTML('afterend', `<section class="quest-card quest-card--note" data-empty-programs>${NO_PROGRAMS_COPY}</section>`);
+        return;
+      }
       sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
       const goals = await coach.goals();
 

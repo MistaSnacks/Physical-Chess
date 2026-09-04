@@ -39,22 +39,22 @@ const colors = Object.entries(AVATAR_COLORS);
         <p class="quest-card__body">Tap an animal and a color. It saves as you go.</p>
         <form class="quest-me__avatar-form">
           <div class="quest-field">
-            <span class="quest-field__label">Animal</span>
-            <div class="quest-avatar-grid" data-avatars>
+            <span class="quest-field__label" id="me-animal-label">Animal</span>
+            <div class="quest-avatar-grid" data-avatars role="radiogroup" aria-labelledby="me-animal-label">
               {ANIMALS.map((a) => (
                 <label>
-                  <input type="radio" name="animal" value={a} />
+                  <input type="radio" name="animal" value={a} aria-label={a} />
                   <span data-animal={a}></span>
                 </label>
               ))}
             </div>
           </div>
           <div class="quest-field">
-            <span class="quest-field__label">Color</span>
-            <div class="quest-swatches">
+            <span class="quest-field__label" id="me-color-label">Color</span>
+            <div class="quest-swatches" role="radiogroup" aria-labelledby="me-color-label">
               {colors.map(([k, hex]) => (
                 <label style={`background:${hex}`}>
-                  <input type="radio" name="color" value={k} />
+                  <input type="radio" name="color" value={k} aria-label={k} />
                   <span></span>
                 </label>
               ))}

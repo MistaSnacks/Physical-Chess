@@ -47,15 +47,17 @@ if (!controls) params.set('controls', '0');
 const src = `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
 ---
 
-<div class:list={['yt-embed', className]} data-yt-embed data-video-id={id}>
-  <iframe
-    src={src}
-    title={title}
-    loading="lazy"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen
-  ></iframe>
-  <p class="yt-embed__credit sr-only">Video: SoChlo Productions</p>
+<div class="yt-with-credit">
+  <div class:list={['yt-embed', className]} data-yt-embed data-video-id={id}>
+    <iframe
+      src={src}
+      title={title}
+      loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+  <p class="quest-video-credit">Video: SoChlo Productions</p>
 </div>
 
 <style>
