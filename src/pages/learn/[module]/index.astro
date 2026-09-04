@@ -51,9 +51,13 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
     <Nav active={navActive} />
 
-    <main class="quest-hub" data-hub data-module={mod.id} data-locked-reason={mod.lockedReason || ''}>
+    <main id="main" class="quest-hub" data-hub data-module={mod.id} data-locked-reason={mod.lockedReason || ''}>
       <div class="quest-detail">
-        <aside class="quest-rail" data-quest-enter>
+        <a class="quest-hub__mobile-back" href="/journey">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to map
+        </a>
+        <aside class="quest-rail" data-quest-enter aria-label={`${mod.title} lessons`}>
           <a class="quest-rail__back" href="/journey">
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Back to map
@@ -82,7 +86,7 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
           ))}
         </aside>
 
-        <section class="quest-panel" data-quest-enter>
+        <section class="quest-panel" data-quest-enter aria-labelledby="quest-hub-feature-title">
           <div class="quest-hub-hero">
             <div class="quest-hub-ring-wrap" aria-hidden="true">
               <svg class="quest-hub-ring" viewBox="0 0 120 120">
@@ -93,7 +97,7 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
             </div>
             <div class="quest-hub-hero__copy">
               <span class="quest-panel__eyebrow">{mod.title}</span>
-              <h2 class="quest-panel__title" data-hub-heading>{mod.title}</h2>
+              <h2 class="quest-panel__title" id="quest-hub-feature-title" data-hub-heading>{mod.title}</h2>
               <p class="quest-panel__summary" data-hub-summary>
                 {mod.lockedReason || 'Pick a lesson from the rail. Stars only go up.'}
               </p>

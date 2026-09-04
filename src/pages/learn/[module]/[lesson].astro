@@ -41,6 +41,7 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
     <Nav active={navActive} />
     <main
+      id="main"
       class="quest-screen quest-lesson"
       data-lesson={lesson.id}
       data-module={lesson.moduleId}
@@ -56,7 +57,7 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
         index={index}
       >
         <span class="quest-lesson__type">{TYPE_LABEL[lesson.type]}</span>
-        <h1 class="quest-lesson__title">{lesson.title}</h1>
+        <h1 class="quest-lesson__title" id="quest-lesson-title">{lesson.title}</h1>
         <p class="quest-lesson__summary">{lesson.summary}</p>
         <p class="quest-already" data-already hidden>You already cleared this. Play again to raise stars.</p>
 
