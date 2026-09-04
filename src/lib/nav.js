@@ -70,8 +70,16 @@ function escapeHtml(s) {
 }
 
 let booted = false;
+function markPageA11y() {
+  const main = document.querySelector('main');
+  if (main && !main.id) main.id = 'main';
+  document.querySelectorAll('.quest-form__error, .quest-form__ok, .quest-empty, [data-toast]').forEach((el) => {
+    if (!el.hasAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+  });
+}
 function boot() {
   if (!booted) { booted = true; store.subscribe(paint); }
+  markPageA11y();
   if (!store.get().ready) loadSession().catch(() => paint(store.get()));
   else paint(store.get());
 }

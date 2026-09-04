@@ -4383,3 +4383,9 @@ body.has-class-mode .quest-page { padding-top: 0; }
 
 /* === WP7: qa === */
 .quest-hud__ticket[data-done="true"] { background: var(--quest-lime); }
+.quest-player-card:focus-visible {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+}
+.yt-with-credit { width: 100%; }
+.yt-with-credit .quest-video-credit { margin: 8px 0 0; }
