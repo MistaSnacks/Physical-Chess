@@ -10,7 +10,7 @@ import {
   overviewFromRoster, buildLeaderboard, toCsv, PLAYER_CSV_HEADERS, EVENT_CSV_HEADERS,
   playerExportRow, eventExportRow,
 } from '../coach.js';
-import { isoWeek } from '../game/streaks.js';
+import { isoWeek, nyDate } from '../game/streaks.js';
 
 const KEY = 'pc.coach.demo.v1';
 
@@ -125,7 +125,7 @@ function seedMeta() {
     id: `att-${i}`,
     playerId: e.playerId,
     program: e.payload.program,
-    classDate: e.occurredAt.slice(0, 10),
+    classDate: nyDate(e.occurredAt),
     stampedBy: 'acct-demo',
   }));
   return saveMeta({
@@ -198,7 +198,7 @@ export const coachDemo = {
     await this.ensure();
     const m = meta();
     const d = readLocalDb();
-    const date = classDate || new Date().toISOString().slice(0, 10);
+    const date = classDate || nyDate();
     const accepted = [];
     for (const playerId of playerIds) {
       if (m.attendance.some((a) => a.playerId === playerId && a.classDate === date && a.program === program)) continue;
@@ -273,9 +273,10 @@ export const coachDemo = {
       eventsByPlayer.get(e.playerId).push(e);
     }
     const accountsById = new Map(m.accounts.map((a) => [a.id, a]));
+    accountsById.set(d.account.id, d.account);
     const built = buildLeaderboard({ players: d.players, eventsByPlayer, accountsById, program, period: week });
     const goal = m.programGoals[program] || DEFAULT_GOAL;
-    return { ...built, target: goal.goalXp, goalLabel: goal.goalLabel, entries: built.entries.slice(0, 10) };
+    return { ...built, target: goal.goalXp, goalLabel: goal.goalLabel };
   },
 
   async exportData({ scope = 'program', format = 'csv', what = 'players', program }) {

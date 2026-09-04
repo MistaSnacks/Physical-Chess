@@ -14,16 +14,16 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen quest-screen--wide">
+    <main class="quest-screen quest-screen--wide quest-coach-screen quest-class-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
       <h1 class="quest-screen__title" data-quest-enter>Class mode</h1>
-      <p class="quest-screen__sub" data-quest-enter>Kids tap their apelido. No family emails. Events from this device are marked as done in class.</p>
+      <p class="quest-screen__sub" data-quest-enter>Choose a turma, then pass the tablet around. Kids tap only their apelido.</p>
       <CoachNav active="class" />
       <div class="quest-field quest-card" data-quest-enter>
         <label class="quest-field__label" for="program">Program</label>
         <select class="quest-field__input" id="program" data-program></select>
       </div>
-      <div class="quest-players quest-players--class" data-grid data-quest-enter></div>
+      <div class="quest-players quest-players--class" data-grid data-quest-enter aria-live="polite"></div>
     </main>
     <Footer />
   </div>
@@ -53,7 +53,7 @@ import '../../directions/quest/theme.css';
       async function render() {
         const prog = programs.find((p) => p.key === sel.value);
         const rows = (await coach.roster(sel.value)).filter((p) => p.mayPlayInClass !== false);
-        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card" data-id="${p.id}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 96)}</span><span class="quest-player-card__name">${p.apelido}</span></button>`).join('')
+        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card" data-id="${p.id}" aria-label="Open ${p.apelido}'s journey"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 96)}</span><span class="quest-player-card__name">${p.apelido}</span><span class="quest-class-card__cue">Tap to play</span></button>`).join('')
           || '<p class="quest-card quest-card--note">No one in this turma is marked to play in class.</p>';
         grid.querySelectorAll('[data-id]').forEach((btn) => {
           btn.addEventListener('click', async () => {

@@ -25,7 +25,10 @@ export const localRepo = {
   async getSession() {
     const d = db();
     if (!d.signedIn) return null;
-    return { account: d.account, players: d.players.filter((p) => p.active !== false && p.accountId === d.account.id) };
+    return {
+      account: { ...d.account, leaderboardOptIn: d.account.leaderboardOptIn === true },
+      players: d.players.filter((p) => p.active !== false && p.accountId === d.account.id),
+    };
   },
   async signOut() { const d = db(); d.signedIn = false; save(d); },
 

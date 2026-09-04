@@ -12,7 +12,7 @@ const links = [
   { id: 'goal', href: '/coach/goal', label: 'Goal' },
 ];
 ---
-<nav class="quest-coach-nav" aria-label="Coach tools">
+<nav class="quest-coach-nav" aria-label="Coach workspace">
   {links.map((link) => (
     <a href={link.href} aria-current={active === link.id ? 'page' : undefined}>{link.label}</a>
   ))}

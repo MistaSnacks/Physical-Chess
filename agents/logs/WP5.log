@@ -1,8 +1,0 @@
-WP5 public parity is done on branch `wp5`. Report: `agents/reports/WP5.md`.
-
-Every Wix public-nav item now has a Quest page: About (hub, Educators, the ACE, ABADÁ, FAQ, Contact), Graduation (hub, What is it?, Cordas, Media), Batizado 2026, and Shop. Nav has a keyboard-accessible **More** menu that becomes a bottom sheet at 390. Contact and shop forms post to `/api/contact` and `/api/shop/order`; without a Wix secret they show “Demo: nothing was sent.”
-
-WP1 had not landed `src/content/site.js` here, so I created it with the exact §4 exports (`ABOUT`, `THE_ACE`, `ABADA`, `EDUCATORS`, `FAQ`, `CORDAS_PAGE`, `SHOP`) and flagged copy `reviewNeeded: true`. WP1 should overwrite that file in place.
-
-Verified: `npm run build`, `npm test`, smoke `SMOKE OK` on port 4405, no horizontal overflow at 390 or 1440, Lighthouse performance on `/` is **96 mobile / 94 desktop**. Screenshots are in `screenshots/wp5/`. Not pushed.Those leftover jobs finished as expected: Lighthouse on `/` scored 94 desktop and (after the hero LCP fix) 96 mobile, and the port 4405 static server was stopped after verification. WP5 remains complete on branch `wp5`; report is in `agents/reports/WP5.md`.
-WP5 exit 0

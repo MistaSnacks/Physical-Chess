@@ -15,11 +15,11 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen quest-screen--wide">
+    <main class="quest-screen quest-screen--wide quest-coach-screen quest-coach-player-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
       <h1 class="quest-screen__title" data-bind-player-title data-quest-enter>Student</h1>
       <CoachNav active="player" />
-      <div data-coach-root>
+      <div data-coach-root aria-live="polite">
         <p class="quest-card quest-card--note">Loading…</p>
       </div>
     </main>
@@ -28,7 +28,7 @@ import '../../directions/quest/theme.css';
   <dialog class="quest-dialog" data-corda-dialog>
     <form method="dialog" class="quest-dialog__card" data-corda-form>
       <h2 class="quest-card__title">Award a corda</h2>
-      <p class="quest-card__body">This is the one action that changes a kid’s rank. Only do this at Batizado, or when ACE has already tied the corda.</p>
+      <p class="quest-card__body">This changes a player’s real rank. Use it only at Batizado, or after ACE has tied the corda.</p>
       <div class="quest-field"><label class="quest-field__label" for="corda">Corda</label>
         <select class="quest-field__input" id="corda" name="corda" data-corda-select></select>
       </div>
@@ -51,6 +51,7 @@ import '../../directions/quest/theme.css';
     import { cordaLabel, EVENT_LABELS } from '../../lib/coach.js';
     import { CORDAS } from '../../data/batizado.js';
     import { avatarSvg } from '../../lib/avatar.js';
+    import { nyDate } from '../../lib/game/streaks.js';
 
     function esc(s) {
       return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -90,12 +91,14 @@ import '../../directions/quest/theme.css';
               <p class="quest-screen__sub" style="margin:0">${esc(player.firstName)} · Level ${snapshot.level.level} ${esc(snapshot.level.title)} · ${esc(cordaLabel(snapshot.cordaCurrent))}</p>
             </div>
           </section>
-          <section class="quest-card" data-quest-enter>
-            <h2 class="quest-card__title">Readiness · ${snapshot.readiness.percent}%</h2>
+          <section class="quest-card quest-player-readiness" data-quest-enter>
+            <div class="quest-coach-section-heading"><div><p class="quest-coach-kicker">Road to Batizado</p><h2 class="quest-card__title">Readiness · ${snapshot.readiness.percent}%</h2></div></div>
             <ul class="quest-checks">${items}</ul>
           </section>
-          <section class="quest-card" data-quest-enter>
-            <h2 class="quest-card__title">Actions</h2>
+          <section class="quest-card quest-player-actions" data-quest-enter>
+            <p class="quest-coach-kicker">Coach tools</p>
+            <h2 class="quest-card__title">Mark the moment</h2>
+            <p class="quest-card__body">Stamp class, recognize growth, or leave a short note for ACE.</p>
             <div class="quest-btn-row">
               <button class="quest-btn quest-btn--lime" type="button" data-stamp>Stamp today</button>
               <button class="quest-btn" type="button" data-award-helper>Ajudante patch</button>
@@ -118,13 +121,14 @@ import '../../directions/quest/theme.css';
               </div>
             </form>
           </section>
-          <section class="quest-card" data-quest-enter>
+          <section class="quest-card quest-player-timeline" data-quest-enter>
+            <p class="quest-coach-kicker">Latest first</p>
             <h2 class="quest-card__title">Timeline</h2>
             <ol class="quest-timeline">${timeline || '<li>No events yet.</li>'}</ol>
           </section>
         `;
         root.querySelector('[data-stamp]').addEventListener('click', async () => {
-          await coach.stampAttendance({ playerIds: [player.id], program: player.program, classDate: new Date().toISOString().slice(0, 10) });
+          await coach.stampAttendance({ playerIds: [player.id], program: player.program, classDate: nyDate() });
           await paint();
         });
         root.querySelector('[data-award-helper]').addEventListener('click', async () => {

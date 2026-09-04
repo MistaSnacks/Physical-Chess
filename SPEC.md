@@ -116,7 +116,7 @@ Field naming follows Wix (`camelCase`, `_owner` = the member). "Author" = `SITE_
 
 | Collection | Purpose | Key fields | Permissions (insert / read / update / remove) |
 |---|---|---|---|
-| `lms-accounts` | One row per Wix member | `memberId`, `role` (guardian·coach·admin), `displayName`, `email`, `phone`, `programs[]` (coach), `leaderboardOptIn` (bool, default true), `consentAt` | member / author / author* / admin |
+| `lms-accounts` | One row per Wix member | `memberId`, `role` (guardian·coach·admin), `displayName`, `email`, `phone`, `programs[]` (coach), `leaderboardOptIn` (bool, default false), `consentAt` | member / author / author* / admin |
 | `lms-players` | Kids | `accountId`, `firstName`, `apelido`, `avatar` (`{animal, color}`), `birthYear` (optional), `program` (school/site), `startedAt`, `active`; snapshot: `xp`, `level`, `weekStreak`, `lastActiveWeek`, `stars`, `lessonsDone`, `cordaCurrent` (mirrored from awards) | member / author / author* / admin |
 | `lms-events` | **Append-only ledger.** Every meaningful thing a player does | `playerId`, `accountId`, `type`, `moduleId`, `lessonId`, `xp`, `stars`, `payload` (JSON), `occurredAt`, `clientEventId` (uuid, idempotency), `source` (app·coach·system) | member / author / admin / admin |
 | `lms-lesson-state` | Per player × lesson snapshot for fast reads | `playerId`, `lessonId`, `status` (open·done), `bestStars`, `bestScore`, `attempts`, `firstDoneAt`, `lastAt` | member / author / author / admin |

@@ -9,7 +9,7 @@ export const DEMO_ACCOUNT = {
   displayName: 'Demo Family',
   email: 'demo@physicalchess.org',
   programs: [],
-  leaderboardOptIn: true,
+  leaderboardOptIn: false,
   demo: true,
 };
 

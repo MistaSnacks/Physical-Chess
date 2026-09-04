@@ -1,6 +1,6 @@
 // coach.js — shared coach/turma helpers (pure). Screens and the demo repo
 // both use these so overview numbers match the export CSV.
-import { isoWeek, nyDate, nyMonth } from './game/streaks.js';
+import { isoWeek, nyDate, nyMonth, weekStreak } from './game/streaks.js';
 import { PROGRAMS, programByKey } from '../content/programs.js';
 import { CORDAS } from '../data/batizado.js';
 
@@ -68,19 +68,20 @@ export function buildLeaderboard({ players, eventsByPlayer, accountsById, progra
     const acc = accountsById.get(p.accountId);
     const events = eventsByPlayer.get(p.id) || [];
     communityXp += monthXp(events, month);
-    if (acc && acc.leaderboardOptIn === false) continue;
+    if (acc?.leaderboardOptIn !== true) continue;
     entries.push({
       playerId: p.id,
       apelido: p.apelido || p.firstName,
       avatar: p.avatar || { animal: 'frog', color: 'lime' },
       xp: weekXp(events, week),
+      weekStreak: weekStreak(events, now).weeks,
     });
   }
   entries.sort((a, b) => b.xp - a.xp || a.apelido.localeCompare(b.apelido));
   return {
     program,
     period: week,
-    entries: entries.map(({ playerId, apelido, avatar, xp }) => ({ playerId, apelido, avatar, xp })),
+    entries: entries.map(({ playerId, apelido, avatar, xp, weekStreak: weeks }) => ({ playerId, apelido, avatar, xp, weekStreak: weeks })),
     communityXp,
     computedAt: now.toISOString(),
   };

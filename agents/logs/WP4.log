@@ -1,8 +1,0 @@
-WP4 is done. The guardian flow works in demo: sign in → add a player → edit → report card → CSV/JSON download → delete player → sign out.
-
-**Screens:** `/login`, `/signup`, `/forgot`, `/verify`, `/who` (with a grown-up math gate), `/family` (settings, class-play toggles, delete account), add/edit player by invite code, `/family/report?player=`, and `/privacy`. Report cards, CSV/JSON, and “I saw it” practice confirms all go through `actions.js`. `wixRepo` now pages events and batch-inserts instead of one query per event.
-
-**Checked:** `npm run build` and `npm test` pass, `node test/e2e/demo-smoke.mjs http://localhost:4404` printed `SMOKE OK`, and 1440/390 shots are in `screenshots/wp4/`. Write-up is `agents/reports/WP4.md` (including what still needs a real Wix client ID). Not pushed.
-
-🚨🚨🚨 Report cards stayed invisible because dynamic `data-quest-enter` never got the motion hook, so those attributes were removed from injected markup.Those two background jobs are already accounted for. The first screenshot run failed on a `/family/` URL wait; that was fixed and the flow later printed `WP4 FLOW OK`. The server on port 4404 was stopped on purpose after verification (exit 143). WP4 remains complete.
-WP4 exit 0
