@@ -4380,3 +4380,6 @@ body.has-class-mode .quest-page { padding-top: 0; }
   .quest-berimbau__svg circle:nth-of-type(2) { transition: none; }
   .quest-desafio-ticket { transition: none; }
 }
+
+/* === WP7: qa === */
+.quest-hud__ticket[data-done="true"] { background: var(--quest-lime); }

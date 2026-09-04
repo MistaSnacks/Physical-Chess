@@ -54,21 +54,15 @@ function paintClassBar() {
 }
 
 function paintDesafioTicket(s) {
-  const hud = document.querySelector('.quest-hud');
-  if (!hud || !s.player) return;
-  let ticket = hud.querySelector('[data-desafio-ticket]');
-  if (!ticket) {
-    ticket = document.createElement('a');
-    ticket.className = 'quest-desafio-ticket';
-    ticket.dataset.desafioTicket = '';
-    hud.appendChild(ticket);
-  }
+  const ticket = document.querySelector('[data-desafio-ticket]');
+  if (!ticket || !s.player) return;
   const done = Boolean(s.snapshot?.desafioDoneToday);
   ticket.href = '/desafio';
   ticket.dataset.done = done ? 'true' : 'false';
-  ticket.innerHTML = done
-    ? '<span class="quest-desafio-ticket__label">Desafio</span><span class="quest-desafio-ticket__state">Done today</span>'
-    : '<span class="quest-desafio-ticket__label">Desafio do Dia</span><span class="quest-desafio-ticket__state">+30 XP</span>';
+  const eye = ticket.querySelector('.quest-hud__ticket-eye');
+  const sub = ticket.querySelector('.quest-hud__ticket-sub');
+  if (eye) eye.textContent = 'Desafio do Dia';
+  if (sub) sub.textContent = done ? 'Done today' : '+30 XP';
 }
 
 function escapeHtml(s) {
