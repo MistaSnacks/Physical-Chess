@@ -17,8 +17,9 @@ function reduced() {
 }
 
 function stagger(nodes, attr, delayStep, startDelay = 0) {
+  const reduceMotion = reduced();
   nodes.forEach((el, i) => {
-    if (reduced()) {
+    if (reduceMotion) {
       el.setAttribute(attr, 'true');
       return;
     }

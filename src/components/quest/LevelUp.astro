@@ -3,11 +3,11 @@
 import Bira from './Bira.astro';
 ---
 
-<div class="quest-levelup" data-levelup hidden>
+<div class="quest-levelup" data-levelup hidden role="dialog" aria-modal="true" aria-labelledby="quest-levelup-title">
   <button class="quest-levelup__panel" type="button" data-levelup-dismiss>
     <Bira moment="levelUp" compact />
     <p class="quest-levelup__eyebrow">New level</p>
-    <h2 class="quest-levelup__title" data-levelup-title></h2>
+    <h2 class="quest-levelup__title" id="quest-levelup-title" data-levelup-title></h2>
     <p class="quest-levelup__bira" data-levelup-bira></p>
     <p class="quest-levelup__hint">Tap to keep going</p>
   </button>
