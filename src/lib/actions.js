@@ -139,4 +139,58 @@ export async function deletePlayer(id) {
   store.set({ session: await repo.getSession() });
 }
 
+export async function updateAccount(patch) {
+  const repo = await getRepo();
+  const account = await repo.updateAccount(patch);
+  const session = await repo.getSession();
+  store.set({ session });
+  return account;
+}
+
+/**
+ * Snapshots for every player in the signed-in family (picker / family home).
+ * Bounded to a handful of siblings; one listEvents per player.
+ */
+export async function snapshotsForSession() {
+  const repo = await getRepo();
+  const players = store.get().session?.players || [];
+  return Promise.all(players.map(async (player) => {
+    const events = await repo.listEvents(player.id);
+    return { player, events, snapshot: derivePlayer(events) };
+  }));
+}
+
+export async function confirmPractice(playerId, { moduleId = null, lessonId = null } = {}) {
+  if (store.get().activePlayerId !== playerId) await selectPlayer(playerId);
+  const already = store.get().events.some((e) => e.type === EVENT.PRACTICE_CONFIRMED && e.lessonId === lessonId);
+  if (already) return store.get().snapshot;
+  return recordEvent(EVENT.PRACTICE_CONFIRMED, { moduleId, lessonId, payload: { by: 'guardian' } });
+}
+
+/**
+ * Delete the whole family account. Demo: wipe and reseed signed-out.
+ * Wix: DELETE /api/account (WP6). If that route is missing, returns { contactAce: true }.
+ */
+export async function deleteAccount() {
+  const repo = await getRepo();
+  clearActivePlayer();
+  if (IS_DEMO && repo.resetDemo) {
+    await repo.resetDemo();
+    store.set({ session: null, ready: true });
+    return { demo: true };
+  }
+  try {
+    if (typeof repo.deleteAccount === 'function') await repo.deleteAccount();
+    else {
+      const res = await fetch('/api/account', { method: 'DELETE' }).catch(() => null);
+      if (!res || res.status === 404 || !res.ok) return { contactAce: true };
+    }
+    store.set({ session: null, ready: true });
+    return { ok: true };
+  } catch (err) {
+    if (err?.code === 'CONTACT_ACE' || err?.message === 'CONTACT_ACE') return { contactAce: true };
+    throw err;
+  }
+}
+
 window.addEventListener('online', () => flushOutbox());

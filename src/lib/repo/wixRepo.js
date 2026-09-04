@@ -10,17 +10,72 @@ const C = {
   events: 'lms-events',
 };
 
+const PAGE = 100;
+
 async function all(query) {
-  const items = [];
-  let res = await query.limit(1000).find();
-  items.push(...res.items);
-  while (res.hasNext()) { res = await res.next(); items.push(...res.items); }
-  return items;
+  const out = [];
+  let res = await query.limit(PAGE).find();
+  out.push(...res.items);
+  while (res.hasNext()) {
+    res = await res.next();
+    out.push(...res.items);
+  }
+  return out;
 }
 
-const fromAccount = (r) => ({ id: r._id, memberId: r.memberId, role: r.role || 'guardian', displayName: r.displayName || '', email: r.email || '', programs: r.programs || [], leaderboardOptIn: r.leaderboardOptIn !== false, demo: false });
-const fromPlayer = (r) => ({ id: r._id, accountId: r.accountId, firstName: r.firstName, apelido: r.apelido || '', avatar: r.avatar || { animal: 'frog', color: 'lime' }, birthYear: r.birthYear || null, program: r.program || null, startedAt: r.startedAt || null, active: r.active !== false, mayPlayInClass: r.mayPlayInClass !== false });
-const fromEvent = (r) => ({ clientEventId: r.clientEventId, playerId: r.playerId, accountId: r.accountId, type: r.type, moduleId: r.moduleId || null, lessonId: r.lessonId || null, payload: r.payload ? JSON.parse(r.payload) : {}, xp: r.xp || 0, stars: r.stars || 0, occurredAt: r.occurredAt, source: r.source || 'app', _id: r._id });
+const fromAccount = (r) => ({
+  id: r._id,
+  memberId: r.memberId,
+  role: r.role || 'guardian',
+  displayName: r.displayName || '',
+  email: r.email || '',
+  phone: r.phone || '',
+  programs: r.programs || [],
+  leaderboardOptIn: r.leaderboardOptIn !== false,
+  demo: false,
+});
+const fromPlayer = (r) => ({
+  id: r._id,
+  accountId: r.accountId,
+  firstName: r.firstName,
+  apelido: r.apelido || '',
+  avatar: r.avatar || { animal: 'frog', color: 'lime' },
+  birthYear: r.birthYear || null,
+  program: r.program || null,
+  startedAt: r.startedAt || null,
+  active: r.active !== false,
+  mayPlayInClass: r.mayPlayInClass !== false,
+});
+const fromEvent = (r) => ({
+  clientEventId: r.clientEventId,
+  playerId: r.playerId,
+  accountId: r.accountId,
+  type: r.type,
+  moduleId: r.moduleId || null,
+  lessonId: r.lessonId || null,
+  payload: r.payload ? (typeof r.payload === 'string' ? JSON.parse(r.payload) : r.payload) : {},
+  xp: r.xp || 0,
+  stars: r.stars || 0,
+  occurredAt: r.occurredAt,
+  source: r.source || 'app',
+  _id: r._id,
+});
+
+function toEventRow(e, playerId) {
+  return {
+    clientEventId: e.clientEventId,
+    playerId,
+    accountId: e.accountId,
+    type: e.type,
+    moduleId: e.moduleId || null,
+    lessonId: e.lessonId || null,
+    payload: JSON.stringify(e.payload || {}),
+    xp: e.xp || 0,
+    stars: e.stars || 0,
+    occurredAt: new Date(e.occurredAt),
+    source: e.source || 'app',
+  };
+}
 
 export const wixRepo = {
   name: 'wix',
@@ -53,7 +108,17 @@ export const wixRepo = {
 
   async createPlayer(data) {
     const session = await this.getSession();
-    const row = await wix.items.insert(C.players, { ...data, accountId: session.account.id, active: true, startedAt: new Date().toISOString().slice(0, 10) });
+    const row = await wix.items.insert(C.players, {
+      firstName: data.firstName,
+      apelido: data.apelido || '',
+      avatar: data.avatar || { animal: 'frog', color: 'lime' },
+      birthYear: data.birthYear || null,
+      program: data.program || null,
+      mayPlayInClass: data.mayPlayInClass !== false,
+      accountId: session.account.id,
+      active: true,
+      startedAt: new Date().toISOString().slice(0, 10),
+    });
     return fromPlayer(row);
   },
   async updatePlayer(id, patch) {
@@ -72,20 +137,42 @@ export const wixRepo = {
     return (await all(wix.items.query(C.events).eq('playerId', playerId).ascending('occurredAt'))).map(fromEvent);
   },
   async appendEvents(playerId, events) {
-    const accepted = [];
-    for (const e of events) {
-      const dup = await wix.items.query(C.events).eq('clientEventId', e.clientEventId).limit(1).find();
-      if (dup.items.length) continue;
-      await wix.items.insert(C.events, { ...e, playerId, payload: JSON.stringify(e.payload || {}), occurredAt: new Date(e.occurredAt) });
-      accepted.push(e);
+    if (!events?.length) return [];
+    const ids = events.map((e) => e.clientEventId).filter(Boolean);
+    const existing = new Set();
+    if (ids.length) {
+      // One query for the whole batch — never one round-trip per event.
+      const found = await all(wix.items.query(C.events).hasSome('clientEventId', ids));
+      for (const r of found) existing.add(r.clientEventId);
     }
-    return accepted;
+    const fresh = events.filter((e) => !existing.has(e.clientEventId));
+    if (!fresh.length) return [];
+    const rows = fresh.map((e) => toEventRow(e, playerId));
+    if (typeof wix.items.bulkInsert === 'function') {
+      await wix.items.bulkInsert(C.events, rows);
+    } else {
+      for (const row of rows) await wix.items.insert(C.events, row);
+    }
+    return fresh;
   },
   async updateAccount(patch) {
     const session = await this.getSession();
     const current = await wix.items.get(C.accounts, session.account.id);
-    const row = await wix.items.update(C.accounts, { ...current, ...patch, _id: session.account.id });
+    const safe = { ...patch };
+    delete safe.role;
+    delete safe.memberId;
+    const row = await wix.items.update(C.accounts, { ...current, ...safe, _id: session.account.id, role: current.role, memberId: current.memberId });
     return fromAccount(row);
+  },
+  async deleteAccount() {
+    // WP6 implements DELETE /api/account (client secret: wipe players, ledger, member).
+    const res = await fetch('/api/account', { method: 'DELETE', headers: await authHeaders() }).catch(() => null);
+    if (!res || res.status === 404 || !res.ok) {
+      const err = new Error('CONTACT_ACE');
+      err.code = 'CONTACT_ACE';
+      throw err;
+    }
+    await this.signOut();
   },
 };
 

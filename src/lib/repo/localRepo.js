@@ -70,8 +70,18 @@ export const localRepo = {
   },
   async updateAccount(patch) {
     const d = db();
-    d.account = { ...d.account, ...patch };
+    const safe = { ...patch };
+    delete safe.role;
+    delete safe.memberId;
+    delete safe.demo;
+    d.account = { ...d.account, ...safe };
     save(d);
     return d.account;
+  },
+
+  /** Demo stand-in for Delete my account (SPEC §3.3): wipe and reseed signed out. */
+  async deleteAccount() {
+    localStorage.removeItem(KEY);
+    seed();
   },
 };
