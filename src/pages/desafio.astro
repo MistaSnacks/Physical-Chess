@@ -1,0 +1,203 @@
+---
+// desafio.astro — Desafio do Dia (SPEC §4.6).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Desafio do Dia — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="journey" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Daily</p>
+      <h1 class="quest-screen__title" data-quest-enter>Desafio do Dia</h1>
+      <p class="quest-screen__sub" data-quest-enter>One short task. Thirty XP. Once a day.</p>
+      <div data-stage></div>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../directions/quest/motion.js';
+    import { requireSession } from '../lib/auth-guard.js';
+    import { recordDesafio } from '../lib/actions.js';
+    import { store } from '../lib/store.js';
+    import { desafioForDate, shuffle } from '../lib/desafio.js';
+    import { wix } from '../data/media.js';
+
+    function kid(s) {
+      return String(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    }
+
+    async function finish(payload) {
+      await recordDesafio(payload);
+      paintDone();
+    }
+
+    function paintDone() {
+      const item = desafioForDate();
+      document.querySelector('[data-stage]').innerHTML = `
+        <section class="quest-card quest-done" data-quest-enter>
+          <p class="quest-done__title">You did today’s desafio</p>
+          <p class="quest-card__body">+30 XP. Come back tomorrow for a new one. Your turma can see the week on <a href="/turma" style="color:var(--quest-mango)">Turma</a>.</p>
+        </section>`;
+      document.body.dataset.desafioDone = 'true';
+      void item;
+    }
+
+    function paintFlashcard(item, stage) {
+      stage.innerHTML = `
+        <section class="quest-card" data-quest-enter>
+          <p class="quest-lesson__type">${item.title}</p>
+          <h2 class="quest-card__title">${item.word}</h2>
+          <p class="quest-card__body">${kid(item.prompt)}</p>
+          <button class="quest-btn quest-btn--ghost" type="button" data-speak>Hear it</button>
+          <p class="quest-desafio-meaning" data-meaning hidden>${item.meaning}</p>
+          <div class="quest-btn-row">
+            <button class="quest-btn" type="button" data-reveal>Show meaning</button>
+          </div>
+          <div class="quest-btn-row" data-after hidden>
+            <button class="quest-btn quest-btn--lime" type="button" data-ok>I knew it</button>
+            <button class="quest-btn quest-btn--ghost" type="button" data-ok>I learned it</button>
+          </div>
+        </section>`;
+      stage.querySelector('[data-speak]').addEventListener('click', () => {
+        const u = new SpeechSynthesisUtterance(item.say || item.word);
+        u.lang = 'pt-BR';
+        speechSynthesis.speak(u);
+      });
+      stage.querySelector('[data-reveal]').addEventListener('click', () => {
+        stage.querySelector('[data-meaning]').hidden = false;
+        stage.querySelector('[data-after]').hidden = false;
+      });
+      stage.querySelectorAll('[data-ok]').forEach((b) => b.addEventListener('click', () => finish({ kind: item.kind, id: item.id, dateKey: item.dateKey, word: item.word })));
+    }
+
+    function paintInstrument(item, stage) {
+      const src = wix(item.photoKey, 720, 480);
+      stage.innerHTML = `
+        <section class="quest-card" data-quest-enter>
+          <p class="quest-lesson__type">${item.title}</p>
+          <p class="quest-card__body">${kid(item.prompt)}</p>
+          <img class="quest-desafio-photo" src="${src}" alt="" width="720" height="480" />
+          <div class="quest-quiz-choices">${item.choices.map((c, i) => `<button type="button" class="quest-btn quest-btn--ghost" data-choice="${i}">${c}</button>`).join('')}</div>
+          <p class="quest-form__error" data-wrong hidden>Not that one. Try again.</p>
+        </section>`;
+      stage.querySelectorAll('[data-choice]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const i = Number(btn.getAttribute('data-choice'));
+          if (i === item.correctIndex) finish({ kind: item.kind, id: item.id, dateKey: item.dateKey, correct: true });
+          else stage.querySelector('[data-wrong]').hidden = false;
+        });
+      });
+    }
+
+    function paintOrder(item, stage) {
+      const seed = item.dateKey + item.id;
+      const shuffled = shuffle(item.steps.map((text, i) => ({ text, i })), seed);
+      const picked = [];
+      stage.innerHTML = `
+        <section class="quest-card" data-quest-enter>
+          <p class="quest-lesson__type">${item.title}</p>
+          <p class="quest-card__body">${kid(item.prompt)}</p>
+          <ol class="quest-order-picked" data-picked></ol>
+          <div class="quest-order-pool" data-pool>${shuffled.map((s) => `<button type="button" class="quest-btn quest-btn--ghost" data-i="${s.i}">${s.text}</button>`).join('')}</div>
+          <p class="quest-form__error" data-wrong hidden>That order is not quite right. Tap again from the top.</p>
+        </section>`;
+      const pool = stage.querySelector('[data-pool]');
+      const dest = stage.querySelector('[data-picked]');
+      pool.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('[data-i]');
+        if (!btn) return;
+        picked.push(Number(btn.getAttribute('data-i')));
+        dest.innerHTML += `<li>${btn.textContent}</li>`;
+        btn.remove();
+        if (picked.length !== item.steps.length) return;
+        const ok = picked.every((n, i) => n === i);
+        if (ok) finish({ kind: item.kind, id: item.id, dateKey: item.dateKey });
+        else {
+          stage.querySelector('[data-wrong]').hidden = false;
+          picked.length = 0;
+          dest.innerHTML = '';
+          pool.innerHTML = shuffled.map((s) => `<button type="button" class="quest-btn quest-btn--ghost" data-i="${s.i}">${s.text}</button>`).join('');
+        }
+      });
+    }
+
+    function paintFact(item, stage) {
+      stage.innerHTML = `
+        <section class="quest-card" data-quest-enter>
+          <p class="quest-lesson__type">${item.title}</p>
+          <p class="quest-card__body">${kid(item.prompt)}</p>
+          <div class="quest-btn-row">
+            <button class="quest-btn" type="button" data-v="true">True</button>
+            <button class="quest-btn quest-btn--ghost" type="button" data-v="false">False</button>
+          </div>
+          <p class="quest-form__error" data-wrong hidden></p>
+        </section>`;
+      stage.querySelectorAll('[data-v]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const v = btn.getAttribute('data-v') === 'true';
+          if (v === item.answer) finish({ kind: item.kind, id: item.id, dateKey: item.dateKey, correct: true });
+          else {
+            const w = stage.querySelector('[data-wrong]');
+            w.hidden = false;
+            w.textContent = item.explain;
+          }
+        });
+      });
+    }
+
+    function paintTimer(item, stage) {
+      let left = item.seconds;
+      let t = null;
+      stage.innerHTML = `
+        <section class="quest-card" data-quest-enter>
+          <p class="quest-lesson__type">${item.title}</p>
+          <p class="quest-card__body">${kid(item.prompt)}</p>
+          <p class="quest-timer" data-timer>${left}</p>
+          <p class="quest-field__hint">${item.cue}</p>
+          <div class="quest-btn-row">
+            <button class="quest-btn quest-btn--lime" type="button" data-start>Start</button>
+            <button class="quest-btn" type="button" data-done hidden>I did it</button>
+          </div>
+        </section>`;
+      const timer = stage.querySelector('[data-timer]');
+      const start = stage.querySelector('[data-start]');
+      const done = stage.querySelector('[data-done]');
+      start.addEventListener('click', () => {
+        start.hidden = true;
+        t = setInterval(() => {
+          left -= 1;
+          timer.textContent = String(Math.max(0, left));
+          if (left <= 0) {
+            clearInterval(t);
+            done.hidden = false;
+          }
+        }, 1000);
+      });
+      done.addEventListener('click', () => finish({ kind: item.kind, id: item.id, dateKey: item.dateKey }));
+    }
+
+    async function init() {
+      const s = await requireSession({ player: true });
+      if (!s) return;
+      const stage = document.querySelector('[data-stage]');
+      const snap = store.get().snapshot;
+      document.body.dataset.desafioDone = snap?.desafioDoneToday ? 'true' : 'false';
+      if (snap?.desafioDoneToday) { paintDone(); return; }
+      const item = desafioForDate();
+      if (item.kind === 'flashcard') paintFlashcard(item, stage);
+      else if (item.kind === 'instrument') paintInstrument(item, stage);
+      else if (item.kind === 'order') paintOrder(item, stage);
+      else if (item.kind === 'fact') paintFact(item, stage);
+      else paintTimer(item, stage);
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

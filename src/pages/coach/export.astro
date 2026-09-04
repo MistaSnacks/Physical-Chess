@@ -1,0 +1,70 @@
+---
+// coach/export.astro — CSV/JSON download by program or all (SPEC §3.4).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import CoachNav from '../../components/quest/CoachNav.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Export — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main class="quest-screen">
+      <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
+      <h1 class="quest-screen__title" data-quest-enter>Export</h1>
+      <p class="quest-screen__sub" data-quest-enter>CSV files open in Numbers. Coaches export their programs. Admins can export all.</p>
+      <CoachNav active="export" />
+      <section class="quest-card" data-quest-enter>
+        <div class="quest-field"><label class="quest-field__label" for="program">Program</label>
+          <select class="quest-field__input" id="program" data-program></select>
+        </div>
+        <div class="quest-btn-row">
+          <button class="quest-btn" type="button" data-dl="program:players:csv">This program · players CSV</button>
+          <button class="quest-btn quest-btn--ghost" type="button" data-dl="program:events:csv">This program · events CSV</button>
+          <button class="quest-btn quest-btn--ghost" type="button" data-dl="program:players:json">This program · JSON</button>
+        </div>
+        <div class="quest-btn-row" data-all-row hidden>
+          <button class="quest-btn quest-btn--lime" type="button" data-dl="all:players:csv">All programs · players CSV</button>
+          <button class="quest-btn quest-btn--ghost" type="button" data-dl="all:events:csv">All programs · events CSV</button>
+        </div>
+      </section>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../../directions/quest/motion.js';
+    import { requireSession } from '../../lib/auth-guard.js';
+    import { getCoach } from '../../lib/repo/coachRepo.js';
+    import { programsForAccount, downloadBlob } from '../../lib/coach.js';
+
+    async function init() {
+      const s = await requireSession({ role: 'coach' });
+      if (!s) return;
+      if (s.session.account.role === 'admin') {
+        document.querySelectorAll('[data-coach-roles]').forEach((el) => { el.hidden = false; });
+        document.querySelector('[data-all-row]').hidden = false;
+      }
+      const programs = programsForAccount(s.session.account);
+      const sel = document.querySelector('[data-program]');
+      sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
+      const coach = await getCoach();
+      document.querySelectorAll('[data-dl]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const [scope, what, format] = btn.getAttribute('data-dl').split(':');
+          const program = sel.value;
+          const result = await coach.exportData({ scope, what, format, program });
+          const name = `physical-chess-${what}-${scope === 'all' ? 'all' : program}.${format}`;
+          if (format === 'json') downloadBlob(name, typeof result === 'string' ? result : JSON.stringify(result, null, 2), 'application/json');
+          else downloadBlob(name, result, 'text/csv;charset=utf-8');
+        });
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

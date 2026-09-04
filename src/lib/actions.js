@@ -51,8 +51,10 @@ export async function recordEvent(type, { moduleId = null, lessonId = null, payl
   const s = store.get();
   if (!s.player) throw new Error('no active player');
   const now = new Date();
+  let source = 'app';
+  try { if (sessionStorage.getItem('pc.classMode')) source = 'class'; } catch { /* ignore */ }
   const base = { playerId: s.player.id, accountId: s.player.accountId };
-  const event = makeEvent({ ...base, type, moduleId, lessonId, payload, occurredAt: now });
+  const event = makeEvent({ ...base, type, moduleId, lessonId, payload, occurredAt: now, source });
   const before = s.snapshot || derivePlayer(s.events);
   const newWeek = event.xp > 0 && startsNewStreakWeek(s.events, now);
   let events = [...s.events, event];
@@ -137,6 +139,35 @@ export async function deletePlayer(id) {
   await repo.deletePlayer(id);
   if (store.get().activePlayerId === id) clearActivePlayer();
   store.set({ session: await repo.getSession() });
+}
+
+export async function updateAccount(patch) {
+  const repo = await getRepo();
+  const account = await repo.updateAccount(patch);
+  const session = await repo.getSession();
+  store.set({ session });
+  return account;
+}
+
+/**
+ * Record today's Desafio. Same ledger path as any other event (30 XP).
+ */
+export async function recordDesafio(payload = {}) {
+  return recordEvent(EVENT.DESAFIO_DONE, { payload });
+}
+
+/**
+ * Class mode: select a turma player who may not belong to the signed-in family.
+ * Their ledger still lives in the repo (demo seeds them into localRepo).
+ */
+export async function selectClassPlayer(player) {
+  const repo = await getRepo();
+  sessionStorage.setItem(ACTIVE_KEY, player.id);
+  await flushOutbox();
+  const events = await repo.listEvents(player.id);
+  const snapshot = derivePlayer(events);
+  store.set({ activePlayerId: player.id, player, events, snapshot, ready: true });
+  return snapshot;
 }
 
 window.addEventListener('online', () => flushOutbox());

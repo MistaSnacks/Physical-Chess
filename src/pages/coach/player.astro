@@ -1,0 +1,169 @@
+---
+// coach/player.astro — student detail, awards, notes (SPEC §5.4).
+// Query param `?id=` so the page is static (demo / smoke) while /api/coach/players/:id stays a server route.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import CoachNav from '../../components/quest/CoachNav.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Student — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main class="quest-screen quest-screen--wide">
+      <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
+      <h1 class="quest-screen__title" data-bind-player-title data-quest-enter>Student</h1>
+      <CoachNav active="player" />
+      <div data-coach-root>
+        <p class="quest-card quest-card--note">Loading…</p>
+      </div>
+    </main>
+    <Footer />
+  </div>
+  <dialog class="quest-dialog" data-corda-dialog>
+    <form method="dialog" class="quest-dialog__card" data-corda-form>
+      <h2 class="quest-card__title">Award a corda</h2>
+      <p class="quest-card__body">This is the one action that changes a kid’s rank. Only do this at Batizado, or when ACE has already tied the corda.</p>
+      <div class="quest-field"><label class="quest-field__label" for="corda">Corda</label>
+        <select class="quest-field__input" id="corda" name="corda" data-corda-select></select>
+      </div>
+      <div class="quest-field"><label class="quest-field__label" for="ceremony">Event</label>
+        <input class="quest-field__input" id="ceremony" name="event" value="Batizado 2026" />
+      </div>
+      <div class="quest-field"><label class="quest-field__label" for="corda-note">Note</label>
+        <input class="quest-field__input" id="corda-note" name="note" maxlength="200" />
+      </div>
+      <div class="quest-btn-row">
+        <button class="quest-btn" type="button" data-corda-confirm>Confirm award</button>
+        <button class="quest-btn quest-btn--ghost" value="cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+  <script>
+    import '../../directions/quest/motion.js';
+    import { requireSession } from '../../lib/auth-guard.js';
+    import { getCoach } from '../../lib/repo/coachRepo.js';
+    import { cordaLabel, EVENT_LABELS } from '../../lib/coach.js';
+    import { CORDAS } from '../../data/batizado.js';
+    import { avatarSvg } from '../../lib/avatar.js';
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+
+    async function init() {
+      const s = await requireSession({ role: 'coach' });
+      if (!s) return;
+      if (s.session.account.role === 'admin') document.querySelectorAll('[data-coach-roles]').forEach((el) => { el.hidden = false; });
+      const id = new URLSearchParams(location.search).get('id');
+      const coach = await getCoach();
+      const root = document.querySelector('[data-coach-root]');
+      const title = document.querySelector('[data-bind-player-title]');
+      const dialog = document.querySelector('[data-corda-dialog]');
+      const select = document.querySelector('[data-corda-select]');
+      select.innerHTML = CORDAS.map((c) => `<option value="${c.id}">${esc(c.label)}</option>`).join('');
+      if (!id) { root.innerHTML = '<p class="quest-card quest-card--note">Pick a player from the roster.</p>'; return; }
+
+      async function paint() {
+        const data = await coach.player(id);
+        if (!data) { root.innerHTML = '<p class="quest-card quest-card--note">This player is not on your roster.</p>'; return; }
+        const { player, snapshot, events } = data;
+        title.textContent = player.apelido;
+        if (snapshot.nextCorda) select.value = snapshot.nextCorda;
+        const items = snapshot.readiness.items.map((it) => `<li class="quest-check ${it.met ? 'is-met' : ''}"><span class="quest-check__mark" aria-hidden="true"></span>${esc(it.label)}</li>`).join('');
+        const timeline = events.map((e) => {
+          const label = EVENT_LABELS[e.type] || e.type;
+          const extra = e.payload?.note || e.payload?.patchKey || e.payload?.corda || '';
+          const when = new Date(e.occurredAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+          return `<li><span class="quest-timeline__when">${esc(when)}</span><span>${esc(label)}${extra ? ` · ${esc(extra)}` : ''}</span></li>`;
+        }).join('');
+        root.innerHTML = `
+          <section class="quest-coach-hero" data-quest-enter>
+            <div class="quest-coach-hero__ava">${avatarSvg(player.avatar, 88)}</div>
+            <div>
+              <p class="quest-coach-hero__apelido">${esc(player.apelido)}</p>
+              <p class="quest-screen__sub" style="margin:0">${esc(player.firstName)} · Level ${snapshot.level.level} ${esc(snapshot.level.title)} · ${esc(cordaLabel(snapshot.cordaCurrent))}</p>
+            </div>
+          </section>
+          <section class="quest-card" data-quest-enter>
+            <h2 class="quest-card__title">Readiness · ${snapshot.readiness.percent}%</h2>
+            <ul class="quest-checks">${items}</ul>
+          </section>
+          <section class="quest-card" data-quest-enter>
+            <h2 class="quest-card__title">Actions</h2>
+            <div class="quest-btn-row">
+              <button class="quest-btn quest-btn--lime" type="button" data-stamp>Stamp today</button>
+              <button class="quest-btn" type="button" data-award-helper>Ajudante patch</button>
+              <button class="quest-btn" type="button" data-award-batizado>Batizado 2026 patch</button>
+              <button class="quest-btn" type="button" data-open-corda>Award corda</button>
+            </div>
+            <form class="quest-xp-form" data-xp-form>
+              <label class="quest-field__label" for="xp-amt">XP bonus (10–50)</label>
+              <div class="quest-xp-row">
+                <input class="quest-field__input" id="xp-amt" name="xp" type="number" min="10" max="50" value="20" />
+                <input class="quest-field__input" name="note" placeholder="Short note" maxlength="160" />
+                <button class="quest-btn quest-btn--ghost" type="submit">Give XP</button>
+              </div>
+            </form>
+            <form class="quest-note-form" data-note-form>
+              <label class="quest-field__label" for="note">Note for ACE</label>
+              <div class="quest-xp-row">
+                <input class="quest-field__input" id="note" name="note" maxlength="240" placeholder="What you saw in class" />
+                <button class="quest-btn quest-btn--ghost" type="submit">Save note</button>
+              </div>
+            </form>
+          </section>
+          <section class="quest-card" data-quest-enter>
+            <h2 class="quest-card__title">Timeline</h2>
+            <ol class="quest-timeline">${timeline || '<li>No events yet.</li>'}</ol>
+          </section>
+        `;
+        root.querySelector('[data-stamp]').addEventListener('click', async () => {
+          await coach.stampAttendance({ playerIds: [player.id], program: player.program, classDate: new Date().toISOString().slice(0, 10) });
+          await paint();
+        });
+        root.querySelector('[data-award-helper]').addEventListener('click', async () => {
+          await coach.award({ playerId: player.id, kind: 'patch', patchKey: 'helper' });
+          await paint();
+        });
+        root.querySelector('[data-award-batizado]').addEventListener('click', async () => {
+          await coach.award({ playerId: player.id, kind: 'patch', patchKey: 'batizado-2026' });
+          await paint();
+        });
+        root.querySelector('[data-open-corda]').addEventListener('click', () => dialog.showModal());
+        root.querySelector('[data-xp-form]').addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const fd = new FormData(ev.currentTarget);
+          await coach.award({ playerId: player.id, kind: 'xp', xp: fd.get('xp'), note: fd.get('note') });
+          ev.currentTarget.reset();
+          await paint();
+        });
+        root.querySelector('[data-note-form]').addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const fd = new FormData(ev.currentTarget);
+          const note = String(fd.get('note') || '').trim();
+          if (!note) return;
+          await coach.award({ playerId: player.id, kind: 'note', note });
+          ev.currentTarget.reset();
+          await paint();
+        });
+      }
+
+      document.querySelector('[data-corda-confirm]').addEventListener('click', async () => {
+        const fd = new FormData(document.querySelector('[data-corda-form]'));
+        await coach.award({ playerId: id, kind: 'corda', corda: fd.get('corda'), event: fd.get('event'), note: fd.get('note') });
+        dialog.close();
+        await paint();
+      });
+
+      await paint();
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

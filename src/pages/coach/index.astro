@@ -1,9 +1,10 @@
 ---
-// coach/index.astro — coach area skeleton, role-gated (SPEC §5.4). WP6.
+// coach/index.astro — overview stats + roster by program (SPEC §5.4).
 import { ClientRouter } from 'astro:transitions';
 import Base from '../../layouts/Base.astro';
 import Nav from '../../directions/quest/Nav.astro';
 import Footer from '../../directions/quest/Footer.astro';
+import CoachNav from '../../components/quest/CoachNav.astro';
 import '../../directions/quest/tokens.css';
 import '../../directions/quest/theme.css';
 ---
@@ -13,17 +14,87 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen">
+    <main class="quest-screen quest-screen--wide">
       <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
       <h1 class="quest-screen__title" data-quest-enter>Your turmas</h1>
-      <section class="quest-card quest-card--note" data-quest-enter>Overview, roster, attendance stamps, awards, class mode and export land here in WP6.</section>
+      <p class="quest-screen__sub" data-quest-enter>Apelidos and first names only. Awards and stamps write to the ledger.</p>
+      <CoachNav active="overview" />
+      <div data-coach-root>
+        <p class="quest-card quest-card--note">Loading the roster…</p>
+      </div>
     </main>
     <Footer />
   </div>
   <script>
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
-    async function init() { await requireSession({ role: 'coach' }); }
+    import { getCoach } from '../../lib/repo/coachRepo.js';
+    import { overviewFromRoster, READINESS_BUCKETS, cordaLabel, programsForAccount } from '../../lib/coach.js';
+    import { avatarSvg } from '../../lib/avatar.js';
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+
+    async function init() {
+      const s = await requireSession({ role: 'coach' });
+      if (!s) return;
+      if (s.session.account.role === 'admin') {
+        document.querySelectorAll('[data-coach-roles]').forEach((el) => { el.hidden = false; });
+      }
+      const coach = await getCoach();
+      const programs = programsForAccount(s.session.account);
+      const root = document.querySelector('[data-coach-root]');
+      const all = [];
+      for (const p of programs) {
+        const rows = await coach.roster(p.key);
+        all.push(...rows.map((r) => ({ ...r, programKey: p.key })));
+      }
+      const ov = overviewFromRoster(all);
+      const bucketMax = Math.max(1, ...ov.buckets);
+      root.innerHTML = `
+        <section class="quest-stats" data-quest-enter>
+          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.activeThisWeek}</p><p class="quest-stat-card__label">Active this week</p></article>
+          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.lessonsThisWeek}</p><p class="quest-stat-card__label">Lessons done this week</p></article>
+          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.inactive.length}</p><p class="quest-stat-card__label">Quiet 3+ weeks</p></article>
+          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.total}</p><p class="quest-stat-card__label">Players</p></article>
+        </section>
+        <section class="quest-card" data-quest-enter>
+          <h2 class="quest-card__title">Readiness</h2>
+          <div class="quest-buckets" role="img" aria-label="Readiness distribution">
+            ${ov.buckets.map((n, i) => `<div class="quest-buckets__col"><span class="quest-buckets__bar" style="height:${Math.round((n / bucketMax) * 100)}%"></span><span class="quest-buckets__n">${n}</span><span class="quest-buckets__label">${READINESS_BUCKETS[i].label}</span></div>`).join('')}
+          </div>
+        </section>
+        ${ov.inactive.length ? `<section class="quest-card quest-card--note" data-quest-enter><h2 class="quest-card__title">Quiet for three weeks</h2><ul class="quest-quiet">${ov.inactive.map((r) => `<li><a href="/coach/player?id=${esc(r.id)}">${esc(r.apelido)}</a> · ${esc(r.firstName)}</li>`).join('')}</ul></section>` : ''}
+        ${programs.map((prog) => {
+          const rows = all.filter((r) => r.program === prog.key);
+          if (!rows.length) return `<section class="quest-card" data-quest-enter><h2 class="quest-card__title">${esc(prog.name)}</h2><p class="quest-card__body">No players in this turma yet.</p></section>`;
+          return `<section class="quest-card quest-card--table" data-quest-enter>
+            <h2 class="quest-card__title">${esc(prog.name)}</h2>
+            <div class="quest-table-wrap">
+              <table class="quest-table quest-table--roster">
+                <thead><tr><th>Player</th><th>Name</th><th>Level</th><th>Ready</th><th>Weeks</th><th>Last</th><th>Corda</th></tr></thead>
+                <tbody>
+                  ${rows.map((r) => {
+                    const snap = r.snapshot;
+                    const last = snap.lastActiveAt ? new Date(snap.lastActiveAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+                    return `<tr>
+                      <td data-label="Player"><a class="quest-roster-link" href="/coach/player?id=${esc(r.id)}"><span class="quest-roster-ava">${avatarSvg(r.avatar, 36)}</span>${esc(r.apelido)}</a></td>
+                      <td data-label="Name">${esc(r.firstName)}</td>
+                      <td data-label="Level">${snap.level.level} ${esc(snap.level.title)}</td>
+                      <td data-label="Ready">${snap.readiness.percent}%</td>
+                      <td data-label="Weeks">${snap.streak.weeks}</td>
+                      <td data-label="Last">${esc(last)}</td>
+                      <td data-label="Corda">${esc(cordaLabel(snap.cordaCurrent))}</td>
+                    </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </section>`;
+        }).join('')}
+      `;
+    }
     document.addEventListener('astro:page-load', init);
     init();
   </script>

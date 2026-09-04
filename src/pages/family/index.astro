@@ -22,6 +22,15 @@ import '../../directions/quest/theme.css';
       <section class="quest-card quest-card--note" style="margin-top:28px" data-quest-enter>
         Report cards, CSV download, leaderboard opt-in and delete-player live here. Built in WP4.
       </section>
+      <section class="quest-card" data-demo-coach hidden data-quest-enter>
+        <h2 class="quest-card__title">Demo coach</h2>
+        <p class="quest-card__body">Open the seeded turma of eight players. Switch back any time. This does not change a real Wix role.</p>
+        <div class="quest-btn-row">
+          <button class="quest-btn quest-btn--lime" type="button" data-to-coach>Switch to coach view</button>
+          <button class="quest-btn" type="button" data-to-admin>Switch to admin view</button>
+          <button class="quest-btn quest-btn--ghost" type="button" data-to-family hidden>Switch back to family</button>
+        </div>
+      </section>
       <div class="quest-btn-row"><button class="quest-btn quest-btn--ghost" type="button" data-signout>Sign out</button></div>
     </main>
     <Footer />
@@ -29,9 +38,10 @@ import '../../directions/quest/theme.css';
   <script>
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
-    import { signOut } from '../../lib/actions.js';
+    import { signOut, updateAccount } from '../../lib/actions.js';
     import { bindDom } from '../../lib/store.js';
     import { avatarSvg } from '../../lib/avatar.js';
+    import { IS_DEMO } from '../../lib/repo/index.js';
     async function init() {
       const s = await requireSession();
       if (!s) return;
@@ -40,6 +50,23 @@ import '../../directions/quest/theme.css';
       grid.innerHTML = s.session.players.map((p) => `<a class="quest-player-card" href="/family/players/${p.id}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${p.firstName}</span><span class="quest-player-card__meta">${p.apelido || 'no apelido yet'}</span></a>`).join('') +
         `<a class="quest-player-card quest-player-card--add" href="/family/players/new"><span class="quest-player-card__name">+ Add a player</span></a>`;
       document.querySelector('[data-signout]').addEventListener('click', async () => { await signOut(); location.href = '/'; });
+      if (IS_DEMO) {
+        const box = document.querySelector('[data-demo-coach]');
+        box.hidden = false;
+        const role = s.session.account.role;
+        document.querySelector('[data-to-family]').hidden = role === 'guardian';
+        document.querySelector('[data-to-coach]').hidden = role === 'coach';
+        document.querySelector('[data-to-admin]').hidden = role === 'admin';
+        const go = async (nextRole, programs) => {
+          await updateAccount({ role: nextRole, programs });
+          const { coachDemo } = await import('../../lib/repo/coachDemo.js');
+          await coachDemo.ensure();
+          location.href = nextRole === 'guardian' ? '/family' : nextRole === 'admin' ? '/admin/roles' : '/coach';
+        };
+        document.querySelector('[data-to-coach]').addEventListener('click', () => go('coach', ['bushwick', 'berkeley-carroll', 'prospect']));
+        document.querySelector('[data-to-admin]').addEventListener('click', () => go('admin', ['bushwick', 'berkeley-carroll', 'prospect', 'brooklyn-open']));
+        document.querySelector('[data-to-family]').addEventListener('click', () => go('guardian', []));
+      }
     }
     document.addEventListener('astro:page-load', init);
     init();
