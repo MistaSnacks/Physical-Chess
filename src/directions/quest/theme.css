@@ -4389,3 +4389,11 @@ body.has-class-mode .quest-page { padding-top: 0; }
 }
 .yt-with-credit { width: 100%; }
 .yt-with-credit .quest-video-credit { margin: 8px 0 0; }
+/* Home "latest" is a full-width lite YouTube, not the map's 112px chip. */
+.quest-section--latest .quest-latest {
+  display: block;
+  grid-template-columns: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
