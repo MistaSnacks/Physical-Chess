@@ -96,7 +96,7 @@ import '../../directions/quest/theme.css';
           <h2 class="quest-card__title">Batizado readiness</h2>
           <p class="quest-card__body">${snapshot.readiness.percent}% · ${snapshot.readiness.metCount} of ${snapshot.readiness.total}</p>
           <ul class="quest-checklist">
-            ${snapshot.readiness.items.map((item) => `<li class="${item.met ? 'is-met' : ''}"><span class="quest-check" aria-hidden="true"></span>${escapeHtml(item.label)}</li>`).join('')}
+            ${snapshot.readiness.items.map((item) => `<li class="${item.met ? 'is-met' : ''}"><span class="quest-checklist__mark" aria-hidden="true"></span>${escapeHtml(item.label)}</li>`).join('')}
           </ul>
         </section>
         <section class="quest-card">
