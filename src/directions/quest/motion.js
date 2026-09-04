@@ -308,11 +308,10 @@ function init() {
   if (now - lastInitAt < 50) return;
   lastInitAt = now;
 
-  enterReady = false;
   watchLateEnter();
+  enterReady = true;
   initLessonDots();
   initEntrance();
-  enterReady = true;
   initTrailDraw();
   initXpBar();
   initMascotBreathing();
