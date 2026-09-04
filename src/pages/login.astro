@@ -1,0 +1,68 @@
+---
+// login.astro — guardian sign-in in the Quest look (SPEC §2.1). In demo
+// mode the form is replaced by "Try the demo". WP4 finishes error states,
+// reCAPTCHA, verification and reset screens.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Log in — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="home" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter>Log in</h1>
+      <p class="quest-screen__sub" data-quest-enter>Use the same email and password you use on physicalchess.org.</p>
+
+      <section class="quest-card" data-demo-card hidden data-quest-enter>
+        <h2 class="quest-card__title">Demo mode</h2>
+        <p class="quest-card__body">No Wix login is connected yet. Open the demo family and play as Maya or Leo.</p>
+        <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="button" data-demo-btn>Try the demo</button></div>
+      </section>
+
+      <form class="quest-card" data-login-form hidden data-quest-enter>
+        <div class="quest-form__error" data-error hidden></div>
+        <div class="quest-field"><label class="quest-field__label" for="email">Email</label><input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required /></div>
+        <div class="quest-field"><label class="quest-field__label" for="password">Password</label><input class="quest-field__input" id="password" name="password" type="password" autocomplete="current-password" required /></div>
+        <div class="quest-btn-row"><button class="quest-btn" type="submit">Log in</button><a class="quest-btn quest-btn--ghost" href="/signup">Sign up</a></div>
+        <p class="quest-field__hint" style="margin-top:14px"><a href="/forgot" style="color:var(--quest-mango)">Forgot your password?</a></p>
+      </form>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import { IS_DEMO } from '../lib/repo/index.js';
+    import { signInDemo, loadSession } from '../lib/actions.js';
+
+    async function init() {
+      const next = new URLSearchParams(location.search).get('next') || '/who';
+      const session = await loadSession();
+      if (session) { location.replace(next); return; }
+      document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
+      document.querySelector('[data-login-form]').hidden = IS_DEMO;
+      document.querySelector('[data-demo-btn]')?.addEventListener('click', async () => { await signInDemo(); location.href = next; });
+      const form = document.querySelector('[data-login-form]');
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = form.querySelector('[data-error]');
+        err.hidden = true;
+        const { loginWithPassword, beginRedirectExchange } = await import('../lib/wix.js');
+        const fd = new FormData(form);
+        try {
+          const res = await loginWithPassword(fd.get('email'), fd.get('password'));
+          if (res.loginState === 'SUCCESS') return beginRedirectExchange(res.data.sessionToken, next);
+          err.textContent = res.loginState === 'EMAIL_VERIFICATION_REQUIRED' ? 'Check your email for a verification code.' : res.errorCode === 'invalidPassword' ? 'That password does not match. Try again or reset it.' : 'We could not log you in. Check your email and password.';
+          err.hidden = false;
+        } catch (ex) { err.textContent = 'Something went wrong. Please try again.'; err.hidden = false; console.error(ex); }
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

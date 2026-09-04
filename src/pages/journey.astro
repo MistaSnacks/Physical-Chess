@@ -19,7 +19,7 @@ const next = nextUpLesson();
 const currentModuleId = next ? next.module.id : null;
 
 const corda = CORDAS[cordaIndex(STUDENT.corda)];
-const xpPercent = Math.round((STUDENT.xp / STUDENT.xpToNext) * 100);
+const xpPercent = STUDENT.level.percent;
 
 const msPerDay = 1000 * 60 * 60 * 24;
 const daysToBatizado = Math.max(
@@ -28,9 +28,9 @@ const daysToBatizado = Math.max(
 );
 
 const PAGE_FOR_MODULE = {
-  movements: '/movements',
-  music: '/music',
-  culture: '/music',
+  movements: '/learn/movements',
+  music: '/learn/music',
+  culture: '/learn/music',
   graduation: '/batizado',
 };
 
@@ -69,7 +69,7 @@ const nodes = MODULES.map((mod) => ({
   photoKey: MODULE_PHOTO[mod.id],
 }));
 
-const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/movements';
+const nextHref = next ? PAGE_FOR_MODULE[next.module.id] : '/learn/movements';
 const MODULE_ORDER = MODULES.map((mod) => mod.id);
 const allLessons = MODULES.flatMap((mod) => {
   const moduleIndex = MODULE_ORDER.indexOf(mod.id);
@@ -93,7 +93,7 @@ const clearedTrailProgress = Math.max(
 const clearedTrailPercent = Math.round(clearedTrailProgress * 1000) / 10;
 ---
 
-<Base title="My Journey — Roda Quest" direction="quest">
+<Base title="My Journey — Physical Chess" direction="quest">
   <ClientRouter slot="head" />
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
@@ -130,7 +130,7 @@ const clearedTrailPercent = Math.round(clearedTrailProgress * 1000) / 10;
             <img src={wix(HERO_CANDIDATES[0], 200, 200)} alt="" loading="eager" width="80" height="80" />
           </div>
           <div class="quest-hud__id">
-            <p class="quest-hud__name">{STUDENT.firstName.toUpperCase()}</p>
+            <p class="quest-hud__name" data-bind="player.apelido">{STUDENT.apelido.toUpperCase()}</p>
             <div class="quest-hud__corda">
               <span class="quest-hud__corda-swatch" style={`background:${corda.color}`}></span>
               <span class="quest-hud__corda-label">CORDA {corda.label.toUpperCase()}</span>
@@ -140,26 +140,26 @@ const clearedTrailPercent = Math.round(clearedTrailProgress * 1000) / 10;
 
         <div class="quest-hud__xp">
           <div class="quest-hud__xp-row">
-            <span class="quest-hud__xp-caption">XP TO NEXT CORDA</span>
-            <span class="quest-hud__xp-value">{STUDENT.xp} / {STUDENT.xpToNext}</span>
+            <span class="quest-hud__xp-caption">LEVEL <span data-bind="level.level">{STUDENT.level.level}</span> · <span data-bind="level.title">{STUDENT.level.title.toUpperCase()}</span></span>
+            <span class="quest-hud__xp-value"><span data-bind="xp">{STUDENT.xp}</span> XP · <span data-bind="level.xpToNext">{STUDENT.level.xpToNext}</span> to go</span>
           </div>
           <div class="quest-hud__xp-track">
-            <div class="quest-hud__xp-fill" data-xp-fill={xpPercent}></div>
+            <div class="quest-hud__xp-fill" data-xp-fill={xpPercent} data-bind="level.percent" data-bind-attr="data-xp-fill"></div>
           </div>
         </div>
 
         <div class="quest-hud__stats">
           <div class="quest-hud__stat">
-            <span class="quest-hud__stat-value">{STUDENT.streakDays}</span>
-            <span class="quest-hud__stat-label">DAY STREAK</span>
+            <span class="quest-hud__stat-value" data-bind="streak.weeks">{STUDENT.streakDays}</span>
+            <span class="quest-hud__stat-label">RODA WEEKS</span>
           </div>
           <div class="quest-hud__stat quest-hud__stat--pink">
-            <span class="quest-hud__stat-value">{STUDENT.stars}</span>
+            <span class="quest-hud__stat-value" data-bind="stars">{STUDENT.stars}</span>
             <span class="quest-hud__stat-label">STARS</span>
           </div>
           <div class="quest-hud__stat quest-hud__stat--mango">
-            <span class="quest-hud__stat-value">{STUDENT.badges}</span>
-            <span class="quest-hud__stat-label">BADGES</span>
+            <span class="quest-hud__stat-value" data-bind="patches.length">{STUDENT.badges}</span>
+            <span class="quest-hud__stat-label">PATCHES</span>
           </div>
         </div>
 
@@ -391,4 +391,18 @@ const clearedTrailPercent = Math.round(clearedTrailProgress * 1000) / 10;
 
 <script>
   import '../directions/quest/motion.js';
+  import { requireSession } from '../lib/auth-guard.js';
+  import { bindDom } from '../lib/store.js';
+  // WP3 rebinds the map nodes/dots to the live snapshot; for now the HUD
+  // numbers are live and the map still shows the demo player's build-time state.
+  async function init() {
+    const s = await requireSession({ player: true });
+    if (!s) return;
+    bindDom();
+    if (s.isDemo && !document.querySelector('.quest-demo-badge')) {
+      const b = document.createElement('div'); b.className = 'quest-demo-badge'; b.textContent = 'Demo'; document.body.appendChild(b);
+    }
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
 </script>

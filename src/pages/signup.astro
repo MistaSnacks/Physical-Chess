@@ -1,0 +1,53 @@
+---
+// signup.astro — guardian sign-up (SPEC §2.1). WP4 completes it.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Sign up — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="home" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter>Create a family account</h1>
+      <p class="quest-screen__sub" data-quest-enter>One account for the whole family. You add each child as a player next.</p>
+      <form class="quest-card" data-signup-form data-quest-enter>
+        <div class="quest-form__error" data-error hidden></div>
+        <div class="quest-field"><label class="quest-field__label" for="firstName">Your first name</label><input class="quest-field__input" id="firstName" name="firstName" autocomplete="given-name" required /></div>
+        <div class="quest-field"><label class="quest-field__label" for="lastName">Your last name</label><input class="quest-field__input" id="lastName" name="lastName" autocomplete="family-name" required /></div>
+        <div class="quest-field"><label class="quest-field__label" for="email">Email</label><input class="quest-field__input" id="email" name="email" type="email" autocomplete="email" required /></div>
+        <div class="quest-field"><label class="quest-field__label" for="password">Password</label><input class="quest-field__input" id="password" name="password" type="password" autocomplete="new-password" minlength="8" required /><span class="quest-field__hint">At least 8 characters.</span></div>
+        <div class="quest-btn-row"><button class="quest-btn" type="submit">Sign up</button><a class="quest-btn quest-btn--ghost" href="/login">I have an account</a></div>
+      </form>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import { IS_DEMO } from '../lib/repo/index.js';
+    async function init() {
+      const form = document.querySelector('[data-signup-form]');
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = form.querySelector('[data-error]');
+        err.hidden = true;
+        if (IS_DEMO) { err.textContent = 'Sign-up needs the Wix connection. Use "Try the demo" on the log in page for now.'; err.hidden = false; return; }
+        const { registerWithPassword, beginRedirectExchange } = await import('../lib/wix.js');
+        const fd = new FormData(form);
+        try {
+          const res = await registerWithPassword({ email: fd.get('email'), password: fd.get('password'), firstName: fd.get('firstName'), lastName: fd.get('lastName') });
+          if (res.loginState === 'SUCCESS') return beginRedirectExchange(res.data.sessionToken, '/family/players/new');
+          err.textContent = res.loginState === 'EMAIL_VERIFICATION_REQUIRED' ? 'Check your email for a verification code.' : res.loginState === 'OWNER_APPROVAL_REQUIRED' ? 'Thanks! ACE will approve your account soon.' : res.errorCode === 'emailAlreadyExists' ? 'That email already has an account. Log in instead.' : 'We could not create the account. Check the details and try again.';
+          err.hidden = false;
+        } catch (ex) { err.textContent = 'Something went wrong. Please try again.'; err.hidden = false; console.error(ex); }
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

@@ -1,0 +1,56 @@
+---
+// who.astro — "Who's playing?" (SPEC §5.2). Player cards for the signed-in
+// family; tapping one makes it the active player and returns to `next`.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Who's playing? — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
+    <Nav active="who" />
+    <main class="quest-screen">
+      <p class="quest-screen__eyebrow" data-quest-enter>Family</p>
+      <h1 class="quest-screen__title" data-quest-enter>Who's playing?</h1>
+      <p class="quest-screen__sub" data-quest-enter>Tap your card to open your map. Grown-ups: manage players in <a href="/family" style="color:var(--quest-mango)">Family</a>.</p>
+      <div class="quest-players" data-players data-quest-enter></div>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import { requireSession } from '../lib/auth-guard.js';
+    import { store } from '../lib/store.js';
+    import { selectPlayer } from '../lib/actions.js';
+    import { avatarSvg } from '../lib/avatar.js';
+    import { levelFor } from '../lib/game/levels.js';
+
+    async function init() {
+      const s = await requireSession();
+      if (!s) return;
+      const grid = document.querySelector('[data-players]');
+      const next = new URLSearchParams(location.search).get('next') || '/journey';
+      grid.innerHTML = '';
+      for (const p of s.session.players) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quest-player-card';
+        btn.innerHTML = `<span class="quest-player-card__avatar">${avatarSvg(p.avatar, 96)}</span><span class="quest-player-card__name">${p.apelido || p.firstName}</span><span class="quest-player-card__meta">${p.firstName}</span>`;
+        btn.addEventListener('click', async () => { await selectPlayer(p.id); location.href = next; });
+        grid.appendChild(btn);
+      }
+      const add = document.createElement('a');
+      add.className = 'quest-player-card quest-player-card--add';
+      add.href = '/family/players/new';
+      add.innerHTML = `<span class="quest-player-card__avatar"><svg width="96" height="96" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="none" stroke="#7FA894" stroke-width="1.5" stroke-dasharray="3 3"/><path d="M12 7v10M7 12h10" stroke="#9FC4B3" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="quest-player-card__name">Add a player</span><span class="quest-player-card__meta">Grown-ups only</span>`;
+      grid.appendChild(add);
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

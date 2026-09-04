@@ -1,0 +1,32 @@
+---
+// me.astro — player profile skeleton (SPEC §5.2). WP3 builds the avatar
+// editor, patch wall and corda history on top of this.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Me — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="me" />
+    <main class="quest-screen">
+      <p class="quest-screen__eyebrow" data-quest-enter>Level <span data-bind="level.level">1</span> · <span data-bind="level.title">Iniciante</span></p>
+      <h1 class="quest-screen__title" data-quest-enter><span data-bind="player.apelido">Player</span></h1>
+      <p class="quest-screen__sub" data-quest-enter><span data-bind="xp">0</span> XP · <span data-bind="stars">0</span> stars · <span data-bind="streak.weeks">0</span> roda weeks · <span data-bind="patches.length">0</span> patches</p>
+      <section class="quest-card quest-card--note" data-quest-enter>Avatar editor, patch wall, readiness checklist and corda history land here in WP3.</section>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import { requireSession } from '../lib/auth-guard.js';
+    import { bindDom } from '../lib/store.js';
+    async function init() { const s = await requireSession({ player: true }); if (s) bindDom(); }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

@@ -1,0 +1,46 @@
+---
+// family/index.astro — guardian home (SPEC §5.3). WP4 completes settings,
+// report card links, delete flows.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Family — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="family" />
+    <main class="quest-screen">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter><span data-bind="account.displayName">Family</span></h1>
+      <p class="quest-screen__sub" data-quest-enter>Your players, their report cards, and your settings.</p>
+      <div class="quest-players" data-players data-quest-enter></div>
+      <section class="quest-card quest-card--note" style="margin-top:28px" data-quest-enter>
+        Report cards, CSV download, leaderboard opt-in and delete-player live here. Built in WP4.
+      </section>
+      <div class="quest-btn-row"><button class="quest-btn quest-btn--ghost" type="button" data-signout>Sign out</button></div>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import { requireSession } from '../../lib/auth-guard.js';
+    import { signOut } from '../../lib/actions.js';
+    import { bindDom } from '../../lib/store.js';
+    import { avatarSvg } from '../../lib/avatar.js';
+    async function init() {
+      const s = await requireSession();
+      if (!s) return;
+      bindDom();
+      const grid = document.querySelector('[data-players]');
+      grid.innerHTML = s.session.players.map((p) => `<a class="quest-player-card" href="/family/players/${p.id}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${p.firstName}</span><span class="quest-player-card__meta">${p.apelido || 'no apelido yet'}</span></a>`).join('') +
+        `<a class="quest-player-card quest-player-card--add" href="/family/players/new"><span class="quest-player-card__name">+ Add a player</span></a>`;
+      document.querySelector('[data-signout]').addEventListener('click', async () => { await signOut(); location.href = '/'; });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

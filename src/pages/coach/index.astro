@@ -1,0 +1,29 @@
+---
+// coach/index.astro — coach area skeleton, role-gated (SPEC §5.4). WP6.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Coach — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main class="quest-screen">
+      <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
+      <h1 class="quest-screen__title" data-quest-enter>Your turmas</h1>
+      <section class="quest-card quest-card--note" data-quest-enter>Overview, roster, attendance stamps, awards, class mode and export land here in WP6.</section>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import { requireSession } from '../../lib/auth-guard.js';
+    async function init() { await requireSession({ role: 'coach' }); }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

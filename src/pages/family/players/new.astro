@@ -1,0 +1,77 @@
+---
+// family/players/new.astro — create a player (SPEC §5.3). Kids never see
+// this screen; a guardian fills it in.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../../layouts/Base.astro';
+import Nav from '../../../directions/quest/Nav.astro';
+import Footer from '../../../directions/quest/Footer.astro';
+import { PROGRAMS } from '../../../content/programs.js';
+import { ANIMALS, AVATAR_COLORS } from '../../../lib/avatar.js';
+import '../../../directions/quest/tokens.css';
+import '../../../directions/quest/theme.css';
+const colors = Object.entries(AVATAR_COLORS);
+---
+
+<Base title="Add a player — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="family" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter>Add a player</h1>
+      <p class="quest-screen__sub" data-quest-enter>Only a first name is needed. We never ask a child for an email or password.</p>
+      <form class="quest-card" data-player-form data-quest-enter>
+        <div class="quest-form__error" data-error hidden></div>
+        <div class="quest-field"><label class="quest-field__label" for="firstName">First name</label><input class="quest-field__input" id="firstName" name="firstName" required maxlength="40" /></div>
+        <div class="quest-field"><label class="quest-field__label" for="apelido">Apelido (capoeira nickname)</label><input class="quest-field__input" id="apelido" name="apelido" maxlength="40" /><span class="quest-field__hint">Optional. Their mestre may give one later.</span></div>
+        <div class="quest-field"><span class="quest-field__label">Avatar</span>
+          <div class="quest-avatar-grid" data-avatars>
+            {ANIMALS.map((a, i) => (<label><input type="radio" name="animal" value={a} checked={i === 0} /><span data-animal={a}></span></label>))}
+          </div>
+        </div>
+        <div class="quest-field"><span class="quest-field__label">Color</span>
+          <div class="quest-swatches">
+            {colors.map(([k, hex], i) => (<label style={`background:${hex}`}><input type="radio" name="color" value={k} checked={i === 2} /><span></span></label>))}
+          </div>
+        </div>
+        <div class="quest-field"><label class="quest-field__label" for="program">Program</label>
+          <select class="quest-field__input" id="program" name="program">
+            <option value="">Not in a school program</option>
+            {PROGRAMS.map((p) => (<option value={p.key}>{p.name}</option>))}
+          </select>
+        </div>
+        <div class="quest-field"><label class="quest-field__label" for="birthYear">Birth year</label><input class="quest-field__input" id="birthYear" name="birthYear" type="number" min="2005" max="2022" /><span class="quest-field__hint">Optional. Helps coaches group classes.</span></div>
+        <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="submit">Add player</button><a class="quest-btn quest-btn--ghost" href="/family">Cancel</a></div>
+      </form>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import { requireSession } from '../../../lib/auth-guard.js';
+    import { createPlayer, selectPlayer } from '../../../lib/actions.js';
+    import { avatarSvg } from '../../../lib/avatar.js';
+    async function init() {
+      const s = await requireSession();
+      if (!s) return;
+      const form = document.querySelector('[data-player-form]');
+      const paint = () => {
+        const color = form.color.value;
+        form.querySelectorAll('[data-animal]').forEach((el) => { el.innerHTML = avatarSvg({ animal: el.dataset.animal, color }, 56); });
+      };
+      form.addEventListener('change', paint);
+      paint();
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        try {
+          const player = await createPlayer({ firstName: String(fd.get('firstName')).trim(), apelido: String(fd.get('apelido') || '').trim(), avatar: { animal: fd.get('animal'), color: fd.get('color') }, program: fd.get('program') || null, birthYear: fd.get('birthYear') ? Number(fd.get('birthYear')) : null });
+          await selectPlayer(player.id);
+          location.href = '/journey';
+        } catch (ex) { const err = form.querySelector('[data-error]'); err.textContent = 'Could not add the player. Please try again.'; err.hidden = false; console.error(ex); }
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

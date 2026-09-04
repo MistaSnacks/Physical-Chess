@@ -1,17 +1,18 @@
 ---
 // Nav.astro — Roda Quest header. Highlights the active screen via
-// aria-current so theme.css can style it.
+// aria-current so theme.css can style it. The right-hand slot is a player
+// chip once a session exists (filled by src/lib/nav.js), else "Log in".
 
 interface Props {
-  active?: 'home' | 'dashboard' | 'movements' | 'music' | 'batizado';
+  active?: 'home' | 'journey' | 'movements' | 'music' | 'culture' | 'graduation' | 'batizado' | 'me' | 'family' | 'coach' | 'who';
 }
 
 const { active } = Astro.props;
 
 const LINKS = [
-  { id: 'dashboard', href: '/dashboard', label: 'My Journey' },
-  { id: 'movements', href: '/movements', label: 'Movements' },
-  { id: 'music', href: '/music', label: 'Music' },
+  { id: 'journey', href: '/journey', label: 'My Journey' },
+  { id: 'movements', href: '/learn/movements', label: 'Movements' },
+  { id: 'music', href: '/learn/music', label: 'Music' },
   { id: 'batizado', href: '/batizado', label: 'Batizado' },
 ];
 ---
@@ -38,5 +39,16 @@ const LINKS = [
     }
   </nav>
 
-  <a class="quest-nav__cta" href="/quest/dashboard">Log in</a>
+  <div class="quest-nav__session" data-nav-session>
+    <a class="quest-nav__cta" href="/login" data-nav-login>Log in</a>
+    <a class="quest-nav__chip" href="/who" data-nav-chip hidden>
+      <span class="quest-nav__chip-avatar" data-nav-avatar></span>
+      <span class="quest-nav__chip-name" data-nav-name></span>
+    </a>
+    <a class="quest-nav__coach" href="/coach" data-nav-coach hidden>Coach</a>
+  </div>
 </header>
+
+<script>
+  import '../../lib/nav.js';
+</script>
