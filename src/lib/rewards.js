@@ -37,6 +37,9 @@ function ensureHosts() {
     el.className = 'quest-levelup';
     el.dataset.levelup = '';
     el.hidden = true;
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', 'quest-levelup-title');
     el.innerHTML = `<button class="quest-levelup__panel" type="button" data-levelup-dismiss>
       <figure class="quest-mascot quest-mascot--inline quest-mascot--compact">
         <div class="quest-mascot__bubble-wrap">
@@ -52,7 +55,7 @@ function ensureHosts() {
         </div>
       </figure>
       <p class="quest-levelup__eyebrow">New level</p>
-      <h2 class="quest-levelup__title" data-levelup-title></h2>
+      <h2 class="quest-levelup__title" id="quest-levelup-title" data-levelup-title></h2>
       <p class="quest-levelup__bira" data-levelup-bira></p>
       <p class="quest-levelup__hint">Tap to keep going</p>
     </button>`;
@@ -109,6 +112,7 @@ function flyXp(xp) {
 
 function fillStars(stars) {
   const n = Math.max(0, Math.min(3, Number(stars) || 0));
+  if (n === 0) return;
   const origin = pointFromEvent();
   const row = document.createElement('div');
   row.className = 'quest-star-burst';
@@ -124,7 +128,7 @@ function fillStars(stars) {
   if (reduced()) {
     for (let i = 0; i < n; i++) show(i);
     if (hudStars) hudStars.classList.add('is-pop');
-    setTimeout(() => { row.remove(); hudStars?.classList.remove('is-pop'); }, 800);
+    setTimeout(() => { row.remove(); hudStars?.classList.remove('is-pop'); }, 600);
     return;
   }
   lights.forEach((el, i) => {
@@ -135,7 +139,7 @@ function fillStars(stars) {
     void hudStars.offsetWidth;
     hudStars.classList.add('is-pop');
   }
-  setTimeout(() => { row.remove(); hudStars?.classList.remove('is-pop'); }, 1400);
+  setTimeout(() => { row.remove(); hudStars?.classList.remove('is-pop'); }, 1050);
 }
 
 function flamePop() {
@@ -179,12 +183,15 @@ function showPatch(patchKey) {
     const stitch = svg.querySelector('.quest-patch__stitch');
     if (stitch) stitch.setAttribute('stroke-dashoffset', '0');
   }
-  const hold = reduced() ? 400 : 1400;
+  const hold = reduced() ? 500 : 1400;
   return new Promise((resolve) => {
     setTimeout(() => {
       host.classList.remove('is-visible');
-      host.hidden = true;
-      resolve();
+      const exit = reduced() ? 0 : 280;
+      setTimeout(() => {
+        host.hidden = true;
+        resolve();
+      }, exit);
     }, hold);
   });
 }
@@ -192,6 +199,7 @@ function showPatch(patchKey) {
 function showLevelUp(level) {
   ensureHosts();
   const host = document.querySelector('[data-levelup]');
+  const previousFocus = document.activeElement;
   host.querySelector('[data-levelup-title]').textContent = level.title || '';
   host.querySelector('[data-levelup-bira]').textContent = level.bira || '';
   const bubble = host.querySelector('[data-bira-line]');
@@ -203,10 +211,14 @@ function showLevelUp(level) {
   return new Promise((resolve) => {
     const done = () => {
       host.classList.remove('is-visible');
-      host.hidden = true;
       host.removeEventListener('click', onClick);
       document.removeEventListener('keydown', onKey);
-      resolve();
+      const exit = reduced() ? 0 : 240;
+      setTimeout(() => {
+        host.hidden = true;
+        if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+        resolve();
+      }, exit);
     };
     const onClick = () => done();
     const onKey = (e) => { if (e.key === 'Escape') done(); };
@@ -234,7 +246,7 @@ export function fireConfetti() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const colors = ['#FF4F7A', '#FFB238', '#B9F26B'];
-  const pieces = Array.from({ length: 90 }, () => ({
+  const pieces = Array.from({ length: 64 }, () => ({
     x: Math.random() * window.innerWidth,
     y: -20 - Math.random() * 200,
     w: 6 + Math.random() * 6,
@@ -247,7 +259,7 @@ export function fireConfetti() {
   }));
 
   const start = performance.now();
-  const duration = 1600;
+  const duration = 1100;
 
   function frame(now) {
     const elapsed = now - start;

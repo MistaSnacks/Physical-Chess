@@ -11,7 +11,7 @@ const daysToBatizado = Math.max(
 const dateNote = BATIZADO_DATE_TBC ? ' (date TBC)' : '';
 ---
 
-<aside class="quest-hud" data-quest-enter data-hud>
+<aside class="quest-hud" data-quest-enter data-hud aria-label="Your journey progress">
   <div class="quest-hud__top">
     <a class="quest-hud__avatar" href="/me" data-hud-avatar aria-label="Your profile"></a>
     <div class="quest-hud__id">
@@ -64,6 +64,6 @@ const dateNote = BATIZADO_DATE_TBC ? ' (date TBC)' : '';
 
   <div class="quest-hud__batizado">
     <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l2 7-8 11L4 10z" fill="none" stroke="#0B2E24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h16M9 3l3 7 3-7M9 10l3 11 3-11" fill="none" stroke="#0B2E24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span>Batizado is in {daysToBatizado} days{dateNote}. Your coach awards the corda.</span>
+    <span>{daysToBatizado} days to <strong>Batizado</strong>{dateNote}. Your coach awards your corda.</span>
   </div>
 </aside>

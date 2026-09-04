@@ -46,9 +46,9 @@ const GATE = '<svg width="60" height="60" viewBox="0 0 24 24"><path d="M6 3h12l2
     <main class="quest-map-wrap" data-quest-map>
       <div class="quest-map-header">
         <p class="quest-map-header__eyebrow" data-quest-enter>Level <span data-bind="level.level">1</span> · Corda <span data-corda-label>Crua</span></p>
-        <h1 class="quest-map-header__title" data-quest-enter>Road to the Roda</h1>
+        <h1 class="quest-map-header__title" data-quest-enter>Road to the <strong>Roda</strong></h1>
         <p class="quest-map-header__sub" data-quest-enter>
-          <span data-bind="lessonsDone">0</span> of <span data-bind="lessonsTotal">0</span> lessons cleared across the roda. Keep moving, capoeirista.
+          You’ve cleared <span data-bind="lessonsDone">0</span> of <span data-bind="lessonsTotal">0</span> lessons. Keep moving, <strong>capoeirista</strong>.
         </p>
       </div>
 
@@ -121,10 +121,10 @@ const GATE = '<svg width="60" height="60" viewBox="0 0 24 24"><path d="M6 3h12l2
         </span>
       </a>
 
-      <article class="quest-latest" data-quest-enter>
+      <article class="quest-latest" data-quest-enter aria-labelledby="journey-latest-title">
         <div class="quest-latest__copy">
           <span class="quest-latest__eyebrow">LATEST FROM THE RODA</span>
-          <span class="quest-latest__title">Brooklyn in motion</span>
+          <span class="quest-latest__title" id="journey-latest-title">Brooklyn in motion</span>
         </div>
         <YouTube id={yt('acb2024')} title="Abadá Capoeira Brooklyn 2024" />
       </article>
