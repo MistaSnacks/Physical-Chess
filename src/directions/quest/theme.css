@@ -6551,3 +6551,6 @@ body.has-class-mode .quest-page { padding-top: 0; }
     transform: none;
   }
 }
+
+/* === sync chip (outbox state) === */
+.quest-sync-chip { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); background: var(--quest-mango); color: var(--quest-ink); font: 800 13px/1.2 var(--quest-font-label); padding: 10px 16px; border-radius: 999px; box-shadow: 0 4px 0 var(--quest-mango-shadow); z-index: 45; max-width: calc(100vw - 32px); text-align: center; }

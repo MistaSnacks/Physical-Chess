@@ -99,6 +99,7 @@ function queue(events) {
   const box = readOutbox();
   box.push(...events);
   localStorage.setItem(OUTBOX_KEY, JSON.stringify(box));
+  emit('sync:pending', { pending: box.length });
 }
 function readOutbox() {
   try { return JSON.parse(localStorage.getItem(OUTBOX_KEY)) || []; } catch { return []; }
@@ -124,8 +125,10 @@ export async function flushOutbox() {
       const leftover = readOutbox().filter((e) => !sent.has(e.clientEventId));
       localStorage.setItem(OUTBOX_KEY, JSON.stringify(leftover));
     }
+    emit('sync:ok', { pending: 0 });
   } catch (err) {
     console.warn('outbox flush failed, will retry', err);
+    emit('sync:fail', { pending: readOutbox().length });
   } finally {
     flushing = false;
   }

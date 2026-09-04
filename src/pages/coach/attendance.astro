@@ -34,6 +34,7 @@ import '../../directions/quest/theme.css';
     <Footer />
   </div>
   <script>
+    import { esc } from '../../lib/html.js';
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
     import { getCoach } from '../../lib/repo/coachRepo.js';
@@ -70,7 +71,7 @@ import '../../directions/quest/theme.css';
         }
         picked.clear();
         stamped.forEach((id) => picked.add(id));
-        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card ${picked.has(p.id) ? 'is-stamped' : ''}" data-id="${p.id}" aria-pressed="${picked.has(p.id)}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${p.apelido}</span><span class="quest-player-card__meta">${p.firstName}</span><span class="quest-attendance-state">${picked.has(p.id) ? 'Stamped' : 'Tap to stamp'}</span></button>`).join('');
+        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card ${picked.has(p.id) ? 'is-stamped' : ''}" data-id="${esc(p.id)}" aria-pressed="${picked.has(p.id)}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${esc(p.apelido)}</span><span class="quest-player-card__meta">${esc(p.firstName)}</span><span class="quest-attendance-state">${picked.has(p.id) ? 'Stamped' : 'Tap to stamp'}</span></button>`).join('');
         grid.querySelectorAll('[data-id]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');

@@ -85,3 +85,26 @@ function boot() {
 }
 document.addEventListener('astro:page-load', boot);
 boot();
+
+
+// Sync chip: shows while ledger events wait in the outbox and could not be
+// sent (offline, or the server is unreachable). Silent when everything is saved.
+function syncChip() {
+  let el = document.querySelector('[data-sync-chip]');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'quest-sync-chip';
+    el.setAttribute('data-sync-chip', '');
+    el.setAttribute('role', 'status');
+    el.hidden = true;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+document.addEventListener('sync:fail', (e) => {
+  const el = syncChip();
+  const n = e.detail?.pending || 0;
+  el.textContent = n ? `Saving ${n} thing${n === 1 ? '' : 's'} when you're back online` : 'Saving…';
+  el.hidden = false;
+});
+document.addEventListener('sync:ok', () => { const el = document.querySelector('[data-sync-chip]'); if (el) el.hidden = true; });

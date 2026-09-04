@@ -28,6 +28,7 @@ import '../../directions/quest/theme.css';
     <Footer />
   </div>
   <script>
+    import { esc } from '../../lib/html.js';
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
     import { selectClassPlayer } from '../../lib/actions.js';
@@ -53,7 +54,7 @@ import '../../directions/quest/theme.css';
       async function render() {
         const prog = programs.find((p) => p.key === sel.value);
         const rows = (await coach.roster(sel.value)).filter((p) => p.mayPlayInClass !== false);
-        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card" data-id="${p.id}" aria-label="Open ${p.apelido}'s journey"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 96)}</span><span class="quest-player-card__name">${p.apelido}</span><span class="quest-class-card__cue">Tap to play</span></button>`).join('')
+        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card" data-id="${esc(p.id)}" aria-label="Open ${esc(p.apelido)}'s journey"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 96)}</span><span class="quest-player-card__name">${esc(p.apelido)}</span><span class="quest-class-card__cue">Tap to play</span></button>`).join('')
           || '<p class="quest-card quest-card--note">No one in this turma is marked to play in class.</p>';
         grid.querySelectorAll('[data-id]').forEach((btn) => {
           btn.addEventListener('click', async () => {
