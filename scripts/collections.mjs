@@ -21,5 +21,5 @@ export const COLLECTIONS = [
   { id: 'lms-attendance', displayName: 'LMS Attendance', permissions: P.adminWriteMemberRead, fields: [f('playerId','TEXT'), f('program','TEXT'), f('classDate','TEXT'), f('stampedBy','TEXT')] },
   { id: 'lms-readiness-rules', displayName: 'LMS Readiness Rules', permissions: P.catalog, fields: [f('key','TEXT'), f('label','TEXT'), f('rule','TEXT'), f('program','TEXT'), f('active','BOOLEAN')] },
   { id: 'lms-leaderboard', displayName: 'LMS Leaderboard', permissions: P.serverOnly, fields: [f('program','TEXT'), f('period','TEXT'), f('entries','TEXT'), f('communityXp','NUMBER'), f('computedAt','DATETIME')] },
-  { id: 'lms-programs', displayName: 'LMS Programs', permissions: P.catalog, fields: [f('key','TEXT'), f('name','TEXT'), f('dayOfWeek','TEXT'), f('inviteCode','TEXT'), f('coachIds','ARRAY'), f('active','BOOLEAN')] },
+  { id: 'lms-programs', displayName: 'LMS Programs', permissions: P.catalog, fields: [f('key','TEXT'), f('name','TEXT'), f('dayOfWeek','TEXT'), f('inviteCode','TEXT'), f('coachIds','ARRAY'), f('active','BOOLEAN'), f('goalXp','NUMBER'), f('goalLabel','TEXT')] },
 ];

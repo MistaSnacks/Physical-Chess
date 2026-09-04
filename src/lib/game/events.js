@@ -17,6 +17,7 @@ export const EVENT = {
   GLOSSARY_MASTERED: 'glossary.mastered',
   PLAYER_CREATED: 'player.created',
   PLAYER_DELETED: 'player.deleted',
+  COACH_NOTE: 'coach.note',
 };
 
 /** XP for an event. Pure. `payload` is the event's payload object. */

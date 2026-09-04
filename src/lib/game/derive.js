@@ -3,7 +3,7 @@
 // server (nightly recompute, leaderboard).
 import { EVENT, LESSON_DONE_TYPES } from './events.js';
 import { levelFor } from './levels.js';
-import { weekStreak } from './streaks.js';
+import { weekStreak, nyDate } from './streaks.js';
 import { earnedPatches } from './patches.js';
 import { readiness } from './readiness.js';
 import { MODULES } from '../../content/modules.js';
@@ -93,12 +93,16 @@ export function derivePlayer(events, opts = {}) {
   const practices = ledger.filter((e) => e.type === EVENT.DRILL_DONE).length;
   const practicesConfirmed = ledger.filter((e) => e.type === EVENT.PRACTICE_CONFIRMED).length;
   const desafios = ledger.filter((e) => e.type === EVENT.DESAFIO_DONE).length;
+  const todayKey = nyDate(now);
+  const desafioDoneToday = ledger.some((e) => e.type === EVENT.DESAFIO_DONE && nyDate(e.occurredAt) === todayKey);
   const attendance = ledger.filter((e) => e.type === EVENT.ATTENDANCE).length;
   const glossaryMastered = new Set(ledger.filter((e) => e.type === EVENT.GLOSSARY_MASTERED).map((e) => e.payload.word)).size;
+  const notes = ledger.filter((e) => e.type === EVENT.COACH_NOTE).map((e) => ({ at: e.occurredAt, note: e.payload?.note || '', by: e.payload?.by || null }));
 
   const base = {
     xp, level, lessons, modules, lessonsDone, lessonsTotal: all, stars, nextUp, streak,
-    cordaCurrent, nextCorda, practices, practicesConfirmed, desafios, attendance, glossaryMastered,
+    cordaCurrent, nextCorda, practices, practicesConfirmed, desafios, desafioDoneToday, attendance, glossaryMastered,
+    notes,
     eventCount: ledger.length,
     lastActiveAt: ledger.length ? ledger[ledger.length - 1].occurredAt : null,
   };

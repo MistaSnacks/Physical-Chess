@@ -1,0 +1,20 @@
+---
+// CoachNav.astro — subnav shared by every /coach and /admin screen.
+interface Props {
+  active?: 'overview' | 'attendance' | 'class' | 'export' | 'goal' | 'roles' | 'player';
+}
+const { active } = Astro.props;
+const links = [
+  { id: 'overview', href: '/coach', label: 'Overview' },
+  { id: 'attendance', href: '/coach/attendance', label: 'Attendance' },
+  { id: 'class', href: '/coach/class', label: 'Class mode' },
+  { id: 'export', href: '/coach/export', label: 'Export' },
+  { id: 'goal', href: '/coach/goal', label: 'Goal' },
+];
+---
+<nav class="quest-coach-nav" aria-label="Coach tools">
+  {links.map((link) => (
+    <a href={link.href} aria-current={active === link.id ? 'page' : undefined}>{link.label}</a>
+  ))}
+  <a href="/admin/roles" data-coach-roles hidden aria-current={active === 'roles' ? 'page' : undefined}>Roles</a>
+</nav>

@@ -70,6 +70,15 @@ import '../../directions/quest/theme.css';
           <button class="quest-btn quest-btn--ghost" type="button" data-delete-cancel>Keep this account</button>
         </div>
       </section>
+      <section class="quest-card" data-demo-coach hidden data-quest-enter>
+        <h2 class="quest-card__title">Demo coach</h2>
+        <p class="quest-card__body">Open the seeded turma of eight players. Switch back any time. This does not change a real Wix role.</p>
+        <div class="quest-btn-row">
+          <button class="quest-btn quest-btn--lime" type="button" data-to-coach>Switch to coach view</button>
+          <button class="quest-btn" type="button" data-to-admin>Switch to admin view</button>
+          <button class="quest-btn quest-btn--ghost" type="button" data-to-family hidden>Switch back to family</button>
+        </div>
+      </section>
     </main>
     <Footer />
   </div>
@@ -79,6 +88,7 @@ import '../../directions/quest/theme.css';
     import { signOut, updateAccount, updatePlayer, deleteAccount, snapshotsForSession } from '../../lib/actions.js';
     import { playerCardEl } from '../../lib/player-card.js';
     import { requireGrownUp } from '../../lib/grown-up-gate.js';
+    import { IS_DEMO } from '../../lib/repo/index.js';
 
     async function init() {
       const s = await requireSession();
@@ -168,6 +178,23 @@ import '../../directions/quest/theme.css';
         }
         location.href = '/';
       });
+      if (IS_DEMO) {
+        const box = document.querySelector('[data-demo-coach]');
+        box.hidden = false;
+        const role = s.session.account.role;
+        document.querySelector('[data-to-family]').hidden = role === 'guardian';
+        document.querySelector('[data-to-coach]').hidden = role === 'coach';
+        document.querySelector('[data-to-admin]').hidden = role === 'admin';
+        const go = async (nextRole, programs) => {
+          await updateAccount({ role: nextRole, programs });
+          const { coachDemo } = await import('../../lib/repo/coachDemo.js');
+          await coachDemo.ensure();
+          location.href = nextRole === 'guardian' ? '/family' : nextRole === 'admin' ? '/admin/roles' : '/coach';
+        };
+        document.querySelector('[data-to-coach]').addEventListener('click', () => go('coach', ['bushwick', 'berkeley-carroll', 'prospect']));
+        document.querySelector('[data-to-admin]').addEventListener('click', () => go('admin', ['bushwick', 'berkeley-carroll', 'prospect', 'brooklyn-open']));
+        document.querySelector('[data-to-family]').addEventListener('click', () => go('guardian', []));
+      }
     }
     document.addEventListener('astro:page-load', init);
     init();

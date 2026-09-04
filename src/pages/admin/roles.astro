@@ -1,0 +1,76 @@
+---
+// admin/roles.astro — promote members, assign programs (SPEC §5.4).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import CoachNav from '../../components/quest/CoachNav.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Roles — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main class="quest-screen quest-screen--wide">
+      <p class="quest-screen__eyebrow" data-quest-enter>Admin</p>
+      <h1 class="quest-screen__title" data-quest-enter>Roles</h1>
+      <p class="quest-screen__sub" data-quest-enter>Guardian is the default. Coach unlocks /coach. Admin unlocks this page. Players never see this list.</p>
+      <CoachNav active="roles" />
+      <div data-list></div>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../../directions/quest/motion.js';
+    import { requireSession } from '../../lib/auth-guard.js';
+    import { getCoach } from '../../lib/repo/coachRepo.js';
+    import { PROGRAMS } from '../../content/programs.js';
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+
+    async function init() {
+      const s = await requireSession({ role: 'admin' });
+      if (!s) return;
+      document.querySelectorAll('[data-coach-roles]').forEach((el) => { el.hidden = false; });
+      const coach = await getCoach();
+      const root = document.querySelector('[data-list]');
+
+      async function paint() {
+        const accounts = await coach.listAccounts();
+        root.innerHTML = accounts.map((a) => `
+          <form class="quest-card quest-role-card" data-member="${esc(a.memberId)}">
+            <p class="quest-role-card__name">${esc(a.displayName || 'Account')}</p>
+            <p class="quest-field__hint">${esc(a.email)}</p>
+            <div class="quest-field"><label class="quest-field__label">Role</label>
+              <select class="quest-field__input" name="role">
+                ${['guardian', 'coach', 'admin'].map((r) => `<option value="${r}" ${a.role === r ? 'selected' : ''}>${r}</option>`).join('')}
+              </select>
+            </div>
+            <fieldset class="quest-programs">
+              <legend class="quest-field__label">Programs</legend>
+              ${PROGRAMS.map((p) => `<label><input type="checkbox" name="programs" value="${p.key}" ${(a.programs || []).includes(p.key) ? 'checked' : ''}/> ${esc(p.name)}</label>`).join('')}
+            </fieldset>
+            <div class="quest-btn-row"><button class="quest-btn" type="submit">Save</button></div>
+          </form>
+        `).join('');
+        root.querySelectorAll('form').forEach((form) => {
+          form.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const fd = new FormData(form);
+            const programs = fd.getAll('programs');
+            await coach.setRole({ memberId: form.getAttribute('data-member'), role: fd.get('role'), programs });
+            await paint();
+          });
+        });
+      }
+      await paint();
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

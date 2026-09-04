@@ -1,0 +1,68 @@
+---
+// coach/class.astro — Class mode for shared tablets (SPEC §2.4).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import CoachNav from '../../components/quest/CoachNav.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Class mode — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main class="quest-screen quest-screen--wide">
+      <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
+      <h1 class="quest-screen__title" data-quest-enter>Class mode</h1>
+      <p class="quest-screen__sub" data-quest-enter>Kids tap their apelido. No family emails. Events from this device are marked as done in class.</p>
+      <CoachNav active="class" />
+      <div class="quest-field quest-card" data-quest-enter>
+        <label class="quest-field__label" for="program">Program</label>
+        <select class="quest-field__input" id="program" data-program></select>
+      </div>
+      <div class="quest-players quest-players--class" data-grid data-quest-enter></div>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../../directions/quest/motion.js';
+    import { requireSession } from '../../lib/auth-guard.js';
+    import { selectClassPlayer } from '../../lib/actions.js';
+    import { getCoach } from '../../lib/repo/coachRepo.js';
+    import { programsForAccount, writeClassMode } from '../../lib/coach.js';
+    import { avatarSvg } from '../../lib/avatar.js';
+
+    async function init() {
+      const s = await requireSession({ role: 'coach' });
+      if (!s) return;
+      if (s.session.account.role === 'admin') document.querySelectorAll('[data-coach-roles]').forEach((el) => { el.hidden = false; });
+      const coach = await getCoach();
+      const programs = programsForAccount(s.session.account);
+      const sel = document.querySelector('[data-program]');
+      const grid = document.querySelector('[data-grid]');
+      sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
+
+      async function render() {
+        const prog = programs.find((p) => p.key === sel.value);
+        const rows = (await coach.roster(sel.value)).filter((p) => p.mayPlayInClass !== false);
+        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card" data-id="${p.id}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 96)}</span><span class="quest-player-card__name">${p.apelido}</span></button>`).join('')
+          || '<p class="quest-card quest-card--note">No one in this turma is marked to play in class.</p>';
+        grid.querySelectorAll('[data-id]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const player = rows.find((p) => p.id === btn.getAttribute('data-id'));
+            writeClassMode({ program: sel.value, programName: prog?.name || sel.value });
+            await selectClassPlayer(player);
+            location.href = '/journey';
+          });
+        });
+      }
+      sel.addEventListener('change', render);
+      await render();
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

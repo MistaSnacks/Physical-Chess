@@ -20,12 +20,12 @@ export const localRepo = {
   isDemo: true,
 
   async signInDemo() { const d = db(); d.signedIn = true; save(d); return this.getSession(); },
-  async resetDemo() { localStorage.removeItem(KEY); return seed(); },
+  async resetDemo() { localStorage.removeItem(KEY); localStorage.removeItem('pc.coach.demo.v1'); return seed(); },
 
   async getSession() {
     const d = db();
     if (!d.signedIn) return null;
-    return { account: d.account, players: d.players.filter((p) => p.active !== false) };
+    return { account: d.account, players: d.players.filter((p) => p.active !== false && p.accountId === d.account.id) };
   },
   async signOut() { const d = db(); d.signedIn = false; save(d); },
 
@@ -85,3 +85,9 @@ export const localRepo = {
     seed();
   },
 };
+
+/** Demo-only: coachDemo reads/writes extra roster rows in the same localStorage db. */
+export function readLocalDb() { return db(); }
+export function writeLocalDb(d) { return save(d); }
+export function allLocalPlayers() { return db().players.slice(); }
+export function allLocalEvents() { return db().events.slice(); }

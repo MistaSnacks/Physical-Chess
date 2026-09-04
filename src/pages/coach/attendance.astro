@@ -1,0 +1,92 @@
+---
+// coach/attendance.astro — tap-to-stamp grid (SPEC §5.4).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import CoachNav from '../../components/quest/CoachNav.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Attendance — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main class="quest-screen quest-screen--wide">
+      <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
+      <h1 class="quest-screen__title" data-quest-enter>Today’s class</h1>
+      <p class="quest-screen__sub" data-quest-enter>Pick a program and a date. Tap a card to stamp. Save writes attendance.stamped events.</p>
+      <CoachNav active="attendance" />
+      <form class="quest-card quest-attend-bar" data-bar data-quest-enter>
+        <div class="quest-field"><label class="quest-field__label" for="program">Program</label>
+          <select class="quest-field__input" id="program" name="program" data-program></select>
+        </div>
+        <div class="quest-field"><label class="quest-field__label" for="date">Date</label>
+          <input class="quest-field__input" id="date" name="date" type="date" data-date />
+        </div>
+        <button class="quest-btn quest-btn--lime" type="submit" data-save>Save stamps</button>
+      </form>
+      <div class="quest-players" data-grid data-quest-enter></div>
+      <p class="quest-field__hint" data-status></p>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../../directions/quest/motion.js';
+    import { requireSession } from '../../lib/auth-guard.js';
+    import { getCoach } from '../../lib/repo/coachRepo.js';
+    import { programsForAccount } from '../../lib/coach.js';
+    import { avatarSvg } from '../../lib/avatar.js';
+
+    async function init() {
+      const s = await requireSession({ role: 'coach' });
+      if (!s) return;
+      if (s.session.account.role === 'admin') document.querySelectorAll('[data-coach-roles]').forEach((el) => { el.hidden = false; });
+      const coach = await getCoach();
+      const programs = programsForAccount(s.session.account);
+      const sel = document.querySelector('[data-program]');
+      const date = document.querySelector('[data-date]');
+      const grid = document.querySelector('[data-grid]');
+      const status = document.querySelector('[data-status]');
+      sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
+      date.value = new Date().toISOString().slice(0, 10);
+      const picked = new Set();
+
+      async function render() {
+        const rows = await coach.roster(sel.value);
+        const detail = await Promise.all(rows.map((r) => coach.player(r.id)));
+        const stamped = new Set();
+        for (const d of detail) {
+          if (!d) continue;
+          for (const a of d.attendance || []) if (a.classDate === date.value && a.program === sel.value) stamped.add(d.player.id);
+        }
+        picked.clear();
+        stamped.forEach((id) => picked.add(id));
+        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card ${picked.has(p.id) ? 'is-stamped' : ''}" data-id="${p.id}" aria-pressed="${picked.has(p.id)}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${p.apelido}</span><span class="quest-player-card__meta">${p.firstName}</span></button>`).join('');
+        grid.querySelectorAll('[data-id]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            if (picked.has(id)) picked.delete(id); else picked.add(id);
+            btn.classList.toggle('is-stamped', picked.has(id));
+            btn.setAttribute('aria-pressed', String(picked.has(id)));
+          });
+        });
+      }
+
+      sel.addEventListener('change', render);
+      date.addEventListener('change', render);
+      document.querySelector('[data-bar]').addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        status.textContent = 'Saving…';
+        await coach.stampAttendance({ playerIds: [...picked], program: sel.value, classDate: date.value });
+        status.textContent = `Saved ${picked.size} stamp${picked.size === 1 ? '' : 's'} for ${date.value}.`;
+        await render();
+      });
+      await render();
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

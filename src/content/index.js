@@ -7,6 +7,7 @@ export { READINESS_RULES } from './readiness.js';
 export { GLOSSARY } from './glossary.js';
 export { PROGRAMS, programByKey, programByInvite } from './programs.js';
 export { BIRA, biraLine } from './bira.js';
+export { DESAFIO_POOL, desafioById } from './desafio.js';
 
 /** Instrument cards for the Music screen. */
 export const INSTRUMENTS = [

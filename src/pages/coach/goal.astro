@@ -1,0 +1,73 @@
+---
+// coach/goal.astro — community berimbau target (SPEC §4.7).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import CoachNav from '../../components/quest/CoachNav.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+---
+
+<Base title="Community goal — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
+      <h1 class="quest-screen__title" data-quest-enter>Fill the berimbau</h1>
+      <p class="quest-screen__sub" data-quest-enter>Set this month’s cooperative XP target. Kids see it on Turma. No last names.</p>
+      <CoachNav active="goal" />
+      <form class="quest-card" data-form data-quest-enter>
+        <div class="quest-form__error" data-error hidden></div>
+        <div class="quest-field"><label class="quest-field__label" for="program">Program</label>
+          <select class="quest-field__input" id="program" name="program" data-program></select>
+        </div>
+        <div class="quest-field"><label class="quest-field__label" for="goalXp">Target XP</label>
+          <input class="quest-field__input" id="goalXp" name="goalXp" type="number" min="100" step="50" required />
+        </div>
+        <div class="quest-field"><label class="quest-field__label" for="goalLabel">Message</label>
+          <input class="quest-field__input" id="goalLabel" name="goalLabel" maxlength="80" required />
+        </div>
+        <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="submit">Save goal</button></div>
+        <p class="quest-field__hint" data-saved hidden>Saved. The turma bar will use this target.</p>
+      </form>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../../directions/quest/motion.js';
+    import { requireSession } from '../../lib/auth-guard.js';
+    import { getCoach } from '../../lib/repo/coachRepo.js';
+    import { programsForAccount } from '../../lib/coach.js';
+
+    async function init() {
+      const s = await requireSession({ role: 'coach' });
+      if (!s) return;
+      if (s.session.account.role === 'admin') document.querySelectorAll('[data-coach-roles]').forEach((el) => { el.hidden = false; });
+      const coach = await getCoach();
+      const programs = programsForAccount(s.session.account);
+      const form = document.querySelector('[data-form]');
+      const sel = form.querySelector('[data-program]');
+      sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
+      const goals = await coach.goals();
+
+      function fill() {
+        const g = goals[sel.value] || { goalXp: 2500, goalLabel: 'Fill the berimbau by Batizado' };
+        form.goalXp.value = g.goalXp;
+        form.goalLabel.value = g.goalLabel;
+      }
+      sel.addEventListener('change', fill);
+      fill();
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const saved = await coach.setGoal({ program: sel.value, goalXp: form.goalXp.value, goalLabel: form.goalLabel.value });
+        goals[sel.value] = saved;
+        document.querySelector('[data-saved]').hidden = false;
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

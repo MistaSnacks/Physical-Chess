@@ -2,6 +2,16 @@
 // weeks in America/New_York.
 const TZ = 'America/New_York';
 
+/** 'YYYY-MM-DD' calendar date in America/New_York. */
+export function nyDate(date = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date(date));
+}
+
+/** 'YYYY-MM' month key in America/New_York. */
+export function nyMonth(date = new Date()) {
+  return nyDate(date).slice(0, 7);
+}
+
 /** 'YYYY-Www' ISO week key for a date in New York time. */
 export function isoWeek(date) {
   const d = new Date(date);
