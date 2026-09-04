@@ -1,0 +1,60 @@
+---
+// AvatarPicker.astro — animal + cord-color radios (SPEC §4.9). Paint the
+// stickers in the page script via `src/lib/avatar.js` `avatarSvg`.
+import { ANIMALS, AVATAR_COLORS } from '../../lib/avatar.js';
+
+interface Props {
+  animal?: string;
+  color?: string;
+}
+
+const { animal = 'frog', color = 'mango' } = Astro.props;
+const colors = Object.entries(AVATAR_COLORS);
+---
+
+<div class="quest-avatar-picker" data-avatar-picker>
+  <div class="quest-field">
+    <span class="quest-field__label" id="avatar-animal-label">Avatar</span>
+    <div class="quest-avatar-grid" data-avatars role="radiogroup" aria-labelledby="avatar-animal-label">
+      {ANIMALS.map((a) => (
+        <label>
+          <input type="radio" name="animal" value={a} checked={a === animal} />
+          <span data-animal={a}></span>
+        </label>
+      ))}
+    </div>
+  </div>
+  <div class="quest-field">
+    <span class="quest-field__label" id="avatar-color-label">Color</span>
+    <div class="quest-swatches" role="radiogroup" aria-labelledby="avatar-color-label">
+      {colors.map(([k, hex]) => (
+        <label style={`background:${hex}`}>
+          <input type="radio" name="color" value={k} checked={k === color} aria-label={k} />
+          <span></span>
+        </label>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  import { avatarSvg } from '../../lib/avatar.js';
+
+  function paint(root) {
+    const color = root.querySelector('[name=color]:checked')?.value || 'lime';
+    root.querySelectorAll('[data-animal]').forEach((el) => {
+      el.innerHTML = avatarSvg({ animal: el.dataset.animal, color }, 56);
+    });
+  }
+  function bind(root) {
+    if (!root || root.dataset.bound) return;
+    root.dataset.bound = '1';
+    root.addEventListener('change', () => paint(root));
+    paint(root);
+  }
+  function init() {
+    document.querySelectorAll('[data-avatar-picker]').forEach(bind);
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

@@ -1,0 +1,64 @@
+---
+// privacy.astro — plain-language child-data notice (SPEC §3.3). Copy still
+// needs ACE / Camren sign-off (SPEC §10 q16).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import { CONTACT } from '../data/batizado.js';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Privacy — Physical Chess" direction="quest" description="What Physical Chess stores about a child, and how a parent can delete it.">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="home" />
+    <main class="quest-screen quest-screen--narrow quest-privacy">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter>Privacy</h1>
+      <p class="quest-screen__sub" data-quest-enter>This page is for parents and guardians. It says what we store about a child and how to erase it.</p>
+
+      <section class="quest-card" data-quest-enter>
+        <h2 class="quest-card__title">What we store about a child</h2>
+        <p class="quest-card__body">A player is a child inside a grown-up’s account. Kids never enter an email or a password.</p>
+        <ul class="quest-privacy__list">
+          <li>First name</li>
+          <li><strong>Apelido</strong> (capoeira nickname), if they have one</li>
+          <li>Avatar: an animal sticker and a color</li>
+          <li>Birth year, only if you choose to share it</li>
+          <li>Which class they train with</li>
+          <li>Activity: lessons, practice, quizzes, patches, and attendance a coach stamps</li>
+        </ul>
+      </section>
+
+      <section class="quest-card" data-quest-enter>
+        <h2 class="quest-card__title">What we do not store</h2>
+        <ul class="quest-privacy__list">
+          <li>A child’s email or password. They do not have one.</li>
+          <li>A child’s last name.</li>
+          <li>Another family’s email or last name on any screen a player can see.</li>
+        </ul>
+      </section>
+
+      <section class="quest-card" data-quest-enter>
+        <h2 class="quest-card__title">How to delete it</h2>
+        <p class="quest-card__body">You can delete one player from Family → that player → Delete this player. That erases their lessons, stars, patches, and activity.</p>
+        <p class="quest-card__body">You can delete the whole family from Family → Delete my account. That removes every player and the grown-up login.</p>
+        <p class="quest-card__body">You can also email ACE and ask. We will delete the records by hand.</p>
+      </section>
+
+      <section class="quest-card" data-quest-enter>
+        <h2 class="quest-card__title">Who to contact</h2>
+        <p class="quest-card__body">ACE / Abadá Capoeira Brooklyn.</p>
+        <p class="quest-card__body"><a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`} style="color:var(--quest-mango)">{CONTACT.phone}</a></p>
+        <p class="quest-card__body"><a href={`mailto:${CONTACT.email}`} style="color:var(--quest-mango)">{CONTACT.email}</a></p>
+      </section>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../directions/quest/motion.js';
+  </script>
+</Base>

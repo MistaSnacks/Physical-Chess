@@ -2746,3 +2746,211 @@ body.direction-quest :focus-visible {
   .quest-screen { padding: 16px 16px 80px; }
   .quest-avatar-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* === WP4: accounts === */
+.quest-form__ok {
+  background: var(--quest-lime);
+  color: var(--quest-ink);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.quest-btn--danger {
+  background: var(--quest-hibiscus);
+  color: var(--quest-cream);
+  box-shadow: 0 6px 0 #c4335c;
+}
+.quest-btn--danger:active { box-shadow: 0 2px 0 #c4335c; }
+.quest-card--danger { border-color: var(--quest-hibiscus); }
+.quest-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 8px 0 16px;
+  color: var(--quest-cream);
+  font-size: 16px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.quest-toggle input {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  margin-top: 2px;
+  accent-color: var(--quest-lime);
+}
+.quest-empty { color: var(--quest-muted); margin: 8px 0 24px; }
+.quest-who__grownups { margin-top: 28px; }
+.quest-family-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.quest-family-card .quest-player-card { width: 100%; }
+.quest-family-card__report {
+  text-align: center;
+  color: var(--quest-mango);
+  font: 800 13px/1.2 var(--quest-font-label);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.quest-grownup {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(11, 46, 36, 0.86);
+}
+.quest-grownup__card {
+  width: min(100%, 420px);
+  background: var(--quest-deep-leaf);
+  border: 3px solid var(--quest-leaf-border);
+  border-radius: var(--quest-radius-lg);
+  padding: 24px;
+  color: var(--quest-cream);
+}
+.quest-grownup__title {
+  font-family: var(--quest-font-display);
+  font-size: 32px;
+  margin: 0 0 8px;
+}
+.quest-grownup__body { color: var(--quest-muted); margin: 0 0 16px; }
+.quest-report { min-width: 0; }
+.quest-report__hero {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.quest-report__avatar svg { display: block; }
+.quest-report__stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.quest-stat {
+  background: var(--quest-deep-leaf);
+  border: 3px solid var(--quest-leaf-border);
+  border-radius: var(--quest-radius-lg);
+  padding: 16px 14px;
+  min-width: 0;
+}
+.quest-stat__label {
+  display: block;
+  color: var(--quest-muted);
+  font: 800 11px/1.2 var(--quest-font-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.quest-stat__value {
+  display: block;
+  font-family: var(--quest-font-display);
+  font-size: 28px;
+  color: var(--quest-cream);
+  margin: 4px 0 2px;
+  overflow-wrap: anywhere;
+}
+.quest-stat__hint { color: var(--quest-muted); font-size: 13px; }
+.quest-checklist { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; }
+.quest-checklist li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: var(--quest-muted);
+}
+.quest-checklist li.is-met { color: var(--quest-cream); }
+.quest-check {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--quest-leaf-border);
+}
+.quest-checklist li.is-met .quest-check {
+  background: var(--quest-lime);
+  border-color: var(--quest-lime);
+}
+.quest-patch-list { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+.quest-patch-list li { color: var(--quest-cream); }
+.quest-timeline { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
+.quest-timeline li { color: var(--quest-cream); font-size: 15px; }
+.quest-timeline li span { display: block; color: var(--quest-muted); font: 800 11px/1.2 var(--quest-font-label); letter-spacing: .08em; text-transform: uppercase; }
+.quest-practice { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 12px; }
+.quest-practice li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  background: var(--quest-palm-shadow);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.quest-practice li div { display: grid; gap: 4px; min-width: 0; }
+.quest-practice li span { color: var(--quest-muted); font-size: 13px; }
+.quest-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--quest-lime);
+  color: var(--quest-ink);
+  font: 800 12px/1 var(--quest-font-label);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.quest-privacy__list { margin: 12px 0 0; padding-left: 1.2em; color: var(--quest-cream); display: grid; gap: 8px; }
+.quest-privacy .quest-card__body + .quest-card__body { margin-top: 10px; }
+.quest-footer__note a { color: var(--quest-mango); }
+.quest-avatar-picker { min-width: 0; }
+
+@media (max-width: 860px) {
+  .quest-report__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quest-practice li { flex-wrap: wrap; }
+  .quest-report__hero { flex-wrap: wrap; }
+}
+@media (max-width: 430px) {
+  .quest-report__stats { grid-template-columns: 1fr 1fr; }
+  .quest-stat__value { font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-grownup { transition: none; }
+  .quest-family-card .quest-player-card { transition: none; }
+}
+
+@media print {
+  .quest-nav,
+  .quest-footer,
+  .quest-stagelight,
+  .quest-demo-badge,
+  .quest-grownup,
+  [data-print-hide] { display: none !important; }
+  body.direction-quest,
+  .quest-page,
+  .quest-screen,
+  .quest-card,
+  .quest-stat {
+    background: #fff !important;
+    color: #0B2E24 !important;
+    box-shadow: none !important;
+    border-color: #c8c8c8 !important;
+  }
+  .quest-screen__title,
+  .quest-card__title,
+  .quest-stat__value { color: #0B2E24 !important; }
+  .quest-screen__sub,
+  .quest-card__body,
+  .quest-muted,
+  .quest-stat__hint,
+  .quest-timeline li span { color: #3d5c50 !important; }
+  .quest-report { max-width: none; }
+  .quest-report__stats { display: block; }
+  .quest-stat { margin-bottom: 8px; }
+  .quest-page { overflow: visible; }
+}
+

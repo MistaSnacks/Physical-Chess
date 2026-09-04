@@ -1,0 +1,80 @@
+---
+// verify.astro — 6-digit email code → processVerification → redirect exchange.
+import { ClientRouter } from 'astro:transitions';
+import Base from '../layouts/Base.astro';
+import Nav from '../directions/quest/Nav.astro';
+import Footer from '../directions/quest/Footer.astro';
+import '../directions/quest/tokens.css';
+import '../directions/quest/theme.css';
+---
+
+<Base title="Verify email — Physical Chess" direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="home" />
+    <main class="quest-screen quest-screen--narrow">
+      <p class="quest-screen__eyebrow" data-quest-enter>Grown-ups</p>
+      <h1 class="quest-screen__title" data-quest-enter>Enter your code</h1>
+      <p class="quest-screen__sub" data-quest-enter>We sent a 6-digit code to your email. It may take a minute to arrive.</p>
+
+      <section class="quest-card" data-demo-card hidden data-quest-enter>
+        <h2 class="quest-card__title">Needs the Wix connection</h2>
+        <p class="quest-card__body">Email codes work once ACE connects member login. For now, open the demo family from the log in page.</p>
+        <div class="quest-btn-row"><a class="quest-btn quest-btn--lime" href="/login">Log in to the demo</a></div>
+      </section>
+
+      <form class="quest-card" data-verify-form hidden data-quest-enter>
+        <div class="quest-form__error" data-error hidden></div>
+        <div class="quest-field">
+          <label class="quest-field__label" for="code">6-digit code</label>
+          <input class="quest-field__input" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+        </div>
+        <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="submit">Verify</button><a class="quest-btn quest-btn--ghost" href="/login">Back to log in</a></div>
+      </form>
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../directions/quest/motion.js';
+    import { IS_DEMO } from '../lib/repo/index.js';
+    import { authMessage, readVerifyState, clearVerifyState, continueAuth } from '../lib/auth-ui.js';
+
+    async function init() {
+      document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
+      document.querySelector('[data-verify-form]').hidden = IS_DEMO;
+      const form = document.querySelector('[data-verify-form]');
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = form.querySelector('[data-error]');
+        err.hidden = true;
+        const saved = readVerifyState() || {};
+        const next = new URLSearchParams(location.search).get('next') || saved.next || '/who';
+        const submit = form.querySelector('[type=submit]');
+        submit.disabled = true;
+        try {
+          const { processVerification } = await import('../lib/wix.js');
+          const code = String(new FormData(form).get('code') || '').trim();
+          const state = saved.stateToken
+            ? { loginState: 'EMAIL_VERIFICATION_REQUIRED', data: { stateToken: saved.stateToken } }
+            : undefined;
+          const res = await processVerification(code, state);
+          const kind = await continueAuth(res, { next });
+          if (kind === 'ok' || kind === 'verify') clearVerifyState();
+          if (kind === 'pending' || kind === 'error' || kind.startsWith('captcha')) {
+            err.textContent = authMessage(res);
+            err.hidden = false;
+          }
+        } catch (ex) {
+          err.textContent = 'That code did not work. Check it and try again.';
+          err.hidden = false;
+          console.error(ex);
+        } finally {
+          submit.disabled = false;
+        }
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+    init();
+  </script>
+</Base>

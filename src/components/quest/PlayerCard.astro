@@ -1,0 +1,19 @@
+---
+// PlayerCard.astro — the dashed "Add a player" card. Live player cards are
+// built in src/lib/player-card.js so apelidos stay in textContent.
+interface Props {
+  href?: string;
+}
+const { href = '/family/players/new' } = Astro.props;
+---
+
+<a class="quest-player-card quest-player-card--add" href={href} data-add-player>
+  <span class="quest-player-card__avatar">
+    <svg width="96" height="96" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="none" stroke="#7FA894" stroke-width="1.5" stroke-dasharray="3 3"></circle>
+      <path d="M12 7v10M7 12h10" stroke="#9FC4B3" stroke-width="2.4" stroke-linecap="round"></path>
+    </svg>
+  </span>
+  <span class="quest-player-card__name">Add a player</span>
+  <span class="quest-player-card__meta">Grown-ups only</span>
+</a>
