@@ -21,6 +21,7 @@ import '../../directions/quest/theme.css';
     <Footer />
   </div>
   <script>
+    import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
     async function init() { await requireSession({ role: 'coach' }); }
     document.addEventListener('astro:page-load', init);

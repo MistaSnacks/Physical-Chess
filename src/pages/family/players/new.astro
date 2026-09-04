@@ -48,6 +48,7 @@ const colors = Object.entries(AVATAR_COLORS);
     <Footer />
   </div>
   <script>
+    import '../../../directions/quest/motion.js';
     import { requireSession } from '../../../lib/auth-guard.js';
     import { createPlayer, selectPlayer } from '../../../lib/actions.js';
     import { avatarSvg } from '../../../lib/avatar.js';
