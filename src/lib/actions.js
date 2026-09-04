@@ -8,6 +8,24 @@ import { makeEvent, derivePlayer, sideEffects, startsNewStreakWeek, isoWeek, EVE
 const ACTIVE_KEY = 'pc.activePlayer';
 const OUTBOX_KEY = 'pc.outbox';
 
+function readActivePlayerId() {
+  try {
+    return sessionStorage.getItem(ACTIVE_KEY) || localStorage.getItem(ACTIVE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeActivePlayerId(id) {
+  sessionStorage.setItem(ACTIVE_KEY, id);
+  localStorage.setItem(ACTIVE_KEY, id);
+}
+
+function clearActivePlayerId() {
+  sessionStorage.removeItem(ACTIVE_KEY);
+  localStorage.removeItem(ACTIVE_KEY);
+}
+
 function emit(name, detail) {
   document.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
 }
@@ -17,7 +35,7 @@ export async function loadSession() {
   const session = await repo.getSession();
   store.set({ session, isDemo: IS_DEMO, ready: !session });
   if (!session) return null;
-  const wanted = sessionStorage.getItem(ACTIVE_KEY);
+  const wanted = readActivePlayerId();
   const player = session.players.find((p) => p.id === wanted) || null;
   if (player) await selectPlayer(player.id);
   else store.set({ ready: true });
@@ -29,7 +47,7 @@ export async function selectPlayer(id) {
   const s = store.get();
   const player = s.session?.players.find((p) => p.id === id);
   if (!player) throw new Error('unknown player');
-  sessionStorage.setItem(ACTIVE_KEY, id);
+  writeActivePlayerId(id);
   await flushOutbox();
   const events = await repo.listEvents(id);
   const snapshot = derivePlayer(events);
@@ -38,7 +56,7 @@ export async function selectPlayer(id) {
 }
 
 export function clearActivePlayer() {
-  sessionStorage.removeItem(ACTIVE_KEY);
+  clearActivePlayerId();
   store.set({ activePlayerId: null, player: null, events: [], snapshot: null });
 }
 
@@ -217,7 +235,7 @@ export async function recordDesafio(payload = {}) {
  */
 export async function selectClassPlayer(player) {
   const repo = await getRepo();
-  sessionStorage.setItem(ACTIVE_KEY, player.id);
+  writeActivePlayerId(player.id);
   await flushOutbox();
   const events = await repo.listEvents(player.id);
   const snapshot = derivePlayer(events);
