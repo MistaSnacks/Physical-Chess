@@ -4397,3 +4397,8 @@ body.has-class-mode .quest-page { padding-top: 0; }
   border: 0;
   background: transparent;
 }
+.quest-video-credit,
+.quest-video-card__credit,
+.quest-footer__note {
+  color: var(--quest-cream);
+}
