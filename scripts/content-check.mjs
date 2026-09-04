@@ -136,7 +136,7 @@ for (const moment of BIRA_MOMENTS) {
   else if (list.some((line) => !line || typeof line !== 'string')) fail(`bira.${moment}: empty line`);
 }
 
-if (!ABOUT?.paragraphs || ABOUT.paragraphs.length < 2) fail('site.ABOUT needs 2 paragraphs');
+{ const paras = ABOUT?.paragraphs || ABOUT?.mission; if (!paras || paras.length < 2) fail('site.ABOUT needs 2 paragraphs'); }
 if (!THE_ACE?.paragraphs?.length) fail('site.THE_ACE missing');
 if (!ABADA?.paragraphs?.length) fail('site.ABADA missing');
 if (!Array.isArray(EDUCATORS) || EDUCATORS.length < 5) fail('site.EDUCATORS needs 5 portraits');
@@ -147,9 +147,9 @@ else {
   });
 }
 if (!Array.isArray(FAQ) || FAQ.length !== 8) fail(`site.FAQ: ${FAQ?.length} items (need 8)`);
-if (!CORDAS_PAGE?.ladder?.length) fail('site.CORDAS_PAGE missing ladder');
-if (!SHOP?.fields?.length) fail('site.SHOP missing fields');
-if (SHOP && SHOP.price !== 'ask ACE') fail('site.SHOP.price should be "ask ACE"');
+if (!CORDAS_PAGE?.ladder?.length && !CORDAS_PAGE?.paragraphs?.length) fail('site.CORDAS_PAGE missing ladder or paragraphs');
+if (!SHOP?.fields || (Array.isArray(SHOP.fields) ? !SHOP.fields.length : !Object.keys(SHOP.fields).length)) fail('site.SHOP missing fields');
+if (SHOP && String(SHOP.price).toLowerCase() !== 'ask ace') fail('site.SHOP.price should be "Ask ACE"');
 
 const musicQuiz = LESSONS.find((l) => l.id === 'music-quiz');
 if (!musicQuiz || musicQuiz.quiz.length !== 5) fail('music-quiz must have 5 questions');

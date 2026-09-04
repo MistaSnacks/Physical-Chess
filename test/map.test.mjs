@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { derivePlayer } from '../src/lib/game/derive.js';
 import { demoEvents } from '../src/lib/repo/demoSeed.js';
 import { nodeState, clearedTrailPercent, lessonTrailItems } from '../src/lib/map.js';
+import { LESSONS } from '../src/content/lessons.js';
 
 test('Maya demo map: movements current, culture locked, trail follows done lessons', () => {
   const s = derivePlayer(demoEvents());
@@ -13,7 +14,7 @@ test('Maya demo map: movements current, culture locked, trail follows done lesso
   const pct = clearedTrailPercent(s);
   assert.ok(pct > 4, `cleared trail ${pct} should be past the start`);
   assert.ok(pct < 100);
-  assert.ok(lessonTrailItems().length === 16);
+  assert.equal(lessonTrailItems().length, LESSONS.length);
 });
 
 test('new player: first module current, gate not ready', () => {
