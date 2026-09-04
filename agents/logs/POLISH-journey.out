@@ -1,0 +1,20 @@
+Completed and committed the journey polish pass.
+
+Highlights:
+
+- Improved `/journey` hierarchy and mobile flow.
+- Refined HUD spacing, copy, focus, hover, and touch states.
+- Limited screens to one idle animation and completed reduced-motion handling.
+- Polished patch, star, confetti, and accessible level-up rewards.
+- Added 1440px, 390px, patch, and level-up screenshots.
+- Wrote [POLISH-journey.md](/Users/admin/pc-pol-journey/agents/reports/POLISH-journey.md).
+
+Verification passed:
+
+- `npm run build`
+- `npm test` — 20/20
+- Demo smoke on port 4411 — `SMOKE OK`
+- No horizontal overflow at 390px
+- Clean worktree
+
+Commit: `2088b39 polish(journey): refine map HUD and rewards`
