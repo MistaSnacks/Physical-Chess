@@ -168,10 +168,7 @@ await page.setViewportSize({ width: 1440, height: 900 });
 await page.click('[data-end-class]');
 await page.waitForURL('**/coach/class**');
 
-await page.goto(`${base}/family`);
-await page.waitForSelector('[data-to-coach]');
-
-// Static dist cannot import /src. Patch the demo db instead.
+// Already in a coach session. Clear assigned programs for the empty state.
 await page.evaluate(() => {
   const db = JSON.parse(localStorage.getItem('pc.demo.v1') || '{}');
   if (db.account) {
