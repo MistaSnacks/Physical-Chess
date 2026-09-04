@@ -4402,3 +4402,269 @@ body.has-class-mode .quest-page { padding-top: 0; }
 .quest-footer__note {
   color: var(--quest-cream);
 }
+
+/* === POLISH: public === */
+.quest-screen--public {
+  width: 100%;
+}
+
+.quest-screen--public > .quest-screen__sub {
+  max-width: 65ch;
+  line-height: 1.6;
+}
+
+.quest-screen--public .quest-public-stops:not(.quest-public-stops--four),
+.quest-screen--public .quest-educators {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.quest-stop-card {
+  box-shadow: 0 0 0 var(--quest-ink);
+  transition:
+    transform 0.18s var(--quest-ease),
+    border-color 0.18s var(--quest-ease),
+    box-shadow 0.18s var(--quest-ease);
+}
+
+.quest-stop-card:hover,
+.quest-stop-card:focus-visible {
+  border-color: var(--quest-mango);
+  box-shadow: 0 8px 0 var(--quest-ink);
+  transform: translateY(-4px);
+}
+
+.quest-stop-card__sub {
+  flex-grow: 1;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.quest-educator {
+  display: flex;
+  flex-direction: column;
+}
+
+.quest-educator__bio {
+  flex-grow: 1;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.quest-faq__q {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.quest-faq__q::after {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-right: 3px solid var(--quest-mango);
+  border-bottom: 3px solid var(--quest-mango);
+  content: '';
+  transform: rotate(45deg) translate(-2px, 2px);
+  transition: transform 0.18s var(--quest-ease);
+}
+
+.quest-faq__item[open] .quest-faq__q::after {
+  transform: rotate(225deg) translate(-2px, 2px);
+}
+
+.quest-nav__more-btn {
+  min-height: 44px;
+  transition:
+    color 0.18s var(--quest-ease),
+    background-color 0.18s var(--quest-ease),
+    transform 0.18s var(--quest-ease);
+}
+
+.quest-nav__more-btn:hover {
+  transform: translateY(-2px);
+}
+
+.quest-nav__more-btn:active {
+  transform: translateY(0);
+}
+
+.quest-more-panel {
+  box-shadow: 0 10px 0 var(--quest-ink);
+}
+
+.quest-more-panel__link {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  transition:
+    color 0.16s var(--quest-ease),
+    background-color 0.16s var(--quest-ease),
+    transform 0.16s var(--quest-ease);
+}
+
+.quest-more-panel__link:hover,
+.quest-more-panel__link:focus-visible {
+  transform: translateX(4px);
+}
+
+.quest-footer {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(180px, 0.6fr) minmax(0, 2fr);
+  align-items: start;
+  gap: 32px 48px;
+}
+
+.quest-footer__identity {
+  display: grid;
+  gap: 20px;
+}
+
+.quest-footer__contact strong,
+.quest-footer__group-title {
+  color: var(--quest-mango);
+  font: 800 11px/1.2 var(--quest-font-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.quest-footer__contact a {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+}
+
+.quest-footer__links {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  max-width: none;
+}
+
+.quest-footer__group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.quest-footer__group-title {
+  margin-bottom: 6px;
+}
+
+.quest-footer__links a {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+}
+
+.quest-footer__note {
+  max-width: 32ch;
+  line-height: 1.55;
+}
+
+.quest-hero__title strong {
+  color: inherit;
+  font-weight: inherit;
+}
+
+.quest-card[aria-busy='true'] {
+  cursor: progress;
+}
+
+.quest-screen--public .quest-card [data-submit] {
+  min-width: 128px;
+}
+
+.quest-gate-panel__title {
+  font-family: var(--quest-font-display);
+}
+
+.quest-gate-panel:active {
+  box-shadow: 0 8px 0 var(--quest-mango-shadow);
+  transform: translateY(4px);
+}
+
+@media (max-width: 900px) {
+  .quest-screen--public .quest-public-stops:not(.quest-public-stops--four),
+  .quest-screen--public .quest-educators {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quest-footer {
+    grid-template-columns: minmax(180px, 0.75fr) minmax(0, 1.5fr);
+  }
+
+  .quest-footer__links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .quest-screen--public .quest-public-stops:not(.quest-public-stops--four),
+  .quest-screen--public .quest-educators {
+    grid-template-columns: 1fr;
+  }
+
+  .quest-nav__brand,
+  .quest-nav__link,
+  .quest-nav__cta,
+  .quest-nav__more-btn {
+    min-height: 44px;
+  }
+
+  .quest-nav__link {
+    padding-block: 10px;
+  }
+
+  .quest-hero__contact a,
+  .quest-screen--public .quest-card__body a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .quest-footer {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .quest-footer__contact a,
+  .quest-footer__links a {
+    min-height: 44px;
+  }
+
+  .quest-footer__links a {
+    min-width: 44px;
+  }
+
+  .quest-stop-card__img {
+    aspect-ratio: 16 / 9;
+  }
+
+  .quest-screen--public .quest-moment__photo-wrap {
+    aspect-ratio: 16 / 10;
+  }
+
+  .quest-gallery .gallery__caption {
+    padding: 20px 8px 8px;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-faq__q::after,
+  .quest-nav__more-btn,
+  .quest-more-panel__link,
+  .quest-stop-card {
+    transition: none;
+  }
+
+  .quest-more-panel__link:hover,
+  .quest-more-panel__link:focus-visible,
+  .quest-stop-card:hover,
+  .quest-stop-card:focus-visible {
+    transform: none;
+  }
+}

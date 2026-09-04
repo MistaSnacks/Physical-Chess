@@ -15,8 +15,8 @@ import { PROGRAMS } from '../content/programs.js';
   {import.meta.env.DEV && SHOP.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
 
   <form class="quest-card" data-shop-form data-quest-enter>
-    <div class="quest-form__error" data-error hidden></div>
-    <div class="quest-form__ok" data-ok hidden></div>
+    <div class="quest-form__error" data-error role="alert" hidden></div>
+    <div class="quest-form__ok" data-ok role="status" aria-live="polite" hidden></div>
 
     <div class="quest-field">
       <label class="quest-field__label" for="parentsName">{SHOP.fields.parentsName}</label>
@@ -77,6 +77,9 @@ import { PROGRAMS } from '../content/programs.js';
       err.hidden = true;
       ok.hidden = true;
       btn.disabled = true;
+      form.setAttribute('aria-busy', 'true');
+      const buttonLabel = btn.textContent;
+      btn.textContent = 'Sending request…';
       const fd = new FormData(form);
       const payload = {
         parentsName: fd.get('parentsName'),
@@ -117,6 +120,8 @@ import { PROGRAMS } from '../content/programs.js';
         }
       }
       btn.disabled = false;
+      btn.textContent = buttonLabel;
+      form.removeAttribute('aria-busy');
     });
   }
   document.addEventListener('astro:page-load', init);
