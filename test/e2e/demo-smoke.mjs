@@ -39,6 +39,10 @@ await page.click('[data-question-index="1"] [data-quiz-choice][data-choice-index
 await page.click('[data-question-index="1"] [data-quiz-next]');
 await page.click('[data-question-index="2"] [data-quiz-choice][data-choice-index="0"]');
 await page.click('[data-question-index="2"] [data-quiz-next]');
+await page.click('[data-question-index="3"] [data-quiz-choice][data-choice-index="0"]');
+await page.click('[data-question-index="3"] [data-quiz-next]');
+await page.click('[data-question-index="4"] [data-quiz-choice][data-choice-index="0"]');
+await page.click('[data-question-index="4"] [data-quiz-next]');
 await page.waitForSelector('[data-finished]:not([hidden])');
 await shot('quiz-done');
 await page.goto(`${base}/journey`);

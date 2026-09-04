@@ -10,6 +10,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "node --test test/*.test.mjs",
+    "content:check": "node scripts/content-check.mjs",
     "wix:collections": "node scripts/wix-collections.mjs",
     "test:e2e": "node test/e2e/demo-smoke.mjs"
   },
