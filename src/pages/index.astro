@@ -14,6 +14,10 @@ import '../directions/quest/tokens.css';
 import '../directions/quest/theme.css';
 
 const hero = video('videoProject1');
+const heroPosterSm = wix('heroRoda', 480, 760);
+const heroPosterMd = wix('heroRoda', 720, 1120);
+const heroPosterLg = wix('heroRoda', 900, 1400);
+const heroSrcset = `${heroPosterSm} 480w, ${heroPosterMd} 720w, ${heroPosterLg} 900w`;
 
 const LEARN = MODULES.map((m) => ({
   href: `/learn/${m.id}`,
@@ -36,7 +40,15 @@ const LEARN = MODULES.map((m) => ({
   direction="quest"
 >
   <ClientRouter slot="head" />
-  <link slot="head" rel="preload" as="image" href={wix('heroRoda', 900, 1400)} />
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    href={heroPosterSm}
+    imagesrcset={heroSrcset}
+    imagesizes="100vw"
+    fetchpriority="high"
+  />
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
@@ -48,12 +60,14 @@ const LEARN = MODULES.map((m) => ({
         <div class="quest-hero__bg" aria-hidden="true">
           <img
             class="quest-hero__poster"
-            src={wix('heroRoda', 900, 1400)}
+            src={heroPosterMd}
+            srcset={heroSrcset}
+            sizes="100vw"
             alt=""
             width="900"
             height="1400"
             fetchpriority="high"
-            decoding="async"
+            decoding="sync"
           />
           <video
             class="quest-hero__video"
@@ -116,7 +130,7 @@ const LEARN = MODULES.map((m) => ({
             data-yt-id={yt('acb2024')}
             aria-label="Play Abadá Capoeira Brooklyn 2024"
           >
-            <img src={wix('heroRoda', 1280, 720)} alt="" width="1280" height="720" loading="lazy" />
+            <img src={wix('heroRoda', 800, 450)} alt="" width="800" height="450" loading="lazy" />
             <span class="quest-yt-lite__play" aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l12-7z" fill="currentColor"/></svg>
             </span>
