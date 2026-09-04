@@ -43,15 +43,16 @@ test('stars only go up; quiz score tracked', () => {
 });
 
 test('clearing a module unlocks the next and mints side effects', () => {
-  const music = ['meet-the-berimbau', 'pandeiro-atabaque', 'sing-the-roda', 'music-quiz'];
+  const music = ['meet-the-berimbau', 'pandeiro-atabaque', 'agogo-reco-reco', 'sing-the-roda', 'music-quiz'];
   const events = [
     makeEvent({ ...P, type: EVENT.READING_DONE, moduleId: 'music', lessonId: music[0], payload: { checkFirstTry: true } }),
     makeEvent({ ...P, type: EVENT.VIDEO_DONE, moduleId: 'music', lessonId: music[1] }),
-    makeEvent({ ...P, type: EVENT.DRILL_DONE, moduleId: 'music', lessonId: music[2], payload: { selfRating: 3 } }),
+    makeEvent({ ...P, type: EVENT.READING_DONE, moduleId: 'music', lessonId: music[2], payload: { checkFirstTry: true } }),
+    makeEvent({ ...P, type: EVENT.DRILL_DONE, moduleId: 'music', lessonId: music[3], payload: { selfRating: 3 } }),
   ];
   const before = derivePlayer(events);
   assert.equal(before.modules.culture.locked, true);
-  const last = makeEvent({ ...P, type: EVENT.QUIZ_DONE, moduleId: 'music', lessonId: music[3], payload: { score: 2, total: 3 } });
+  const last = makeEvent({ ...P, type: EVENT.QUIZ_DONE, moduleId: 'music', lessonId: music[4], payload: { score: 3, total: 5 } });
   const after = derivePlayer([...events, last]);
   assert.equal(after.modules.music.cleared, true);
   assert.equal(after.modules.culture.locked, false);
