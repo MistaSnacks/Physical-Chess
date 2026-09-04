@@ -40,7 +40,7 @@ import '../../directions/quest/theme.css';
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
     import { getCoach } from '../../lib/repo/coachRepo.js';
-    import { programsForAccount, downloadBlob } from '../../lib/coach.js';
+    import { programsForAccount, downloadBlob, NO_PROGRAMS_COPY } from '../../lib/coach.js';
 
     async function init() {
       const s = await requireSession({ role: 'coach' });
@@ -51,6 +51,12 @@ import '../../directions/quest/theme.css';
       }
       const programs = programsForAccount(s.session.account);
       const sel = document.querySelector('[data-program]');
+      if (!programs.length) {
+        sel.closest('section')?.insertAdjacentHTML('beforeend', `<p class="quest-card quest-card--note" data-empty-programs>${NO_PROGRAMS_COPY}</p>`);
+        sel.closest('.quest-field')?.setAttribute('hidden', '');
+        document.querySelectorAll('[data-dl]').forEach((btn) => { btn.disabled = true; });
+        return;
+      }
       sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
       const coach = await getCoach();
       document.querySelectorAll('[data-dl]').forEach((btn) => {

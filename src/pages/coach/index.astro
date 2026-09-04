@@ -29,7 +29,7 @@ import '../../directions/quest/theme.css';
     import '../../directions/quest/motion.js';
     import { requireSession } from '../../lib/auth-guard.js';
     import { getCoach } from '../../lib/repo/coachRepo.js';
-    import { overviewFromRoster, READINESS_BUCKETS, cordaLabel, programsForAccount } from '../../lib/coach.js';
+    import { overviewFromRoster, READINESS_BUCKETS, cordaLabel, programsForAccount, NO_PROGRAMS_COPY } from '../../lib/coach.js';
     import { avatarSvg } from '../../lib/avatar.js';
 
     function esc(s) {
@@ -45,6 +45,10 @@ import '../../directions/quest/theme.css';
       const coach = await getCoach();
       const programs = programsForAccount(s.session.account);
       const root = document.querySelector('[data-coach-root]');
+      if (!programs.length) {
+        root.innerHTML = `<section class="quest-card quest-card--note" data-empty-programs data-quest-enter>${NO_PROGRAMS_COPY}</section>`;
+        return;
+      }
       const all = [];
       for (const p of programs) {
         const rows = await coach.roster(p.key);

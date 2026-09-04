@@ -32,7 +32,7 @@ import '../../directions/quest/theme.css';
     import { requireSession } from '../../lib/auth-guard.js';
     import { selectClassPlayer } from '../../lib/actions.js';
     import { getCoach } from '../../lib/repo/coachRepo.js';
-    import { programsForAccount, writeClassMode } from '../../lib/coach.js';
+    import { programsForAccount, writeClassMode, NO_PROGRAMS_COPY } from '../../lib/coach.js';
     import { avatarSvg } from '../../lib/avatar.js';
 
     async function init() {
@@ -43,6 +43,11 @@ import '../../directions/quest/theme.css';
       const programs = programsForAccount(s.session.account);
       const sel = document.querySelector('[data-program]');
       const grid = document.querySelector('[data-grid]');
+      if (!programs.length) {
+        sel.closest('.quest-card')?.setAttribute('hidden', '');
+        grid.innerHTML = `<p class="quest-card quest-card--note" data-empty-programs>${NO_PROGRAMS_COPY}</p>`;
+        return;
+      }
       sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
 
       async function render() {
