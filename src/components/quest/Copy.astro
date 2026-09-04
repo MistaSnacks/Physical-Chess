@@ -1,0 +1,19 @@
+---
+// Copy.astro — render a string with **bold** Portuguese / key words.
+interface Props {
+  text: string;
+  class?: string;
+}
+
+const { text, class: className } = Astro.props;
+const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
+---
+
+<p class={className}>
+  {
+    parts.map((part) => {
+      const m = part.match(/^\*\*(.+)\*\*$/);
+      return m ? <strong>{m[1]}</strong> : part;
+    })
+  }
+</p>

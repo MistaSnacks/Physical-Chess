@@ -1,6 +1,24 @@
 ---
-// Footer.astro — Roda Quest footer with the ACE contact info (SPEC §4.3).
+// Footer.astro — Roda Quest footer with the ACE contact info and a public sitemap.
 import { CONTACT } from '../../data/batizado.js';
+
+const LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/about/educators', label: 'Educators' },
+  { href: '/about/the-ace', label: 'the ACE' },
+  { href: '/about/abada', label: 'ABADÁ' },
+  { href: '/about/faq', label: 'F.A.Q.' },
+  { href: '/about/contact', label: 'Contact' },
+  { href: '/graduation', label: 'Graduation' },
+  { href: '/graduation/what-is-batizado', label: 'What is it?' },
+  { href: '/graduation/cordas', label: 'Cordas' },
+  { href: '/graduation/media', label: 'Batizado Media' },
+  { href: '/batizado', label: 'Batizado 2026' },
+  { href: '/shop', label: 'Shop' },
+  { href: '/login', label: 'Log in' },
+  { href: '/privacy', label: 'Privacy' },
+];
 ---
 
 <footer class="quest-footer" data-quest-enter>
@@ -10,5 +28,15 @@ import { CONTACT } from '../../data/batizado.js';
     <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
     <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
   </div>
-  <div class="quest-footer__note">A program of ACE / Abad&aacute; Capoeira Brooklyn.</div>
+  <nav class="quest-footer__links" aria-label="Public pages">
+    {
+      LINKS.map((l) => (
+        <a href={l.href}>{l.label}</a>
+      ))
+    }
+  </nav>
+  <div class="quest-footer__note">
+    A program of ACE / Abad&aacute; Capoeira Brooklyn.
+    <span class="quest-footer__credit">Video: SoChlo Productions</span>
+  </div>
 </footer>

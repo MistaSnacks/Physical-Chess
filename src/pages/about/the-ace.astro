@@ -1,0 +1,25 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import Copy from '../../components/quest/Copy.astro';
+import { THE_ACE } from '../../content/site.js';
+import { wix } from '../../data/media.js';
+---
+
+<PublicFrame title="the ACE — Physical Chess" description="The Abadá Capoeira Experience: ACE’s Brooklyn kids program." active="about">
+  <p class="quest-screen__eyebrow" data-quest-enter>About Us</p>
+  <h1 class="quest-screen__title" data-quest-enter>{THE_ACE.title}</h1>
+  <p class="quest-screen__sub" data-quest-enter>{THE_ACE.kicker}</p>
+  <img
+    class="quest-public-heroimg"
+    src={wix('classPhoto2022a', 1200, 675)}
+    alt="ACE class in Brooklyn"
+    width="1200"
+    height="675"
+    loading="lazy"
+    data-quest-enter
+  />
+  <div class="quest-prose" data-quest-enter>
+    {THE_ACE.paragraphs.map((p) => <Copy text={p} />)}
+  </div>
+  {import.meta.env.DEV && THE_ACE.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
+</PublicFrame>

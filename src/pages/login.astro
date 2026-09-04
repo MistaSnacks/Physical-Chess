@@ -42,9 +42,15 @@ import '../directions/quest/theme.css';
     import { signInDemo, loadSession } from '../lib/actions.js';
 
     async function init() {
-      const next = new URLSearchParams(location.search).get('next') || '/who';
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next') || '/who';
       const session = await loadSession();
       if (session) { location.replace(next); return; }
+      if (IS_DEMO && params.get('demo') === '1') {
+        await signInDemo();
+        location.href = next;
+        return;
+      }
       document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
       document.querySelector('[data-login-form]').hidden = IS_DEMO;
       document.querySelector('[data-demo-btn]')?.addEventListener('click', async () => { await signInDemo(); location.href = next; });

@@ -1,0 +1,34 @@
+---
+// PublicFrame.astro — shared chrome for public WP5 pages (nav, footer, motion).
+import { ClientRouter } from 'astro:transitions';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../directions/quest/Nav.astro';
+import Footer from '../../directions/quest/Footer.astro';
+import '../../directions/quest/tokens.css';
+import '../../directions/quest/theme.css';
+
+interface Props {
+  title: string;
+  description: string;
+  active?: 'home' | 'journey' | 'movements' | 'music' | 'culture' | 'graduation' | 'batizado' | 'me' | 'family' | 'coach' | 'who' | 'about' | 'shop';
+  narrow?: boolean;
+}
+
+const { title, description, active, narrow = false } = Astro.props;
+---
+
+<Base title={title} description={description} direction="quest">
+  <ClientRouter slot="head" />
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <div class="quest-stagelight quest-stagelight--b" aria-hidden="true"></div>
+    <Nav active={active} />
+    <main class:list={['quest-screen', narrow && 'quest-screen--narrow']}>
+      <slot />
+    </main>
+    <Footer />
+  </div>
+  <script>
+    import '../../directions/quest/motion.js';
+  </script>
+</Base>

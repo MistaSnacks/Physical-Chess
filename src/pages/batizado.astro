@@ -1,7 +1,5 @@
 ---
-// batizado.astro — Graduation / Batizado. The Corda Amarela gate opens to
-// reveal the ceremony moments, the cordas track and the gallery. Per
-// SPEC §2 row 5 + §4.3 + §5.2.
+// batizado.astro — Batizado 2026 ceremony page. Linked from /graduation.
 import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
@@ -9,15 +7,13 @@ import Footer from '../directions/quest/Footer.astro';
 import Countdown from '../components/Countdown.astro';
 import Gallery from '../components/Gallery.astro';
 import YouTube from '../components/YouTube.astro';
-import { INTRO, MOMENTS, CORDAS, BATIZADO_DATE, BATIZADO_DATE_TBC, cordaIndex } from '../data/batizado.js';
-import { STUDENT } from '../data/student.js';
+import { INTRO, MOMENTS, CORDAS, BATIZADO_DATE, BATIZADO_DATE_TBC } from '../data/batizado.js';
 import { wix, yt } from '../data/media.js';
 
 import '../directions/quest/tokens.css';
 import '../directions/quest/theme.css';
 
 const gateCorda = CORDAS.find((c) => c.id === 'amarela');
-const currentCordaIndex = cordaIndex(STUDENT.corda);
 
 const GALLERY_PHOTOS = [
   'batizado2019a',
@@ -43,7 +39,7 @@ const VIDEOS = [
 ];
 ---
 
-<Base title="Batizado — Roda Quest" direction="quest">
+<Base title="Batizado 2026 — Roda Quest" description="Batizado 2026: countdown, the six ceremony moments, cordas, gallery, and videos from ACE / Abadá Capoeira Brooklyn." direction="quest">
   <ClientRouter slot="head" />
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
@@ -59,6 +55,10 @@ const VIDEOS = [
         <div data-quest-enter>
           <Countdown target={BATIZADO_DATE} dateTbc={BATIZADO_DATE_TBC} class="quest-countdown" />
         </div>
+        <p class="quest-btn-row" data-quest-enter>
+          <a class="quest-btn quest-btn--ghost" href="/graduation">Graduation hub</a>
+          <a class="quest-btn quest-btn--ghost" href="/graduation/what-is-batizado">What is it?</a>
+        </p>
       </section>
 
       <section class="quest-gate-reveal">
@@ -88,7 +88,7 @@ const VIDEOS = [
                 MOMENTS.map((m, i) => (
                   <div class="quest-moment">
                     <div class="quest-moment__photo-wrap">
-                      <img class="quest-moment__photo" src={wix(m.photoKey, 480, 360)} alt={m.title} loading="lazy" />
+                      <img class="quest-moment__photo" src={wix(m.photoKey, 480, 360)} alt={m.title} loading="lazy" width="480" height="360" />
                     </div>
                     <div class="quest-moment__body">
                       <span class="quest-moment__index">MOMENT {i + 1}</span>
@@ -103,18 +103,20 @@ const VIDEOS = [
 
           <div>
             <p class="quest-section__eyebrow">Cordas &middot; Ranks</p>
-            <h2 class="quest-section__title">Maya is Corda {CORDAS[currentCordaIndex].label} right now.</h2>
+            <h2 class="quest-section__title">Kids start at Crua.</h2>
             <div class="quest-cordas-track">
               {
-                CORDAS.map((c, i) => (
-                  <div class="quest-corda" data-current={i === currentCordaIndex ? 'true' : 'false'}>
+                CORDAS.map((c) => (
+                  <div class="quest-corda">
                     <span class="quest-corda__swatch" style={`background:${c.color}`} />
                     <span class="quest-corda__label">{c.label}</span>
-                    {i === currentCordaIndex && <span class="quest-corda__you">MAYA IS HERE</span>}
                   </div>
                 ))
               }
             </div>
+            <p class="quest-btn-row">
+              <a class="quest-btn quest-btn--ghost" href="/graduation/cordas">Read the ladder</a>
+            </p>
           </div>
 
           <div>

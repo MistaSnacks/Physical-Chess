@@ -1,0 +1,32 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import { INTRO, MOMENTS } from '../../data/batizado.js';
+import { wix } from '../../data/media.js';
+---
+
+<PublicFrame title="What is Batizado? — Physical Chess" description="The six moments of the ACE / Abadá Capoeira Brooklyn Batizado ceremony." active="graduation">
+  <p class="quest-screen__eyebrow" data-quest-enter>Graduation</p>
+  <h1 class="quest-screen__title" data-quest-enter>What is it?</h1>
+  <p class="quest-screen__sub" data-quest-enter>{INTRO}</p>
+
+  <div class="quest-moments">
+    {
+      MOMENTS.map((m, i) => (
+        <article class="quest-moment" data-quest-enter>
+          <div class="quest-moment__photo-wrap">
+            <img class="quest-moment__photo" src={wix(m.photoKey, 480, 360)} alt={m.title} width="480" height="360" loading="lazy" />
+          </div>
+          <div class="quest-moment__body">
+            <span class="quest-moment__index">MOMENT {i + 1}</span>
+            <h2 class="quest-moment__title">{m.title}</h2>
+            <p class="quest-moment__copy">{m.copy}</p>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+  <p class="quest-btn-row" data-quest-enter>
+    <a class="quest-btn quest-btn--mango" href="/batizado">Batizado 2026</a>
+    <a class="quest-btn quest-btn--ghost" href="/graduation/media">Batizado Media</a>
+  </p>
+</PublicFrame>

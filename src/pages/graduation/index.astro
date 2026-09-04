@@ -1,0 +1,31 @@
+---
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import { wix } from '../../data/media.js';
+import { BATIZADO_DATE_TBC } from '../../data/batizado.js';
+
+const STOPS = [
+  { href: '/batizado', title: 'Batizado 2026', sub: BATIZADO_DATE_TBC ? 'Countdown (date TBC). The gate, the six moments, and this year’s video.' : 'The gate, the six moments, and this year’s video.', photoKey: 'bannerBatizado' },
+  { href: '/graduation/what-is-batizado', title: 'What is it?', sub: 'Abertura, solos, Batizado, Volta do Mundo, Troca de Cordas, Jogo de Compra.', photoKey: 'cocoTubarao' },
+  { href: '/graduation/cordas', title: 'Cordas', sub: 'The kids’ rank ladder. A coach awards the corda. The app never does.', photoKey: 'cordsTable2022' },
+  { href: '/graduation/media', title: 'Batizado Media', sub: 'Gallery 2016–2022 plus YouTube from 2024, 2025, and 2026.', photoKey: 'groupFoto2019' },
+];
+---
+
+<PublicFrame title="Graduation — Physical Chess" description="Batizado 2026, what the ceremony is, the kids’ corda ladder, and years of media." active="graduation">
+  <p class="quest-screen__eyebrow" data-quest-enter>Graduation</p>
+  <h1 class="quest-screen__title" data-quest-enter>The ceremony is the summit.</h1>
+  <p class="quest-screen__sub" data-quest-enter>
+    Batizado welcomes new students and celebrates the year’s progress. Walk these four stops.
+  </p>
+  <div class="quest-public-stops">
+    {
+      STOPS.map((s) => (
+        <a class="quest-stop-card" href={s.href} data-quest-enter>
+          <img class="quest-stop-card__img" src={wix(s.photoKey, 640, 400)} alt="" width="640" height="400" loading="lazy" />
+          <span class="quest-stop-card__title">{s.title}</span>
+          <span class="quest-stop-card__sub">{s.sub}</span>
+        </a>
+      ))
+    }
+  </div>
+</PublicFrame>

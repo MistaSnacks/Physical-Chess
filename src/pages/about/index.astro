@@ -1,0 +1,38 @@
+---
+// about/index.astro — About Us hub. Four Wix sub-pages as map-style stops.
+import PublicFrame from '../../components/quest/PublicFrame.astro';
+import Copy from '../../components/quest/Copy.astro';
+import { ABOUT } from '../../content/site.js';
+import { wix } from '../../data/media.js';
+
+const STOPS = [
+  { href: '/about/educators', title: 'Educators', sub: 'Mestres and mestras who teach with ACE in Brooklyn.', photoKey: 'mestrePernilongo' },
+  { href: '/about/the-ace', title: 'the ACE', sub: 'The Abadá Capoeira Experience program.', photoKey: 'classPhoto2022a' },
+  { href: '/about/abada', title: 'ABADÁ', sub: 'The organization Mestre Camisa founded in Rio in 1988.', photoKey: 'mestraMarciaBerimbau' },
+  { href: '/about/faq', title: 'F.A.Q.', sub: 'Ages, uniforms, Batizado, and how the app works.', photoKey: 'berimbauGourd' },
+  { href: '/about/contact', title: 'Contact', sub: 'Phone, email, and a note to ACE.', photoKey: 'heroRoda' },
+];
+---
+
+<PublicFrame title="About Us — Physical Chess" description="ACE / Abadá Capoeira Brooklyn: who we are, who teaches, and how to reach us." active="about">
+  <p class="quest-screen__eyebrow" data-quest-enter>About Us</p>
+  <h1 class="quest-screen__title" data-quest-enter>Who we are.</h1>
+  <div class="quest-prose" data-quest-enter>
+    {ABOUT.mission.map((p) => <Copy text={p} />)}
+  </div>
+  {import.meta.env.DEV && ABOUT.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
+
+  <p class="quest-section__eyebrow" data-quest-enter>Stops</p>
+  <h2 class="quest-section__title" data-quest-enter>Walk the About map.</h2>
+  <div class="quest-public-stops">
+    {
+      STOPS.map((s) => (
+        <a class="quest-stop-card" href={s.href} data-quest-enter>
+          <img class="quest-stop-card__img" src={wix(s.photoKey, 640, 400)} alt="" width="640" height="400" loading="lazy" />
+          <span class="quest-stop-card__title">{s.title}</span>
+          <span class="quest-stop-card__sub">{s.sub}</span>
+        </a>
+      ))
+    }
+  </div>
+</PublicFrame>
