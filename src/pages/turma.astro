@@ -1,5 +1,5 @@
 ---
-// turma.astro — weekly leaderboard + community berimbau (SPEC §4.7).
+// turma.astro — weekly podiums + community berimbau (SPEC §4.7).
 import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
@@ -13,11 +13,13 @@ import '../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="journey" />
-    <main class="quest-screen">
+    <main class="quest-screen quest-turma-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Your turma</p>
-      <h1 class="quest-screen__title" data-quest-enter>This week’s roda</h1>
-      <p class="quest-screen__sub" data-quest-enter>Apelidos only. XP this week. Fill the berimbau together.</p>
-      <div data-root></div>
+      <h1 class="quest-screen__title" data-quest-enter>Move as one roda</h1>
+      <p class="quest-screen__sub" data-quest-enter>Every practice helps the whole turma. The boards show apelidos and avatars only.</p>
+      <div class="quest-turma" data-root aria-live="polite">
+        <p class="quest-card quest-card--note">Bringing your roda together…</p>
+      </div>
     </main>
     <Footer />
   </div>
@@ -34,12 +36,40 @@ import '../directions/quest/theme.css';
       return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     }
 
+    function isCurrent(entry, player) {
+      return entry.playerId === player.id || entry.apelido === player.apelido;
+    }
+
+    function topThreePlusYou(source, player, optedOut, fallback, compare) {
+      const ranked = [...source].sort(compare).map((entry, index) => ({ ...entry, rank: index + 1 }));
+      const shown = ranked.slice(0, 3);
+      if (optedOut) return shown;
+      const mine = ranked.find((entry) => isCurrent(entry, player));
+      if (mine && mine.rank > 3) shown.push({ ...mine, you: true });
+      else if (!mine) shown.push({ ...fallback, rank: null, you: true });
+      return shown;
+    }
+
+    function boardRows(entries, player, value, suffix) {
+      if (!entries.length) return '<p class="quest-turma-board__empty">No apelidos are on this board yet.</p>';
+      return `<ol class="quest-lb">${entries.map((entry) => {
+        const you = entry.you || isCurrent(entry, player);
+        const rankLabel = entry.rank == null ? 'You' : String(entry.rank);
+        return `<li class="quest-lb__row ${you ? 'is-you' : ''}">
+          <span class="quest-lb__rank" aria-label="${entry.rank == null ? 'Your place' : `Place ${entry.rank}`}">${rankLabel}</span>
+          <span class="quest-lb__ava">${avatarSvg(entry.avatar, 48)}</span>
+          <span class="quest-lb__name">${esc(entry.apelido)}${you ? '<small>you</small>' : ''}</span>
+          <span class="quest-lb__xp">${value(entry)} <small>${suffix}</small></span>
+        </li>`;
+      }).join('')}</ol>`;
+    }
+
     async function init() {
       const s = await requireSession({ player: true });
       if (!s) return;
-      const player = store.get().player;
-      const account = store.get().session.account;
-      const events = store.get().events;
+      const state = store.get();
+      const player = state.player;
+      const account = state.session.account;
       const program = player.program;
       const prog = programByKey(program);
       const root = document.querySelector('[data-root]');
@@ -49,42 +79,74 @@ import '../directions/quest/theme.css';
       }
       const coach = await getCoach();
       const board = await coach.leaderboard({ program });
-      const myXp = weekXp(events);
-      const optedOut = account.leaderboardOptIn === false;
-      const entries = (board.entries || []).slice(0, 10);
-      const mine = entries.find((e) => e.playerId === player.id || e.apelido === player.apelido);
-      if (!mine && !optedOut) entries.push({ apelido: player.apelido, avatar: player.avatar, xp: myXp, you: true });
+      const myXp = weekXp(state.events);
+      const optedOut = account.leaderboardOptIn !== true;
+      const entries = board.entries || [];
+      const fallback = {
+        apelido: player.apelido,
+        avatar: player.avatar,
+        xp: myXp,
+        weekStreak: state.snapshot?.streak?.weeks || 0,
+      };
+      const xpRows = topThreePlusYou(
+        entries,
+        player,
+        optedOut,
+        fallback,
+        (a, b) => (b.xp || 0) - (a.xp || 0) || a.apelido.localeCompare(b.apelido),
+      );
+      const streakRows = topThreePlusYou(
+        entries,
+        player,
+        optedOut,
+        fallback,
+        (a, b) => (b.weekStreak || 0) - (a.weekStreak || 0) || (b.xp || 0) - (a.xp || 0) || a.apelido.localeCompare(b.apelido),
+      );
       const target = board.target || 2500;
-      const pct = Math.min(100, Math.round((board.communityXp / target) * 100));
-      const dash = 2 * Math.PI * 54;
+      const communityXp = Number(board.communityXp) || 0;
+      const pct = Math.min(100, Math.round((communityXp / target) * 100));
+      const radius = 68;
+      const dash = 2 * Math.PI * radius;
       const offset = dash * (1 - pct / 100);
 
       root.innerHTML = `
-        <section class="quest-card quest-berimbau" data-quest-enter>
-          <h2 class="quest-card__title">${esc(prog?.name || 'Turma')}</h2>
-          <p class="quest-card__body">${esc(board.goalLabel || 'Fill the berimbau by Batizado')}</p>
-          <svg class="quest-berimbau__svg" viewBox="0 0 140 140" aria-hidden="true">
-            <circle cx="70" cy="70" r="54" fill="none" stroke="#1E5A46" stroke-width="12"/>
-            <circle cx="70" cy="70" r="54" fill="none" stroke="#FFB238" stroke-width="12" stroke-linecap="round"
-              stroke-dasharray="${dash}" stroke-dashoffset="${offset}" transform="rotate(-90 70 70)"/>
-            <path d="M48 28c18 8 28 40 22 84" fill="none" stroke="#FFF6E5" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="48" cy="28" r="10" fill="#B9F26B"/>
-          </svg>
-          <p class="quest-berimbau__n">${board.communityXp} / ${target} XP this month</p>
+        <section class="quest-card quest-berimbau quest-turma-hero" data-quest-enter>
+          <div class="quest-turma-hero__copy">
+            <p class="quest-turma-hero__eyebrow">Together this month · ${esc(prog?.name || 'Turma')}</p>
+            <h2 class="quest-turma-hero__title">${esc(board.goalLabel || 'Fill the berimbau by Batizado')}</h2>
+            <p class="quest-card__body">Lessons, desafios, and coach bonuses all move the roda forward.</p>
+            <div class="quest-turma-progress" role="progressbar" aria-label="Community berimbau goal" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${communityXp}">
+              <span class="quest-turma-progress__bar" style="--quest-turma-pct:${pct}%"></span>
+            </div>
+            <p class="quest-berimbau__n"><strong>${communityXp.toLocaleString()}</strong> of ${target.toLocaleString()} XP <span>· ${pct}% full</span></p>
+          </div>
+          <div class="quest-turma-hero__art" aria-hidden="true">
+            <svg class="quest-berimbau__svg" viewBox="0 0 180 180">
+              <circle cx="90" cy="90" r="${radius}" fill="none" stroke="var(--quest-leaf-border)" stroke-width="14"/>
+              <circle cx="90" cy="90" r="${radius}" fill="none" stroke="var(--quest-mango)" stroke-width="14" stroke-linecap="round"
+                stroke-dasharray="${dash}" stroke-dashoffset="${offset}" transform="rotate(-90 90 90)"/>
+              <path d="M59 35c25 12 39 55 30 110" fill="none" stroke="var(--quest-cream)" stroke-width="6" stroke-linecap="round"/>
+              <path d="M60 36L125 137" fill="none" stroke="var(--quest-lime)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="59" cy="35" r="13" fill="var(--quest-lime)"/>
+              <path d="M111 122c17 1 25 12 20 24-14 5-26-1-29-13z" fill="var(--quest-hibiscus)"/>
+            </svg>
+          </div>
         </section>
-        ${optedOut ? '<section class="quest-card quest-card--note" data-quest-enter>Your family turned the leaderboard off. You still help fill the berimbau. A grown-up can turn names back on in Family settings.</section>' : ''}
-        ${optedOut ? '' : `<section class="quest-card" data-quest-enter>
-          <h2 class="quest-card__title">Top of the week</h2>
-          <ol class="quest-lb">${entries.map((e, i) => {
-            const you = e.you || e.playerId === player.id || e.apelido === player.apelido;
-            return `<li class="quest-lb__row ${you ? 'is-you' : ''}">
-              <span class="quest-lb__rank">${i + 1}</span>
-              <span class="quest-lb__ava">${avatarSvg(e.avatar, 40)}</span>
-              <span class="quest-lb__name">${esc(e.apelido)}${you ? ' · you' : ''}</span>
-              <span class="quest-lb__xp">${e.xp} XP</span>
-            </li>`;
-          }).join('')}</ol>
-        </section>`}
+        ${optedOut ? '<aside class="quest-turma-private" data-quest-enter><span class="quest-turma-private__mark" aria-hidden="true"></span><p><strong>Your apelido stays private.</strong> You still help fill the berimbau. A grown-up can change this in Family settings.</p></aside>' : ''}
+        <div class="quest-turma-boards">
+          <section class="quest-card quest-turma-board" data-quest-enter>
+            <p class="quest-turma-board__eyebrow">This week</p>
+            <h2 class="quest-card__title">XP podium</h2>
+            <p class="quest-card__body">${optedOut ? 'Three players who chose to join the board.' : 'The top three, plus your place.'}</p>
+            ${boardRows(xpRows, player, (entry) => entry.xp || 0, 'XP')}
+          </section>
+          <section class="quest-card quest-turma-board quest-turma-board--streak" data-quest-enter>
+            <p class="quest-turma-board__eyebrow">Keep showing up</p>
+            <h2 class="quest-card__title">Roda weeks</h2>
+            <p class="quest-card__body">Longest current streaks. One practice can keep yours going.</p>
+            ${boardRows(streakRows, player, (entry) => entry.weekStreak || 0, 'weeks')}
+          </section>
+        </div>
       `;
     }
     document.addEventListener('astro:page-load', init);

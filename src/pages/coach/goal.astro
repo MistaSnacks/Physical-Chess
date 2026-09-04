@@ -14,12 +14,14 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen quest-screen--narrow">
+    <main class="quest-screen quest-screen--narrow quest-coach-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
       <h1 class="quest-screen__title" data-quest-enter>Fill the berimbau</h1>
-      <p class="quest-screen__sub" data-quest-enter>Set this month’s cooperative XP target. Kids see it on Turma. No last names.</p>
+      <p class="quest-screen__sub" data-quest-enter>Set one shared target for the month. Every player helps the berimbau fill.</p>
       <CoachNav active="goal" />
-      <form class="quest-card" data-form data-quest-enter>
+      <form class="quest-card quest-goal-card" data-form data-quest-enter>
+        <p class="quest-coach-kicker">Community goal</p>
+        <h2 class="quest-card__title">What are you reaching for?</h2>
         <div class="quest-form__error" data-error hidden></div>
         <div class="quest-field"><label class="quest-field__label" for="program">Program</label>
           <select class="quest-field__input" id="program" name="program" data-program></select>

@@ -41,7 +41,7 @@ import '../../directions/quest/theme.css';
           </div>
           <label class="quest-toggle">
             <input type="checkbox" name="leaderboardOptIn" />
-            <span>Show our apelidos on the turma board. Avatars only. Never last names or emails.</span>
+            <span>Show our apelidos on the turma board. This starts off. We only show avatars and apelidos—never last names or emails.</span>
           </label>
           <div class="quest-btn-row"><button class="quest-btn quest-btn--lime" type="submit">Save settings</button></div>
         </form>
@@ -103,7 +103,7 @@ import '../../directions/quest/theme.css';
       const form = document.querySelector('[data-settings-form]');
       form.displayName.value = account.displayName || '';
       form.email.value = account.email || '';
-      form.leaderboardOptIn.checked = account.leaderboardOptIn !== false;
+      form.leaderboardOptIn.checked = account.leaderboardOptIn === true;
 
       const grid = document.querySelector('[data-players]');
       const add = grid.querySelector('[data-add-player]');

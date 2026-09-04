@@ -1,7 +1,7 @@
 // lms.js — cross-family operations under the OAuth client secret.
 // Used by /api/coach/*, /api/leaderboard, /api/export, /api/jobs/recompute.
 import { derivePlayer, makeEvent, EVENT } from '../game/index.js';
-import { isoWeek } from '../game/streaks.js';
+import { isoWeek, nyDate } from '../game/streaks.js';
 import {
   C, queryItems, insertItem, updateItem, bulkInsert, bulkRemove, getItem,
   deleteWixMember, fromEventRow, fromPlayerRow, fromAccountRow, parseDate,
@@ -83,7 +83,7 @@ export async function getPlayerDetail(id) {
 }
 
 export async function stampAttendance({ playerIds, program, classDate, stampedBy }) {
-  const date = classDate || new Date().toISOString().slice(0, 10);
+  const date = classDate || nyDate();
   const existing = await queryItems(C.attendance, { filter: { program: { $eq: program }, classDate: { $eq: date } } });
   const have = new Set(existing.map((r) => r.playerId));
   const events = [];
@@ -156,13 +156,17 @@ export async function computeLeaderboard(program, period) {
   if (cached[0] && cached[0].entries) {
     let entries = cached[0].entries;
     if (typeof entries === 'string') { try { entries = JSON.parse(entries); } catch { entries = []; } }
-    return {
-      program, period: week, entries, communityXp: cached[0].communityXp || 0,
-      target: goal.goalXp, goalLabel: goal.goalLabel, computedAt: parseDate(cached[0].computedAt) || cached[0].computedAt,
-    };
+    const hasCurrentShape = Array.isArray(entries)
+      && entries.every((entry) => Object.prototype.hasOwnProperty.call(entry, 'weekStreak'));
+    if (hasCurrentShape) {
+      return {
+        program, period: week, entries, communityXp: cached[0].communityXp || 0,
+        target: goal.goalXp, goalLabel: goal.goalLabel, computedAt: parseDate(cached[0].computedAt) || cached[0].computedAt,
+      };
+    }
   }
   const built = await recomputeLeaderboard(program, week);
-  return { ...built, target: goal.goalXp, goalLabel: goal.goalLabel, entries: built.entries.slice(0, 10) };
+  return { ...built, target: goal.goalXp, goalLabel: goal.goalLabel };
 }
 
 async function recomputeLeaderboard(program, week) {
@@ -172,7 +176,7 @@ async function recomputeLeaderboard(program, week) {
   const eventsByPlayer = new Map();
   for (const p of players) eventsByPlayer.set(p.id, await eventsForPlayer(p.id));
   const built = buildLeaderboard({ players, eventsByPlayer, accountsById, program, period: week });
-  const publicEntries = built.entries.map(({ apelido, avatar, xp }) => ({ apelido, avatar, xp }));
+  const publicEntries = built.entries.map(({ apelido, avatar, xp, weekStreak }) => ({ apelido, avatar, xp, weekStreak }));
   const existing = await queryItems(C.leaderboard, { filter: { program: { $eq: program }, period: { $eq: week } } }, { cap: 5 });
   const doc = {
     program, period: week, entries: JSON.stringify(publicEntries),

@@ -74,8 +74,23 @@ test('leaderboard hides opted-out families and ranks weekly XP', () => {
   const board = buildLeaderboard({ players, eventsByPlayer, accountsById, program: 'bushwick', period: week, now });
   assert.equal(board.entries.length, 1);
   assert.equal(board.entries[0].apelido, 'Gatinha');
+  assert.equal(board.entries[0].weekStreak, 1);
   assert.ok(board.communityXp >= 20);
   assert.ok(!('email' in board.entries[0]));
+});
+
+test('leaderboard treats a missing opt-in as private', () => {
+  const now = new Date('2026-09-03T18:00:00-04:00');
+  const players = [
+    { id: 'p1', accountId: 'a1', apelido: 'Gatinha', program: 'bushwick', active: true },
+  ];
+  const eventsByPlayer = new Map([['p1', [makeEvent({
+    playerId: 'p1', accountId: 'a1', type: EVENT.VIDEO_DONE,
+    lessonId: 'ginga-basics', moduleId: 'movements', occurredAt: now,
+  })]]]);
+  const board = buildLeaderboard({ players, eventsByPlayer, accountsById: new Map(), program: 'bushwick', now });
+  assert.equal(board.entries.length, 0);
+  assert.ok(board.communityXp >= 20);
 });
 
 test('shuffle is deterministic for a seed', () => {

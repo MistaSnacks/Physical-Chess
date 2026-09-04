@@ -13,11 +13,11 @@ import '../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="journey" />
-    <main class="quest-screen quest-screen--narrow">
+    <main class="quest-screen quest-screen--narrow quest-desafio-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Daily</p>
       <h1 class="quest-screen__title" data-quest-enter>Desafio do Dia</h1>
-      <p class="quest-screen__sub" data-quest-enter>One short task. Thirty XP. Once a day.</p>
-      <div data-stage></div>
+      <p class="quest-screen__sub" data-quest-enter>One quick move for your mind or body. Earn 30 XP, once a day.</p>
+      <div class="quest-desafio-stage" data-stage aria-live="polite"></div>
     </main>
     <Footer />
   </div>
@@ -41,9 +41,9 @@ import '../directions/quest/theme.css';
     function paintDone() {
       const item = desafioForDate();
       document.querySelector('[data-stage]').innerHTML = `
-        <section class="quest-card quest-done" data-quest-enter>
+        <section class="quest-card quest-done quest-desafio-card" data-quest-enter>
           <p class="quest-done__title">You did today’s desafio</p>
-          <p class="quest-card__body">+30 XP. Come back tomorrow for a new one. Your turma can see the week on <a href="/turma" style="color:var(--quest-mango)">Turma</a>.</p>
+          <p class="quest-card__body">+30 XP. Come back tomorrow for a new one. See how your whole roda is moving on <a href="/turma">Turma</a>.</p>
         </section>`;
       document.body.dataset.desafioDone = 'true';
       void item;
@@ -51,7 +51,7 @@ import '../directions/quest/theme.css';
 
     function paintFlashcard(item, stage) {
       stage.innerHTML = `
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card quest-desafio-card" data-quest-enter>
           <p class="quest-lesson__type">${item.title}</p>
           <h2 class="quest-card__title">${item.word}</h2>
           <p class="quest-card__body">${kid(item.prompt)}</p>
@@ -80,7 +80,7 @@ import '../directions/quest/theme.css';
     function paintInstrument(item, stage) {
       const src = wix(item.photoKey, 720, 480);
       stage.innerHTML = `
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card quest-desafio-card" data-quest-enter>
           <p class="quest-lesson__type">${item.title}</p>
           <p class="quest-card__body">${kid(item.prompt)}</p>
           <img class="quest-desafio-photo" src="${src}" alt="" width="720" height="480" />
@@ -101,7 +101,7 @@ import '../directions/quest/theme.css';
       const shuffled = shuffle(item.steps.map((text, i) => ({ text, i })), seed);
       const picked = [];
       stage.innerHTML = `
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card quest-desafio-card" data-quest-enter>
           <p class="quest-lesson__type">${item.title}</p>
           <p class="quest-card__body">${kid(item.prompt)}</p>
           <ol class="quest-order-picked" data-picked></ol>
@@ -130,7 +130,7 @@ import '../directions/quest/theme.css';
 
     function paintFact(item, stage) {
       stage.innerHTML = `
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card quest-desafio-card" data-quest-enter>
           <p class="quest-lesson__type">${item.title}</p>
           <p class="quest-card__body">${kid(item.prompt)}</p>
           <div class="quest-btn-row">
@@ -156,7 +156,7 @@ import '../directions/quest/theme.css';
       let left = item.seconds;
       let t = null;
       stage.innerHTML = `
-        <section class="quest-card" data-quest-enter>
+        <section class="quest-card quest-desafio-card quest-desafio-card--timer" data-quest-enter>
           <p class="quest-lesson__type">${item.title}</p>
           <p class="quest-card__body">${kid(item.prompt)}</p>
           <p class="quest-timer" data-timer>${left}</p>

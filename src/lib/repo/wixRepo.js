@@ -31,7 +31,7 @@ const fromAccount = (r) => ({
   email: r.email || '',
   phone: r.phone || '',
   programs: r.programs || [],
-  leaderboardOptIn: r.leaderboardOptIn !== false,
+  leaderboardOptIn: r.leaderboardOptIn === true,
   demo: false,
 });
 const fromPlayer = (r) => ({
@@ -95,7 +95,7 @@ export const wixRepo = {
         displayName: [member.contact?.firstName, member.contact?.lastName].filter(Boolean).join(' ') || member.profile?.nickname || '',
         email: member.loginEmail || '',
         programs: [],
-        leaderboardOptIn: true,
+        leaderboardOptIn: false,
         consentAt: new Date(),
       });
       account = fromAccount(created);

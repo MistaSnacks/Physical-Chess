@@ -14,12 +14,13 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen">
+    <main class="quest-screen quest-coach-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
       <h1 class="quest-screen__title" data-quest-enter>Export</h1>
-      <p class="quest-screen__sub" data-quest-enter>CSV files open in Numbers. Coaches export their programs. Admins can export all.</p>
+      <p class="quest-screen__sub" data-quest-enter>Download a clean roster or the full activity ledger for your programs.</p>
       <CoachNav active="export" />
-      <section class="quest-card" data-quest-enter>
+      <section class="quest-card quest-export-card" data-quest-enter>
+        <div class="quest-coach-section-heading"><div><p class="quest-coach-kicker">Choose the data</p><h2 class="quest-card__title">Build an export</h2></div><p>CSV opens in Numbers or Sheets</p></div>
         <div class="quest-field"><label class="quest-field__label" for="program">Program</label>
           <select class="quest-field__input" id="program" data-program></select>
         </div>

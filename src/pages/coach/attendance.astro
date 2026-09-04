@@ -14,10 +14,10 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen quest-screen--wide">
+    <main class="quest-screen quest-screen--wide quest-coach-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
       <h1 class="quest-screen__title" data-quest-enter>Today’s class</h1>
-      <p class="quest-screen__sub" data-quest-enter>Pick a program and a date. Tap a card to stamp. Save writes attendance.stamped events.</p>
+      <p class="quest-screen__sub" data-quest-enter>Choose a turma and tap everyone who trained. Save once the circle is complete.</p>
       <CoachNav active="attendance" />
       <form class="quest-card quest-attend-bar" data-bar data-quest-enter>
         <div class="quest-field"><label class="quest-field__label" for="program">Program</label>
@@ -28,8 +28,8 @@ import '../../directions/quest/theme.css';
         </div>
         <button class="quest-btn quest-btn--lime" type="submit" data-save>Save stamps</button>
       </form>
-      <div class="quest-players" data-grid data-quest-enter></div>
-      <p class="quest-field__hint" data-status></p>
+      <div class="quest-players quest-attendance-grid" data-grid data-quest-enter aria-live="polite"></div>
+      <p class="quest-field__hint quest-coach-status" data-status role="status"></p>
     </main>
     <Footer />
   </div>
@@ -38,6 +38,7 @@ import '../../directions/quest/theme.css';
     import { requireSession } from '../../lib/auth-guard.js';
     import { getCoach } from '../../lib/repo/coachRepo.js';
     import { programsForAccount, NO_PROGRAMS_COPY } from '../../lib/coach.js';
+    import { nyDate } from '../../lib/game/streaks.js';
     import { avatarSvg } from '../../lib/avatar.js';
 
     async function init() {
@@ -56,7 +57,7 @@ import '../../directions/quest/theme.css';
         return;
       }
       sel.innerHTML = programs.map((p) => `<option value="${p.key}">${p.name}</option>`).join('');
-      date.value = new Date().toISOString().slice(0, 10);
+      date.value = nyDate();
       const picked = new Set();
 
       async function render() {
@@ -69,13 +70,14 @@ import '../../directions/quest/theme.css';
         }
         picked.clear();
         stamped.forEach((id) => picked.add(id));
-        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card ${picked.has(p.id) ? 'is-stamped' : ''}" data-id="${p.id}" aria-pressed="${picked.has(p.id)}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${p.apelido}</span><span class="quest-player-card__meta">${p.firstName}</span></button>`).join('');
+        grid.innerHTML = rows.map((p) => `<button type="button" class="quest-player-card ${picked.has(p.id) ? 'is-stamped' : ''}" data-id="${p.id}" aria-pressed="${picked.has(p.id)}"><span class="quest-player-card__avatar">${avatarSvg(p.avatar, 80)}</span><span class="quest-player-card__name">${p.apelido}</span><span class="quest-player-card__meta">${p.firstName}</span><span class="quest-attendance-state">${picked.has(p.id) ? 'Stamped' : 'Tap to stamp'}</span></button>`).join('');
         grid.querySelectorAll('[data-id]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');
             if (picked.has(id)) picked.delete(id); else picked.add(id);
             btn.classList.toggle('is-stamped', picked.has(id));
             btn.setAttribute('aria-pressed', String(picked.has(id)));
+            btn.querySelector('.quest-attendance-state').textContent = picked.has(id) ? 'Stamped' : 'Tap to stamp';
           });
         });
       }

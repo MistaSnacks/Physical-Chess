@@ -14,12 +14,12 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen quest-screen--wide">
+    <main class="quest-screen quest-screen--wide quest-coach-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
       <h1 class="quest-screen__title" data-quest-enter>Your turmas</h1>
-      <p class="quest-screen__sub" data-quest-enter>Apelidos and first names only. Awards and stamps write to the ledger.</p>
+      <p class="quest-screen__sub" data-quest-enter>See who is moving, who needs a check-in, and how each turma is growing.</p>
       <CoachNav active="overview" />
-      <div data-coach-root>
+      <div data-coach-root aria-live="polite">
         <p class="quest-card quest-card--note">Loading the roster…</p>
       </div>
     </main>
@@ -58,23 +58,23 @@ import '../../directions/quest/theme.css';
       const bucketMax = Math.max(1, ...ov.buckets);
       root.innerHTML = `
         <section class="quest-stats" data-quest-enter>
-          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.activeThisWeek}</p><p class="quest-stat-card__label">Active this week</p></article>
-          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.lessonsThisWeek}</p><p class="quest-stat-card__label">Lessons done this week</p></article>
-          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.inactive.length}</p><p class="quest-stat-card__label">Quiet 3+ weeks</p></article>
+          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.activeThisWeek}</p><p class="quest-stat-card__label">Moving this week</p></article>
+          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.lessonsThisWeek}</p><p class="quest-stat-card__label">Lessons finished</p></article>
+          <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.inactive.length}</p><p class="quest-stat-card__label">Ready for a check-in</p></article>
           <article class="quest-stat-card"><p class="quest-stat-card__value">${ov.total}</p><p class="quest-stat-card__label">Players</p></article>
         </section>
         <section class="quest-card" data-quest-enter>
-          <h2 class="quest-card__title">Readiness</h2>
+            <div class="quest-coach-section-heading"><div><p class="quest-coach-kicker">All turmas</p><h2 class="quest-card__title">Batizado readiness</h2></div><p>Players by progress range</p></div>
           <div class="quest-buckets" role="img" aria-label="Readiness distribution">
             ${ov.buckets.map((n, i) => `<div class="quest-buckets__col"><span class="quest-buckets__bar" style="height:${Math.round((n / bucketMax) * 100)}%"></span><span class="quest-buckets__n">${n}</span><span class="quest-buckets__label">${READINESS_BUCKETS[i].label}</span></div>`).join('')}
           </div>
         </section>
-        ${ov.inactive.length ? `<section class="quest-card quest-card--note" data-quest-enter><h2 class="quest-card__title">Quiet for three weeks</h2><ul class="quest-quiet">${ov.inactive.map((r) => `<li><a href="/coach/player?id=${esc(r.id)}">${esc(r.apelido)}</a> · ${esc(r.firstName)}</li>`).join('')}</ul></section>` : ''}
+        ${ov.inactive.length ? `<section class="quest-card quest-card--note quest-coach-checkins" data-quest-enter><p class="quest-coach-kicker">A gentle nudge</p><h2 class="quest-card__title">Quiet for three weeks</h2><ul class="quest-quiet">${ov.inactive.map((r) => `<li><a href="/coach/player?id=${esc(r.id)}">${esc(r.apelido)}</a><span>${esc(r.firstName)}</span></li>`).join('')}</ul></section>` : ''}
         ${programs.map((prog) => {
           const rows = all.filter((r) => r.program === prog.key);
           if (!rows.length) return `<section class="quest-card" data-quest-enter><h2 class="quest-card__title">${esc(prog.name)}</h2><p class="quest-card__body">No players in this turma yet.</p></section>`;
           return `<section class="quest-card quest-card--table" data-quest-enter>
-            <h2 class="quest-card__title">${esc(prog.name)}</h2>
+            <div class="quest-coach-section-heading"><div><p class="quest-coach-kicker">Roster</p><h2 class="quest-card__title">${esc(prog.name)}</h2></div><p>${rows.length} player${rows.length === 1 ? '' : 's'}</p></div>
             <div class="quest-table-wrap">
               <table class="quest-table quest-table--roster">
                 <thead><tr><th>Player</th><th>Name</th><th>Level</th><th>Ready</th><th>Weeks</th><th>Last</th><th>Corda</th></tr></thead>

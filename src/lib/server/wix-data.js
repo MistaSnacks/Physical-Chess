@@ -223,7 +223,7 @@ export function fromAccountRow(r) {
     email: r.email || '',
     phone: r.phone || '',
     programs: r.programs || [],
-    leaderboardOptIn: r.leaderboardOptIn !== false,
+    leaderboardOptIn: r.leaderboardOptIn === true,
     demo: false,
   };
 }

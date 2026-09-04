@@ -14,12 +14,12 @@ import '../../directions/quest/theme.css';
   <div class="quest-page">
     <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
     <Nav active="coach" />
-    <main class="quest-screen quest-screen--wide">
+    <main class="quest-screen quest-screen--wide quest-coach-screen quest-roles-screen">
       <p class="quest-screen__eyebrow" data-quest-enter>Admin</p>
       <h1 class="quest-screen__title" data-quest-enter>Roles</h1>
-      <p class="quest-screen__sub" data-quest-enter>Guardian is the default. Coach unlocks /coach. Admin unlocks this page. Players never see this list.</p>
+      <p class="quest-screen__sub" data-quest-enter>Give each grown-up only the access and turmas they need. Players never see this list.</p>
       <CoachNav active="roles" />
-      <div data-list></div>
+      <div class="quest-role-list" data-list aria-live="polite"><p class="quest-card quest-card--note">Loading accounts…</p></div>
     </main>
     <Footer />
   </div>
@@ -45,9 +45,9 @@ import '../../directions/quest/theme.css';
         root.innerHTML = accounts.map((a) => `
           <form class="quest-card quest-role-card" data-member="${esc(a.memberId)}">
             <p class="quest-role-card__name">${esc(a.displayName || 'Account')}</p>
-            <p class="quest-field__hint">${esc(a.email)}</p>
-            <div class="quest-field"><label class="quest-field__label">Role</label>
-              <select class="quest-field__input" name="role">
+            <p class="quest-field__hint quest-role-card__email">${esc(a.email)}</p>
+            <div class="quest-field"><label class="quest-field__label" for="role-${esc(a.memberId)}">Role</label>
+              <select class="quest-field__input" id="role-${esc(a.memberId)}" name="role">
                 ${['guardian', 'coach', 'admin'].map((r) => `<option value="${r}" ${a.role === r ? 'selected' : ''}>${r}</option>`).join('')}
               </select>
             </div>
@@ -55,7 +55,7 @@ import '../../directions/quest/theme.css';
               <legend class="quest-field__label">Programs</legend>
               ${PROGRAMS.map((p) => `<label><input type="checkbox" name="programs" value="${p.key}" ${(a.programs || []).includes(p.key) ? 'checked' : ''}/> ${esc(p.name)}</label>`).join('')}
             </fieldset>
-            <div class="quest-btn-row"><button class="quest-btn" type="submit">Save</button></div>
+            <div class="quest-btn-row"><button class="quest-btn" type="submit">Save access</button><span class="quest-role-card__status" role="status"></span></div>
           </form>
         `).join('');
         root.querySelectorAll('form').forEach((form) => {
@@ -63,8 +63,14 @@ import '../../directions/quest/theme.css';
             ev.preventDefault();
             const fd = new FormData(form);
             const programs = fd.getAll('programs');
+            const button = form.querySelector('button[type="submit"]');
+            const status = form.querySelector('.quest-role-card__status');
+            button.disabled = true;
+            button.textContent = 'Saving…';
             await coach.setRole({ memberId: form.getAttribute('data-member'), role: fd.get('role'), programs });
-            await paint();
+            button.disabled = false;
+            button.textContent = 'Save access';
+            status.textContent = 'Saved';
           });
         });
       }
