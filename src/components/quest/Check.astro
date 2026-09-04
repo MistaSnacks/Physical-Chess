@@ -1,0 +1,76 @@
+---
+// Check.astro — one question at the end of a reading. Wrong answers shake;
+// a right answer pulses lime. Dispatches `check:pass` with { firstTry }.
+import ReadAloud from './ReadAloud.astro';
+
+interface Props {
+  prompt: string;
+  choices: string[];
+  correctIndex: number;
+}
+
+const { prompt, choices, correctIndex } = Astro.props;
+---
+
+<div class="quest-check" data-check data-readaloud-root>
+  <div class="quest-check__top">
+    <p class="quest-check__eyebrow">Check</p>
+    <ReadAloud selector="[data-check-prompt]" label="Listen to the question" />
+  </div>
+  <p class="quest-check__prompt" data-check-prompt><span data-sent>{prompt}</span></p>
+  <div class="quest-rating quest-check__choices" data-check-choices role="group" aria-label="Answer choices">
+    {choices.map((c, i) => (
+      <button type="button" data-check-choice={i} data-correct={i === correctIndex}>{c}</button>
+    ))}
+  </div>
+  <p class="quest-field__hint" data-check-feedback aria-live="polite"></p>
+</div>
+
+<script>
+  function reduced() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function initCheck(root) {
+    if (root.dataset.checkInit === '1') return;
+    root.dataset.checkInit = '1';
+    let tries = 0;
+    const feedback = root.querySelector('[data-check-feedback]');
+    const choices = Array.from(root.querySelectorAll('[data-check-choice]'));
+
+    choices.forEach((b) => {
+      b.addEventListener('click', () => {
+        if (root.dataset.solved === 'true') return;
+        tries += 1;
+        const ok = b.dataset.correct === 'true';
+        b.setAttribute('aria-pressed', ok ? 'true' : 'false');
+        if (!ok) {
+          if (feedback) feedback.textContent = 'Not that one. Try again.';
+          if (!reduced()) {
+            root.classList.remove('quest-check--shake');
+            void root.offsetWidth;
+            root.classList.add('quest-check--shake');
+          }
+          return;
+        }
+        if (feedback) feedback.textContent = 'Boa. That is it.';
+        root.dataset.solved = 'true';
+        choices.forEach((x) => { x.disabled = true; });
+        b.setAttribute('aria-pressed', 'true');
+        if (!reduced()) {
+          root.classList.add('quest-check--pulse');
+        }
+        root.dispatchEvent(new CustomEvent('check:pass', {
+          detail: { firstTry: tries === 1 },
+          bubbles: true,
+        }));
+      });
+    });
+  }
+
+  function init() {
+    document.querySelectorAll('[data-check]').forEach(initCheck);
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

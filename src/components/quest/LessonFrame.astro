@@ -1,0 +1,51 @@
+---
+// LessonFrame.astro — rail + stage layout shared by every lesson type.
+// Rail state (done / current / locked / stars) is painted from the snapshot
+// by src/lib/lesson-ui.js after requireSession.
+interface LessonRow {
+  id: string;
+  title: string;
+  minutes: number;
+  type: string;
+}
+
+interface Props {
+  moduleId: string;
+  moduleTitle: string;
+  lessons: LessonRow[];
+  currentId: string;
+  index: number;
+}
+
+const { moduleId, moduleTitle, lessons, currentId, index } = Astro.props;
+---
+
+<aside class="quest-rail" data-quest-enter>
+  <a class="quest-rail__back" href={`/learn/${moduleId}`}>
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    {moduleTitle}
+  </a>
+  <p class="quest-rail__eyebrow">Lesson {index + 1} of {lessons.length}</p>
+  <div class="quest-rail__list">
+    {lessons.map((l, i) => (
+      <a
+        class:list={['quest-rail__item', l.id === currentId && 'quest-rail__item--current']}
+        href={`/learn/${moduleId}/${l.id}`}
+        data-rail-lesson={l.id}
+        aria-current={l.id === currentId ? 'page' : undefined}
+      >
+        <span class="quest-rail__item-icon" data-rail-icon>{l.type === 'quiz' ? '?' : i + 1}</span>
+        <span class="quest-rail__item-body">
+          <span class="quest-rail__item-title">{l.title}</span>
+          <span class="quest-rail__item-meta">
+            {l.minutes} min · {l.type}
+            <span class="quest-rail__stars" data-rail-stars></span>
+          </span>
+        </span>
+      </a>
+    ))}
+  </div>
+</aside>
+<section class="quest-lesson__stage" data-quest-enter data-lesson-stage inert>
+  <slot />
+</section>

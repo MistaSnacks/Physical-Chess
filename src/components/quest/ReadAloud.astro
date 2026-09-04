@@ -1,0 +1,82 @@
+---
+// ReadAloud.astro — speaker button for lesson body, checks, and prompts.
+// Uses Web Speech via src/lib/speech.js. Click again to stop.
+interface Props {
+  selector?: string;
+  text?: string;
+  lang?: string;
+  label?: string;
+}
+
+const { selector = '', text = '', lang = 'en-US', label = 'Listen' } = Astro.props;
+---
+
+<button
+  type="button"
+  class="quest-readaloud"
+  data-readaloud
+  data-selector={selector}
+  data-text={text}
+  data-lang={lang}
+  data-idle-label={label}
+  aria-pressed="false"
+  aria-label={label}
+>
+  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3 10v4h3.2L12 19V5L6.2 10H3z" fill="currentColor"/>
+    <path d="M16.2 8.2a5 5 0 0 1 0 7.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M18.8 5.6a9 9 0 0 1 0 12.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+  </svg>
+  <span data-readaloud-label>{label}</span>
+</button>
+
+<script>
+  import { speak, speakSentences, stop, bindStopOnNavigate } from '../../lib/speech.js';
+
+  bindStopOnNavigate();
+
+  function finish(btn) {
+    btn.setAttribute('aria-pressed', 'false');
+    const label = btn.dataset.idleLabel || 'Listen';
+    const span = btn.querySelector('[data-readaloud-label]');
+    if (span) span.textContent = label;
+    btn.setAttribute('aria-label', label);
+  }
+
+  function initBtn(btn) {
+    if (btn.dataset.init === '1') return;
+    btn.dataset.init = '1';
+    btn.addEventListener('click', () => {
+      if (btn.getAttribute('aria-pressed') === 'true') {
+        stop();
+        finish(btn);
+        return;
+      }
+      const lang = btn.dataset.lang || 'en-US';
+      const sel = btn.dataset.selector;
+      const root = btn.closest('[data-readaloud-root]') || document;
+      document.querySelectorAll('[data-readaloud][aria-pressed="true"]').forEach((other) => {
+        if (other !== btn) finish(other);
+      });
+      btn.setAttribute('aria-pressed', 'true');
+      const span = btn.querySelector('[data-readaloud-label]');
+      if (span) span.textContent = 'Stop';
+      btn.setAttribute('aria-label', 'Stop reading');
+      const done = () => finish(btn);
+      if (sel) {
+        const target = root.querySelector(sel) || document.querySelector(sel);
+        const sents = target?.querySelectorAll('[data-sent]');
+        if (sents && sents.length) speakSentences(sents, { lang, onEnd: done });
+        else speak((target?.textContent || btn.dataset.text || '').trim(), { lang, onEnd: done });
+      } else {
+        speak((btn.dataset.text || '').trim(), { lang, onEnd: done });
+      }
+    });
+  }
+
+  function init() {
+    document.querySelectorAll('[data-readaloud]').forEach(initBtn);
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

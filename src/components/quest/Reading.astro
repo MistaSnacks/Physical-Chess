@@ -1,0 +1,138 @@
+---
+// Reading.astro — chapter typesetting for reading lessons. Optional photo,
+// sentence spans for read-aloud highlight, and the 12-word glossary when
+// `glossary` is set on the lesson.
+import ReadAloud from './ReadAloud.astro';
+import { GLOSSARY } from '../../content/glossary.js';
+import { PHOTOS, wix } from '../../data/media.js';
+
+interface Props {
+  body?: string;
+  photoKey?: string;
+  glossary?: boolean;
+}
+
+const { body = '', photoKey, glossary = false } = Astro.props;
+
+function mdSentences(s = '') {
+  return s.split(/\n\s*\n/).map((block) => {
+    const html = block.trim().replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    const parts = html.split(/(?<=[.!?])\s+/).filter((p) => p.trim());
+    const inner = (parts.length ? parts : [html])
+      .map((sent) => `<span class="quest-reading__sent" data-sent>${sent}</span>`)
+      .join(' ');
+    return `<p>${inner}</p>`;
+  }).join('');
+}
+
+const photo = photoKey && PHOTOS[photoKey] ? { src: wix(photoKey, 1200, 640), caption: PHOTOS[photoKey].caption } : null;
+---
+
+<div class="quest-reading-wrap" data-readaloud-root data-reading>
+  {photo && (
+    <figure class="quest-reading__figure">
+      <img src={photo.src} alt={photo.caption} loading="lazy" width="1200" height="640" />
+    </figure>
+  )}
+  <div class="quest-reading__toolbar">
+    <ReadAloud selector="[data-reading-body]" label="Listen to this" />
+  </div>
+  <div class="quest-reading" data-reading-body set:html={mdSentences(body)} />
+
+  {glossary && (
+    <section class="quest-glossary" data-glossary aria-labelledby="quest-glossary-title">
+      <h2 class="quest-glossary__title" id="quest-glossary-title">Twelve words for the roda</h2>
+      <p class="quest-glossary__lead">Tap the speaker to hear Portuguese. Then tap “I can say it” if you can say it back.</p>
+      <ul class="quest-glossary__list">
+        {GLOSSARY.map((g) => (
+          <li class="quest-glossary__item" data-glossary-word={g.word}>
+            <div class="quest-glossary__head">
+              <p class="quest-glossary__word"><strong>{g.word}</strong></p>
+              <button
+                type="button"
+                class="quest-readaloud quest-readaloud--icon"
+                data-glossary-speak
+                data-say={g.say}
+                aria-label={`Hear ${g.word}`}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 10v4h3.2L12 19V5L6.2 10H3z" fill="currentColor"/>
+                  <path d="M16.2 8.2a5 5 0 0 1 0 7.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <p class="quest-glossary__meaning">{g.meaning}</p>
+            <button type="button" class="quest-btn quest-btn--ghost quest-glossary__master" data-glossary-master disabled>
+              I can say it
+            </button>
+            <p class="quest-glossary__status" data-glossary-status hidden>You can say this one.</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</div>
+
+<script>
+  import { speak, bindStopOnNavigate } from '../../lib/speech.js';
+  import { recordEvent } from '../../lib/actions.js';
+  import { store } from '../../lib/store.js';
+  import { EVENT } from '../../lib/game/events.js';
+
+  bindStopOnNavigate();
+
+  function masteredWords() {
+    const words = new Set();
+    for (const e of store.get().events || []) {
+      if (e.type === EVENT.GLOSSARY_MASTERED && e.payload?.word) words.add(e.payload.word);
+    }
+    return words;
+  }
+
+  function paintMastered(root) {
+    const have = masteredWords();
+    root.querySelectorAll('[data-glossary-word]').forEach((item) => {
+      const word = item.dataset.glossaryWord;
+      if (!have.has(word)) return;
+      const btn = item.querySelector('[data-glossary-master]');
+      const status = item.querySelector('[data-glossary-status]');
+      if (btn) { btn.hidden = true; btn.disabled = true; }
+      if (status) status.hidden = false;
+      item.dataset.mastered = 'true';
+    });
+  }
+
+  function initGlossary(root) {
+    if (!root || root.dataset.glossaryInit === '1') return;
+    root.dataset.glossaryInit = '1';
+    paintMastered(root);
+
+    root.querySelectorAll('[data-glossary-speak]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('[data-glossary-word]');
+        const say = btn.dataset.say || item?.dataset.glossaryWord || '';
+        speak(say, { lang: 'pt-BR', rate: 0.85 });
+        const master = item?.querySelector('[data-glossary-master]');
+        if (master && item?.dataset.mastered !== 'true') master.disabled = false;
+      });
+    });
+
+    root.querySelectorAll('[data-glossary-master]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (btn.disabled || !store.get().player) return;
+        const item = btn.closest('[data-glossary-word]');
+        const word = item?.dataset.glossaryWord;
+        if (!word) return;
+        btn.disabled = true;
+        await recordEvent(EVENT.GLOSSARY_MASTERED, { payload: { word } });
+        paintMastered(root);
+      });
+    });
+  }
+
+  function init() {
+    document.querySelectorAll('[data-glossary]').forEach(initGlossary);
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

@@ -21,32 +21,33 @@ const xp1 = Number(await page.textContent('[data-bind="xp"]'));
 const name = await page.textContent('[data-bind="player.apelido"]');
 await shot('journey');
 
+await page.clock.install();
 await page.goto(`${base}/learn/movements/au`);
 await page.waitForSelector('[data-complete]');
-await page.click('[data-complete]');
+await page.clock.fastForward(61000);
+await page.locator('[data-complete]').click();
 await page.waitForSelector('[data-finished]:not([hidden])');
 await shot('lesson-done');
+if (page.clock.resume) await page.clock.resume();
 
 await page.goto(`${base}/journey`);
-await page.waitForTimeout(1500);
+await page.waitForFunction(() => document.querySelector('[data-bind="xp"]')?.textContent !== '');
 const xp2 = Number(await page.textContent('[data-bind="xp"]'));
 const weeks = await page.textContent('[data-bind="streak.weeks"]');
 
 await page.goto(`${base}/learn/music/music-quiz`);
-await page.click('[data-quiz-choice][data-choice-index="1"]');
-await page.click('[data-quiz-next]:visible');
-await page.click('[data-question-index="1"] [data-quiz-choice][data-choice-index="2"]');
-await page.click('[data-question-index="1"] [data-quiz-next]');
-await page.click('[data-question-index="2"] [data-quiz-choice][data-choice-index="0"]');
-await page.click('[data-question-index="2"] [data-quiz-next]');
-await page.click('[data-question-index="3"] [data-quiz-choice][data-choice-index="0"]');
-await page.click('[data-question-index="3"] [data-quiz-next]');
-await page.click('[data-question-index="4"] [data-quiz-choice][data-choice-index="0"]');
-await page.click('[data-question-index="4"] [data-quiz-next]');
+await page.waitForSelector('[data-quiz]');
+await page.locator('[data-lesson-stage]:not([inert])').waitFor();
+const questionCount = await page.locator('[data-quiz-question]').count();
+for (let i = 0; i < questionCount; i++) {
+  const q = page.locator(`[data-quiz-question][data-question-index="${i}"]`);
+  await q.locator('[data-quiz-choice][data-is-correct="true"]').click();
+  await q.locator('[data-quiz-next]').click();
+}
 await page.waitForSelector('[data-finished]:not([hidden])');
 await shot('quiz-done');
 await page.goto(`${base}/journey`);
-await page.waitForTimeout(1200);
+await page.waitForFunction(() => document.querySelector('[data-bind="xp"]')?.textContent !== '');
 const xp3 = Number(await page.textContent('[data-bind="xp"]'));
 const patches = await page.textContent('[data-bind="patches.length"]');
 
