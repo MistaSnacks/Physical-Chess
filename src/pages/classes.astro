@@ -1,0 +1,255 @@
+---
+// classes.astro — what an ACE class is like, where ACE teaches, and how to
+// join, ending in an inquiry form that posts to /api/contact (SPEC-v3 R10.4).
+// Every age line on the site links here. Ages, schedule, cost and uniform
+// stay "Ask ACE" until ACE confirms them (D3).
+import PublicFrame from '../components/quest/PublicFrame.astro';
+import Copy from '../components/quest/Copy.astro';
+import { CONTACT } from '../data/batizado.js';
+import { PROGRAMS } from '../content/programs.js';
+import { wix } from '../data/media.js';
+import '../directions/quest/wp10-classes.css';
+
+// Read only the public fields. Invite codes never reach this page.
+const SITES = PROGRAMS.map(({ key, name, dayOfWeek }) => ({ key, name, dayOfWeek }));
+
+const DAY_NAMES = { Mon: 'Mondays', Tue: 'Tuesdays', Wed: 'Wednesdays', Thu: 'Thursdays', Fri: 'Fridays', Sat: 'Saturdays', Sun: 'Sundays' };
+const dayLabel = (d) => DAY_NAMES[d] || d || 'Day to be confirmed';
+
+const tel = `tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`;
+const mailto = `mailto:${CONTACT.email}`;
+
+// Draft copy, written from site.js (THE_ACE, FAQ). ACE reviews it before launch.
+const CLASSES = {
+  reviewNeeded: true,
+  intro:
+    'ACE teaches capoeira to kids in Brooklyn: in schools, after school, in community classes, and at summer camp. Here is what to expect and how to sign up.',
+  facts: [
+    { id: 'ages', label: 'Ages', value: CONTACT.ageLine, note: 'Younger or older? Ask ACE what we can offer.' },
+    { id: 'schedule', label: 'Schedule', value: 'Ask ACE', note: 'Days and times depend on the program.' },
+    { id: 'cost', label: 'Cost', value: 'Ask ACE', note: 'Fees depend on the school program or community class.' },
+    { id: 'uniform', label: 'Uniform', value: 'Ask ACE', note: 'Start in comfy clothes. A uniform top comes once your child is settled in.' },
+  ],
+  classLike: [
+    { title: 'Ginga and kicks', body: 'Kids practice the **ginga**, the basic capoeira sway, then kicks and escapes. It builds balance, strength, and flexibility.' },
+    { title: 'Music', body: 'Capoeira has its own music. Kids sing and learn instruments like the **berimbau** and the **pandeiro**.' },
+    { title: 'The roda', body: 'The **roda** is the circle where capoeira is played. Kids learn its manners: enter at the berimbau and stop when the music stops.' },
+    { title: 'Play, not fight', body: 'Coaches teach control, listening, and how to fall well. Kids play a game together. They do not fight.' },
+  ],
+  wear: 'Wear clothes you can squat, cartwheel, and sit on the floor in. Tie long hair back. Feet are bare in the **roda** unless a coach says otherwise.',
+  join: [
+    { title: 'Say hello', body: 'Send a note with the form on this page, or call or email ACE.' },
+    { title: 'Find your class', body: 'ACE tells you which class fits your child, the days, and the cost.' },
+    { title: 'Come to class', body: 'Bring your child in comfy clothes. Coaches take it from there.' },
+    { title: 'Practice at home', body: 'A grown-up can make an account so your child can play the app between classes.' },
+  ],
+};
+---
+
+<PublicFrame
+  title="Classes — Physical Chess"
+  description="Kids capoeira classes with ACE / Abadá Capoeira Brooklyn: what a class is like, where ACE teaches, and how to join."
+>
+  <p class="quest-screen__eyebrow" data-quest-enter>Classes</p>
+  <h1 class="quest-screen__title" data-quest-enter>Train with ACE.</h1>
+  <p class="quest-screen__sub" data-quest-enter>{CLASSES.intro}</p>
+  {import.meta.env.DEV && CLASSES.reviewNeeded && <p class="quest-review-note">copy pending ACE review</p>}
+
+  <img
+    class="quest-public-heroimg quest-classes__hero"
+    src={wix('classPhotoWorkshop2022', 1200, 600)}
+    alt="Kids sit on a gym floor with ACE coaches during a capoeira class"
+    width="1200"
+    height="600"
+    data-quest-enter
+  />
+
+  <section class="quest-classes__section" aria-labelledby="classes-facts">
+    <p class="quest-section__eyebrow" data-quest-enter>At a glance</p>
+    <h2 class="quest-section__title" id="classes-facts" data-quest-enter>The quick facts.</h2>
+    <ul class="quest-classes__facts">
+      {
+        CLASSES.facts.map((f) => (
+          <li class="quest-classes__fact" data-fact={f.id} data-quest-enter>
+            <span class="quest-classes__fact-label">{f.label}</span>
+            <span class="quest-classes__fact-value">{f.value}</span>
+            <span class="quest-classes__fact-note">{f.note}</span>
+            {f.value !== 'Ask ACE' && <span class="quest-classes__tbc">Ask ACE to confirm</span>}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="quest-classes__section" aria-labelledby="classes-like">
+    <p class="quest-section__eyebrow" data-quest-enter>In class</p>
+    <h2 class="quest-section__title" id="classes-like" data-quest-enter>What a class is like.</h2>
+    <div class="quest-classes__grid">
+      {
+        CLASSES.classLike.map((c) => (
+          <article class="quest-card quest-classes__card" data-quest-enter>
+            <h3 class="quest-card__title">{c.title}</h3>
+            <Copy text={c.body} class="quest-card__body quest-classes__copy" />
+          </article>
+        ))
+      }
+    </div>
+    <div class="quest-card quest-card--note quest-classes__wear" data-quest-enter>
+      <p class="quest-classes__wear-title">What to wear</p>
+      <Copy text={CLASSES.wear} class="quest-classes__copy" />
+      <p class="quest-classes__copy">
+        Want a uniform top? <a class="quest-classes__link" href="/shop">Ask in the Shop</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="quest-classes__section" aria-labelledby="classes-where">
+    <p class="quest-section__eyebrow" data-quest-enter>Programs</p>
+    <h2 class="quest-section__title" id="classes-where" data-quest-enter>Where ACE teaches.</h2>
+    <p class="quest-classes__lede" data-quest-enter>
+      This list is still being checked with ACE. Days may change, so ask before you come.
+    </p>
+    <ul class="quest-classes__programs">
+      {
+        SITES.map((p) => (
+          <li class="quest-classes__program" data-program={p.key} data-quest-enter>
+            <span class="quest-classes__program-name">{p.name}</span>
+            <span class="quest-classes__program-day">{dayLabel(p.dayOfWeek)}</span>
+            <span class="quest-classes__tbc">To be confirmed</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="quest-classes__section quest-classes__join" aria-labelledby="classes-join">
+    <div class="quest-classes__join-copy">
+      <p class="quest-section__eyebrow" data-quest-enter>Join</p>
+      <h2 class="quest-section__title" id="classes-join" data-quest-enter>How to join.</h2>
+      <ol class="quest-classes__steps">
+        {
+          CLASSES.join.map((s, i) => (
+            <li class="quest-classes__step" data-quest-enter>
+              <span class="quest-classes__step-num" aria-hidden="true">{i + 1}</span>
+              <span class="quest-classes__step-text">
+                <strong>{s.title}</strong>
+                <span>{s.body}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="quest-classes__reach" data-quest-enter>
+        <a href={tel}>{CONTACT.phone}</a>
+        <a href={mailto}>{CONTACT.email}</a>
+      </p>
+    </div>
+
+    <form class="quest-card quest-classes__form" data-classes-form data-quest-enter aria-labelledby="classes-form-title">
+      <h3 class="quest-card__title" id="classes-form-title">Ask about a class</h3>
+      <p class="quest-card__body quest-classes__form-sub">For grown-ups. ACE writes back by email.</p>
+      <div class="quest-form__error" data-error role="alert" hidden></div>
+      <div class="quest-form__ok" data-ok role="status" aria-live="polite" hidden></div>
+      <div class="quest-field">
+        <label class="quest-field__label" for="classes-name">Your name</label>
+        <input class="quest-field__input" id="classes-name" name="name" type="text" autocomplete="name" required />
+      </div>
+      <div class="quest-field">
+        <label class="quest-field__label" for="classes-email">Email</label>
+        <input class="quest-field__input" id="classes-email" name="email" type="email" autocomplete="email" required />
+      </div>
+      <div class="quest-field">
+        <label class="quest-field__label" for="classes-age">Child&rsquo;s age</label>
+        <input class="quest-field__input" id="classes-age" name="age" type="number" inputmode="numeric" min="1" max="99" autocomplete="off" />
+        <span class="quest-field__hint">Optional.</span>
+      </div>
+      <div class="quest-field">
+        <label class="quest-field__label" for="classes-program">Which class?</label>
+        <select class="quest-field__input" id="classes-program" name="program">
+          <option value="">Not sure yet</option>
+          {SITES.map((p) => <option value={p.name}>{p.name}</option>)}
+        </select>
+      </div>
+      <div class="quest-field">
+        <label class="quest-field__label" for="classes-message">Questions</label>
+        <textarea class="quest-field__input quest-field__input--area" id="classes-message" name="message" rows="4" autocomplete="off"></textarea>
+        <span class="quest-field__hint">Optional. Ask about days, cost, or uniforms.</span>
+      </div>
+      <div class="quest-btn-row">
+        <button class="quest-btn quest-btn--lime" type="submit" data-submit>Send</button>
+      </div>
+    </form>
+  </section>
+</PublicFrame>
+
+<script>
+  import { IS_DEMO } from '../lib/repo/index.js';
+
+  const FALLBACK = 'Could not send. Email info@the-ace.org instead.';
+
+  /** /api/contact takes name, email, message; fold the class fields into the message. */
+  function composeMessage(fd) {
+    const lines = ['Class inquiry (from /classes)'];
+    const age = String(fd.get('age') || '').trim();
+    const program = String(fd.get('program') || '').trim();
+    const note = String(fd.get('message') || '').trim();
+    lines.push(`Child's age: ${age || 'not given'}`);
+    lines.push(`Class: ${program || 'not sure yet'}`);
+    if (note) lines.push('', note);
+    return lines.join('\n');
+  }
+
+  function init() {
+    const form = document.querySelector('[data-classes-form]');
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+    const err = form.querySelector('[data-error]');
+    const ok = form.querySelector('[data-ok]');
+    const btn = form.querySelector('[data-submit]');
+
+    const showOk = (text) => {
+      form.reset();
+      ok.textContent = text;
+      ok.hidden = false;
+    };
+    const showErr = (text) => {
+      err.textContent = text;
+      err.hidden = false;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      ok.hidden = true;
+      btn.disabled = true;
+      form.setAttribute('aria-busy', 'true');
+      const buttonLabel = btn.textContent;
+      btn.textContent = 'Sending…';
+      const fd = new FormData(form);
+      const payload = { name: fd.get('name'), email: fd.get('email'), message: composeMessage(fd) };
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          showOk(data.demo ? 'Demo: nothing was sent.' : 'Got it. ACE will write back.');
+        } else if (IS_DEMO && (!res.ok || data.ok === undefined)) {
+          showOk('Demo: nothing was sent.');
+        } else {
+          showErr(data.error || FALLBACK);
+        }
+      } catch {
+        if (IS_DEMO) showOk('Demo: nothing was sent.');
+        else showErr(FALLBACK);
+      }
+      btn.disabled = false;
+      btn.textContent = buttonLabel;
+      form.removeAttribute('aria-busy');
+    });
+  }
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

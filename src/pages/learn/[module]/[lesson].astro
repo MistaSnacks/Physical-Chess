@@ -13,7 +13,7 @@ import Reading from '../../../components/quest/Reading.astro';
 import Check from '../../../components/quest/Check.astro';
 import DrillTimer from '../../../components/quest/DrillTimer.astro';
 import { LESSONS, moduleById } from '../../../content/index.js';
-import { yt, video as wixVideo } from '../../../data/media.js';
+import { yt, video as wixVideo, credit } from '../../../data/media.js';
 import '../../../directions/quest/tokens.css';
 import '../../../directions/quest/theme.css';
 
@@ -63,14 +63,14 @@ const nextLabel = nextLesson ? `Next: ${nextLesson.title}` : 'Back to the map';
 
         {lesson.type === 'video' && (
           <div class="quest-watch" data-watch>
-            {ytId && <YouTube id={ytId} title={lesson.title} class="quest-video-frame" />}
+            {ytId && <YouTube id={ytId} title={lesson.title} credit={credit(lesson.videoKey)} class="quest-video-frame" />}
             {fileVideo && (
               <div class="quest-video-frame">
                 <video src={fileVideo.mp4} poster={fileVideo.poster} controls playsinline preload="metadata" data-wix-video></video>
               </div>
             )}
             {!ytId && fileVideo && (
-              <p class="quest-video-credit">Video: SoChlo Productions</p>
+              <p class="quest-video-credit">{credit(lesson.wixVideoKey)}</p>
             )}
             <div class="quest-watch__row">
               <span class="quest-watch-ring" aria-hidden="true">

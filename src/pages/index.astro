@@ -6,12 +6,13 @@ import { ClientRouter } from 'astro:transitions';
 import Base from '../layouts/Base.astro';
 import Nav from '../directions/quest/Nav.astro';
 import Footer from '../directions/quest/Footer.astro';
-import { video, wix, yt } from '../data/media.js';
+import { video, wix, yt, credit } from '../data/media.js';
 import { CONTACT } from '../data/batizado.js';
 import { MODULES } from '../content/modules.js';
 
 import '../directions/quest/tokens.css';
 import '../directions/quest/theme.css';
+import '../directions/quest/wp10-classes.css';
 
 const hero = video('videoProject1');
 const heroPosterSm = wix('heroRoda', 480, 760);
@@ -82,12 +83,17 @@ const LEARN = MODULES.map((m) => ({
         </div>
         <div class="quest-hero__content">
           <p class="quest-hero__eyebrow" data-quest-enter>Roda Quest &middot; Physical Chess</p>
-          <h1 class="quest-hero__title" data-quest-enter>Enter the <strong>roda</strong>.<br />Level up your ax&eacute;.</h1>
+          <h1 class="quest-hero__title quest-hero__title--welcome" data-quest-enter>Welcome to ABADÁ Capoeira. <span class="quest-hero__title-line">Level up your Capoeira knowledge.</span></h1>
           <p class="quest-hero__sub" data-quest-enter>
             Follow a tropical-night map through capoeira. Practice movement, music, and culture,
             then build your Batizado readiness with real classes from ACE / Abad&aacute; Capoeira Brooklyn.
           </p>
-          <p class="quest-hero__age" data-quest-enter>{CONTACT.ageLine}</p>
+          <p class="quest-hero__age" data-quest-enter>
+            <a class="quest-age-link" href="/classes">
+              {CONTACT.ageLine}
+              <svg class="quest-age-link__arrow" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12m-5-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </p>
           <p class="quest-hero__contact" data-quest-enter>
             <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
             ·
@@ -98,7 +104,7 @@ const LEARN = MODULES.map((m) => ({
             <a class="quest-btn quest-btn--ghost" href="/login?demo=1" data-demo-cta>Try the demo</a>
             <a class="quest-btn quest-btn--hibiscus" href="/graduation">Batizado 2026</a>
           </div>
-          <p class="quest-hero__credit" data-quest-enter>Video: SoChlo Productions</p>
+          <p class="quest-hero__credit" data-quest-enter>{credit('videoProject1')}</p>
         </div>
       </section>
 
@@ -134,7 +140,7 @@ const LEARN = MODULES.map((m) => ({
               <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l12-7z" fill="currentColor"/></svg>
             </span>
           </button>
-          <p class="quest-video-card__credit">Video: SoChlo Productions</p>
+          <p class="quest-video-card__credit">{credit('acb2024')}</p>
         </div>
       </section>
     </main>

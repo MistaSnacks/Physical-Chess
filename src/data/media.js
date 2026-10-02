@@ -239,129 +239,151 @@ export const WIX_VIDEOS = {
     poster: 'https://static.wixstatic.com/media/473014_d2a74a236692481582693d7b21567b4cf002.jpg',
     seconds: 520,
     title: 'Video Project 1 (2026 program video)',
+    credit: 'Video: SoChlo Productions',
   },
   aulao2024Lapa: {
     mp4: 'https://video.wixstatic.com/video/473014_3d2557ff2a8241c689d11c9d0a74e96b/720p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_3d2557ff2a8241c689d11c9d0a74e96bf002.jpg',
     seconds: 630,
     title: 'Aulão 2024 – 300 Anos Lapa',
+    credit: 'Video: SoChlo Productions',
   },
   clip20240909a: {
     mp4: 'https://video.wixstatic.com/video/473014_75f9c019b0994e9a8e25b0c9580b9660/720p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_75f9c019b0994e9a8e25b0c9580b9660f002.jpg',
     seconds: 23,
     title: 'Class clip, 2024-09-09',
+    credit: 'Video: SoChlo Productions',
   },
   clip20240909b: {
     mp4: 'https://video.wixstatic.com/video/473014_74516344498246d88b72274de6e7e878/720p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_74516344498246d88b72274de6e7e878f002.jpg',
     seconds: 20,
     title: 'Class clip, 2024-09-09',
+    credit: 'Video: SoChlo Productions',
   },
   copacabana2019: {
     mp4: 'https://video.wixstatic.com/video/473014_3b12f1e32ea94b3bb673164cbf6849a0/720p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_3b12f1e32ea94b3bb673164cbf6849a0f002.jpg',
     seconds: 378,
     title: 'ABADÁ Capoeira Copacabana 2019 Aulão',
+    credit: 'Video: SoChlo Productions',
   },
   nycSiteVideo: {
     mp4: 'https://video.wixstatic.com/video/473014_9cb3597a58954482954bc96bfeb7b0df/720p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_9cb3597a58954482954bc96bfeb7b0dff002.jpg',
     seconds: 153,
     title: 'NYC Video for Site (2019)',
+    credit: 'Video: SoChlo Productions',
   },
   whatsapp2018a: {
     mp4: 'https://video.wixstatic.com/video/473014_476d6a6bf0954bee999b323062f35301/480p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_476d6a6bf0954bee999b323062f35301f002.jpg',
     seconds: 33,
     title: 'Kids clip 2018 (portrait)',
+    credit: 'Video: SoChlo Productions',
   },
   whatsapp2018b: {
     mp4: 'https://video.wixstatic.com/video/473014_01ff9a5acead408eb4354140b540a822/480p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_01ff9a5acead408eb4354140b540a822f002.jpg',
     seconds: 35,
     title: 'Kids clip 2018',
+    credit: 'Video: SoChlo Productions',
   },
   whatsapp2018c: {
     mp4: 'https://video.wixstatic.com/video/473014_0724006255494ba8833d9f64aab6ccbc/480p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_0724006255494ba8833d9f64aab6ccbcf002.jpg',
     seconds: 15,
     title: 'Kids clip 2018',
+    credit: 'Video: SoChlo Productions',
   },
   whatsapp2018d: {
     mp4: 'https://video.wixstatic.com/video/473014_5058f3055da5461c9f87137ae5e46d6f/360p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_5058f3055da5461c9f87137ae5e46d6ff002.jpg',
     seconds: 50,
     title: 'Kids clip 2018',
+    credit: 'Video: SoChlo Productions',
   },
   whatsapp2018e: {
     mp4: 'https://video.wixstatic.com/video/473014_f11484b882ea4c1a896b386169055834/360p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_f11484b882ea4c1a896b386169055834f002.jpg',
     seconds: 33,
     title: 'Kids clip 2018',
+    credit: 'Video: SoChlo Productions',
   },
   whatsapp2018f: {
     mp4: 'https://video.wixstatic.com/video/473014_9240218a99c1472da743e86a3122b7eb/360p/mp4/file.mp4',
     poster: 'https://static.wixstatic.com/media/473014_9240218a99c1472da743e86a3122b7ebf002.jpg',
     seconds: 38,
     title: 'Kids clip 2018',
+    credit: 'Video: SoChlo Productions',
   },
 };
 
 // ---------------------------------------------------------------------
-// SoChlo Productions YouTube uploads. Always credit "Video: SoChlo
-// Productions" wherever one of these is embedded (SPEC §4.2).
+// YouTube uploads. Each entry (here and in WIX_VIDEOS) carries its own
+// on-screen `credit` line; read it with credit(key) (SPEC-v3 R10.2, D9).
 // ---------------------------------------------------------------------
 export const YOUTUBE = {
   aceCompilation: {
     id: 'r5G5G1RMakk',
     title: 'The Abadá Capoeira Experience',
     use: "Home hero background / 'What is Physical Chess'",
+    credit: 'Video: SoChlo Productions',
   },
   batizado2026: {
     id: 'R9ofSmjDe0I',
     title: 'Abadá Capoeira NYC Batizado 2026',
     use: 'Batizado screen featured video',
+    credit: 'Video: SoChlo Productions',
   },
   batizado2025: {
     id: '18UN2FHpS10',
     title: 'Abadá Capoeira NYC Batizado 2025',
     use: 'Batizado screen',
+    credit: 'Video: SoChlo Productions',
   },
   batizado2024: {
     id: 'qRHd8yXlMVk',
     title: 'Abadá Capoeira NYC Batizado 2024',
     use: 'Batizado screen',
+    credit: 'Video: SoChlo Productions',
   },
   aulaoBushwick: {
     id: 'EBvKKDFnZho',
     title: 'ACE Aulão at Achievement First Bushwick Elementary',
     use: 'Movements lesson video',
+    credit: 'Video: SoChlo Productions',
   },
   acePresentation: {
     id: 'y2NLf9Vw78w',
     title: 'Abadá Capoeira Experience Presentation',
     use: "Movements: 'Jogo' lesson",
+    credit: 'Video: SoChlo Productions',
   },
   sankofaHaus: {
     id: 'gv8gtMagSj0',
     title: 'ACE x Sankofa Haus',
     use: 'Music & Culture',
+    credit: 'Video: SoChlo Productions',
   },
   berkeleyCarroll: {
     id: '2OSrC0C9FGQ',
     title: 'ACE – Berkeley Carroll',
     use: 'Movements alt',
+    credit: 'Video: SoChlo Productions',
   },
   bhmShowcase: {
     id: '-V_OzLj_Hf8',
     title: 'ACE Black History Month Showcase',
     use: 'Culture',
+    credit: 'Video: SoChlo Productions',
   },
   acb2024: {
     id: 'ercczK8Cgf8',
     title: 'Abadá Capoeira Brooklyn 2024',
     use: "Dashboard 'latest from the roda'",
+    credit: 'Video: TV-ABADÁ Capoeira',
   },
 };
 
@@ -391,6 +413,13 @@ export function yt(key) {
   const entry = YOUTUBE[key];
   if (!entry) throw new Error(`media.js: unknown YouTube key "${key}"`);
   return entry.id;
+}
+
+/** On-screen credit line ("Video: …") for a YOUTUBE or WIX_VIDEOS key. */
+export function credit(key) {
+  const entry = YOUTUBE[key] || WIX_VIDEOS[key];
+  if (!entry) throw new Error(`media.js: unknown video key "${key}"`);
+  return entry.credit;
 }
 
 /** { mp4, poster, seconds } for a Wix-hosted video key. */

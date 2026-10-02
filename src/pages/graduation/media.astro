@@ -1,7 +1,7 @@
 ---
 import PublicFrame from '../../components/quest/PublicFrame.astro';
 import YouTube from '../../components/YouTube.astro';
-import { wix, yt } from '../../data/media.js';
+import { wix, yt, credit } from '../../data/media.js';
 
 /** Captions from the public Wix "Batizado Media" page. Skip any with no photo in media.js. */
 const YEARS = [
@@ -89,7 +89,7 @@ const VIDEOS = [
       {
         VIDEOS.map((v) => (
           <div class="quest-video-card">
-            <YouTube id={yt(v.key)} title={v.label} />
+            <YouTube id={yt(v.key)} title={v.label} credit={credit(v.key)} />
             <span class="quest-video-card__title">{v.label}</span>
           </div>
         ))
