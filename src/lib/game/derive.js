@@ -3,6 +3,7 @@
 // server (nightly recompute, leaderboard).
 import { EVENT, LESSON_DONE_TYPES } from './events.js';
 import { levelFor } from './levels.js';
+import { coreFor } from './cores.js';
 import { weekStreak, nyDate } from './streaks.js';
 import { earnedPatches } from './patches.js';
 import { readiness } from './readiness.js';
@@ -27,6 +28,7 @@ export function derivePlayer(events, opts = {}) {
 
   const xp = ledger.reduce((sum, e) => sum + (Number(e.xp) || 0), 0);
   const level = levelFor(xp);
+  const core = coreFor(xp); // SPEC-v3 R12.2: inert until D1; no display reads it yet
 
   // Per-lesson state
   const lessons = {};
@@ -103,7 +105,7 @@ export function derivePlayer(events, opts = {}) {
   const notes = ledger.filter((e) => e.type === EVENT.COACH_NOTE).map((e) => ({ at: e.occurredAt, note: e.payload?.note || '', by: e.payload?.by || null }));
 
   const base = {
-    xp, level, lessons, modules, lessonsDone, lessonsTotal: all, stars, nextUp, streak,
+    xp, level, core, lessons, modules, lessonsDone, lessonsTotal: all, stars, nextUp, streak,
     cordaCurrent, nextCorda, practices, practicesConfirmed, desafios, desafioDoneToday, attendance, glossaryMastered,
     notes,
     eventCount: ledger.length,
