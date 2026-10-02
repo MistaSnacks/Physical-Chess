@@ -4,12 +4,19 @@
 // chip once a session exists (filled by src/lib/nav.js), else "Log in".
 // WP5 adds a "More" menu for public pages; the four main links and session
 // chip stay as they are.
+import './wp14-badge.css';
 
 interface Props {
   active?: 'home' | 'journey' | 'movements' | 'music' | 'culture' | 'graduation' | 'batizado' | 'me' | 'family' | 'coach' | 'who' | 'about' | 'shop';
 }
 
 const { active } = Astro.props;
+
+// SPEC-v3 WP14 R14.1: brand badge switch. 'stick' is today's stick-figure
+// tile. 'logos' puts the ABADÁ globe and the ACE mark in the pink badge as a
+// ~44px pill. The logos in public/brand/ are low-res PDF placeholders: keep
+// 'stick' until ACE approves the badge and sends SVG or transparent originals.
+const BRAND_BADGE: 'stick' | 'logos' = 'stick';
 
 const LINKS = [
   { id: 'journey', href: '/journey', label: 'My Journey' },
@@ -30,13 +37,22 @@ const moreCurrent = active === 'about' || active === 'shop' || active === 'gradu
 
 <header class="quest-nav" data-quest-enter>
   <a class="quest-nav__brand" href="/">
-    <span class="quest-nav__mark">
-      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="13" cy="4" r="2" fill="none" stroke="#FFF6E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M4 20l4-5 3 1 2-5 4 2 3-4" fill="none" stroke="#FFF6E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M8 15l-1 6" fill="none" stroke="#FFF6E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </span>
+    {BRAND_BADGE === 'logos' ? (
+      <span class="quest-nav__mark quest-nav__mark--logos">
+        <span class="quest-nav__logo-chip">
+          <img class="quest-nav__logo quest-nav__logo--abada" src="/brand/abada-globe-placeholder-badge.webp" alt="ABADÁ-Capoeira" width="163" height="90" />
+          <img class="quest-nav__logo quest-nav__logo--ace" src="/brand/ace-blocks-placeholder-badge.webp" alt="the ACE" width="208" height="66" />
+        </span>
+      </span>
+    ) : (
+      <span class="quest-nav__mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="13" cy="4" r="2" fill="none" stroke="#FFF6E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M4 20l4-5 3 1 2-5 4 2 3-4" fill="none" stroke="#FFF6E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M8 15l-1 6" fill="none" stroke="#FFF6E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    )}
     <span class="quest-nav__wordmark">PHYSICAL CHESS</span>
   </a>
 

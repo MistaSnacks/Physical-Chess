@@ -1,0 +1,61 @@
+/* === WP14: logo badge (SPEC-v3 R14.1) ===
+   Styles the 'logos' variant of the brand badge in Nav.astro. The default
+   'stick' tile does not use these classes, so nothing here shows until
+   BRAND_BADGE flips. Selectors carry two classes so they win over the
+   .quest-nav__mark tile rules in theme.css whatever the bundle order. */
+
+.quest-nav__mark.quest-nav__mark--logos {
+  width: auto;
+  height: 44px;
+  padding: 4px;
+  border-radius: var(--quest-radius-pill);
+  rotate: -3deg;
+}
+
+/* Cream inner chip. The PDF placeholders are opaque on white, so the marks
+   multiply onto the chip: their white backgrounds take the chip's cream and
+   no white box shows. Transparent originals will not need the blend. */
+.quest-nav__mark--logos .quest-nav__logo-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 10px;
+  border-radius: var(--quest-radius-pill);
+  background: var(--quest-cream);
+  rotate: 3deg;
+  isolation: isolate;
+}
+
+.quest-nav__mark--logos .quest-nav__logo {
+  display: block;
+  width: auto;
+  flex-shrink: 0;
+  mix-blend-mode: multiply;
+}
+
+.quest-nav__mark--logos .quest-nav__logo--abada {
+  height: 30px;
+}
+
+.quest-nav__mark--logos .quest-nav__logo--ace {
+  height: 22px;
+}
+
+@media (max-width: 600px) {
+  .quest-nav__mark.quest-nav__mark--logos {
+    width: auto;
+    height: 40px;
+    border-radius: var(--quest-radius-pill);
+  }
+  .quest-nav__mark--logos .quest-nav__logo-chip {
+    gap: 6px;
+    padding: 0 8px;
+  }
+  .quest-nav__mark--logos .quest-nav__logo--abada {
+    height: 27px;
+  }
+  .quest-nav__mark--logos .quest-nav__logo--ace {
+    height: 19px;
+  }
+}
