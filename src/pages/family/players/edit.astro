@@ -33,6 +33,10 @@ import '../../../directions/quest/theme.css';
           <input class="quest-field__input" id="inviteCode" name="inviteCode" maxlength="24" autocomplete="off" />
           <span class="quest-field__hint" data-program-hint></span>
         </div>
+        <label class="quest-toggle" data-leave-wrap hidden>
+          <input type="checkbox" name="leaveProgram" />
+          <span data-leave-label>Train at home (leave this class)</span>
+        </label>
         <div class="quest-field"><label class="quest-field__label" for="birthYear">Birth year</label><input class="quest-field__input" id="birthYear" name="birthYear" type="number" min="2005" max="2022" /></div>
         <label class="quest-toggle">
           <input type="checkbox" name="mayPlayInClass" />
@@ -67,27 +71,49 @@ import '../../../directions/quest/theme.css';
   <script>
     import '../../../directions/quest/motion.js';
     import { requireSession } from '../../../lib/auth-guard.js';
-    import { updatePlayer, deletePlayer } from '../../../lib/actions.js';
+    import { updatePlayer, deletePlayer, checkInvite } from '../../../lib/actions.js';
     import { requireGrownUp } from '../../../lib/grown-up-gate.js';
-    import { programByInvite, programByKey } from '../../../content/programs.js';
+    import { programByKey } from '../../../content/programs.js';
     import { avatarSvg } from '../../../lib/avatar.js';
 
+    // Codes never ship in the page (SPEC-v3 R15.12), so the current class is
+    // shown by name and the field stays blank. Blank keeps the class; a new
+    // code switches it; "Train at home" leaves it. Resolves like new.astro:
+    // program, null (blank), false (no match), undefined (check unavailable).
     function bindInvite(form, currentKey) {
       const input = form.querySelector('[name=inviteCode]');
       const hint = form.querySelector('[data-program-hint]');
-      const current = programByKey(currentKey);
-      if (current && !input.value) input.value = current.inviteCode;
-      const paint = () => {
+      const leave = form.querySelector('[name=leaveProgram]');
+      const leaveWrap = form.querySelector('[data-leave-wrap]');
+      const leaveLabel = form.querySelector('[data-leave-label]');
+      let current = null;
+      let seq = 0;
+      let timer = null;
+      const idle = () => (current ? `In ${current.name}. Enter a new code to switch classes.` : 'Leave blank if they train at home.');
+      const paint = async () => {
+        const mine = ++seq;
         const code = String(input.value || '').trim();
-        if (!code) { hint.textContent = 'Leave blank if they train at home.'; return null; }
-        const prog = programByInvite(code);
-        if (prog) { hint.textContent = `This places them in ${prog.name}.`; return prog; }
+        if (!code) { hint.textContent = idle(); return null; }
+        let prog;
+        try { prog = await checkInvite(code); } catch { prog = undefined; }
+        if (mine !== seq) return prog === undefined ? undefined : (prog || false);
+        if (prog) { hint.textContent = `This places them in ${prog.name}.`; leave.checked = false; return prog; }
+        if (prog === undefined) { hint.textContent = 'We will check this code when you save.'; return undefined; }
         hint.textContent = 'That code does not match a class. Ask your coach.';
         return false;
       };
-      input.addEventListener('input', paint);
-      paint();
-      return paint;
+      /** Show the saved class by name; called on load and after each save. */
+      const setCurrent = (key) => {
+        current = programByKey(key);
+        input.value = '';
+        leave.checked = false;
+        leaveWrap.hidden = !current;
+        if (current) leaveLabel.textContent = `Train at home (leave ${current.name})`;
+        paint();
+      };
+      input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(paint, 250); });
+      setCurrent(currentKey);
+      return { resolve: paint, setCurrent };
     }
 
     async function init() {
@@ -119,7 +145,7 @@ import '../../../directions/quest/theme.css';
         el.innerHTML = avatarSvg({ animal: el.dataset.animal, color: player.avatar?.color || 'mango' }, 56);
       });
       document.querySelector('[data-report-link]').href = `/family/report?player=${encodeURIComponent(player.id)}`;
-      const resolve = bindInvite(form, player.program);
+      const invite = bindInvite(form, player.program);
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -127,22 +153,26 @@ import '../../../directions/quest/theme.css';
         const ok = form.querySelector('[data-ok]');
         err.hidden = true; ok.hidden = true;
         const fd = new FormData(form);
-        const invite = String(fd.get('inviteCode') || '').trim();
-        const prog = resolve();
-        if (invite && prog === false) { err.textContent = 'That invite code does not match a class.'; err.hidden = false; return; }
+        const code = String(fd.get('inviteCode') || '').trim();
+        const prog = await invite.resolve();
+        if (code && prog === false) { err.textContent = 'That invite code does not match a class.'; err.hidden = false; return; }
+        const leave = !code && form.leaveProgram.checked;
         try {
-          await updatePlayer(player.id, {
+          const saved = await updatePlayer(player.id, {
             firstName: String(fd.get('firstName')).trim(),
             apelido: String(fd.get('apelido') || '').trim(),
             avatar: { animal: fd.get('animal'), color: fd.get('color') },
-            program: prog ? prog.key : null,
+            ...(code ? { inviteCode: code } : {}),
+            ...(leave ? { leaveProgram: true } : {}),
             birthYear: fd.get('birthYear') ? Number(fd.get('birthYear')) : null,
             mayPlayInClass: form.mayPlayInClass.checked,
           });
+          player.program = saved?.program ?? null;
+          invite.setCurrent(player.program);
           ok.textContent = 'Saved.';
           ok.hidden = false;
         } catch (ex) {
-          err.textContent = 'Could not save. Please try again.';
+          err.textContent = ex?.code === 'INVITE' ? 'That invite code does not match a class.' : 'Could not save. Please try again.';
           err.hidden = false;
           console.error(ex);
         }

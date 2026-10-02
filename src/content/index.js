@@ -5,7 +5,7 @@ export { LEVELS } from './levels.js';
 export { PATCHES, patchByKey } from './patches.js';
 export { READINESS_RULES } from './readiness.js';
 export { GLOSSARY } from './glossary.js';
-export { PROGRAMS, programByKey, programByInvite } from './programs.js';
+export { PROGRAMS, programByKey } from './programs.js';
 export { BIRA, biraLine } from './bira.js';
 export { DESAFIO_POOL, desafioById } from './desafio.js';
 

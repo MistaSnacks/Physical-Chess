@@ -1,13 +1,21 @@
 // wixRepo.js — Wix Members (identity) + Wix CMS collections (data).
-// Reads and writes run as the logged-in member, so Wix's author-scoped
-// permissions guarantee a family only ever sees its own rows. Anything
-// cross-family goes through /api/* (server, client secret). SPEC §2, §3.
+// Reads run as the logged-in member, so Wix's author-scoped permissions
+// guarantee a family only ever sees its own rows. Writes to accounts and
+// players go through /api/account and /api/players (SPEC-v3 R15.2): those
+// collections are admin-write, so a member cannot give themselves a role, a
+// program or another family's child. Anything cross-family goes through
+// /api/* too (server, client secret). SPEC §2, §3.
 import { wix, getMemberSession, signOutMember } from '../wix.js';
+import { buildLedger } from './ledger.js';
 
 const C = {
   accounts: 'lms-accounts',
   players: 'lms-players',
   events: 'lms-events',
+  cordaAwards: 'lms-corda-awards',
+  attendance: 'lms-attendance',
+  patchAwards: 'lms-patch-awards',
+  coachEvents: 'lms-coach-events',
 };
 
 const PAGE = 100;
@@ -23,8 +31,13 @@ async function all(query) {
   return out;
 }
 
+/** Mirror collections may not exist until Camren applies WP15's schema; read them softly. */
+async function allOrEmpty(query) {
+  try { return await all(query); } catch (err) { console.warn('ledger read skipped', err?.message || err); return []; }
+}
+
 const fromAccount = (r) => ({
-  id: r._id,
+  id: r._id || r.id,
   memberId: r.memberId,
   role: r.role || 'guardian',
   displayName: r.displayName || '',
@@ -35,7 +48,7 @@ const fromAccount = (r) => ({
   demo: false,
 });
 const fromPlayer = (r) => ({
-  id: r._id,
+  id: r._id || r.id,
   accountId: r.accountId,
   firstName: r.firstName,
   apelido: r.apelido || '',
@@ -56,7 +69,7 @@ const fromEvent = (r) => ({
   payload: r.payload ? (typeof r.payload === 'string' ? JSON.parse(r.payload) : r.payload) : {},
   xp: r.xp || 0,
   stars: r.stars || 0,
-  occurredAt: r.occurredAt,
+  occurredAt: r.occurredAt instanceof Date ? r.occurredAt.toISOString() : r.occurredAt,
   source: r.source || 'app',
   _id: r._id,
 });
@@ -77,54 +90,77 @@ function toEventRow(e, playerId) {
   };
 }
 
+/** JSON call to our own /api routes with the member bearer token. */
+async function api(path, { method = 'GET', body } = {}) {
+  const res = await fetch(path, {
+    method,
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: 'same-origin',
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+  if (!res.ok) {
+    const err = new Error(data?.error || `HTTP ${res.status}`);
+    err.status = res.status;
+    err.code = data?.code || null;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+// Players of the signed-in family (from the last getSession). Any other
+// player is a Class-mode player and is read and written through the
+// coach-scoped routes instead of the member's own collections.
+let familyIds = null;
+
+async function isFamilyPlayer(repo, playerId) {
+  if (!familyIds) await repo.getSession();
+  return Boolean(familyIds && familyIds.has(playerId));
+}
+
 export const wixRepo = {
   name: 'wix',
   isDemo: false,
 
   async getSession() {
     const member = await getMemberSession();
-    if (!member) return null;
-    let rows = await all(wix.items.query(C.accounts).eq('memberId', member._id));
-    let account;
-    if (rows.length) {
-      account = fromAccount(rows[0]);
-    } else {
-      const created = await wix.items.insert(C.accounts, {
-        memberId: member._id,
-        role: 'guardian',
-        displayName: [member.contact?.firstName, member.contact?.lastName].filter(Boolean).join(' ') || member.profile?.nickname || '',
-        email: member.loginEmail || '',
-        programs: [],
-        leaderboardOptIn: false,
-        consentAt: new Date(),
-      });
-      account = fromAccount(created);
-    }
+    if (!member) { familyIds = null; return null; }
+    const rows = await all(wix.items.query(C.accounts).eq('memberId', member._id));
+    // First login: the server creates the row (role guardian, _owner = member).
+    const account = rows.length ? fromAccount(rows[0]) : fromAccount((await api('/api/account', { method: 'POST' })).account);
     const players = (await all(wix.items.query(C.players).eq('accountId', account.id).ne('active', false))).map(fromPlayer);
+    familyIds = new Set(players.map((p) => p.id));
     return { account, players };
   },
 
-  async signOut() { await signOutMember(); },
+  async signOut() { familyIds = null; await signOutMember(); },
+
+  async checkInvite(code) {
+    const data = await api('/api/players/invite', { method: 'POST', body: { code } });
+    return data?.program || null;
+  },
 
   async createPlayer(data) {
-    const session = await this.getSession();
-    const row = await wix.items.insert(C.players, {
-      firstName: data.firstName,
-      apelido: data.apelido || '',
-      avatar: data.avatar || { animal: 'frog', color: 'lime' },
-      birthYear: data.birthYear || null,
-      program: data.program || null,
-      mayPlayInClass: data.mayPlayInClass !== false,
-      accountId: session.account.id,
-      active: true,
-      startedAt: new Date().toISOString().slice(0, 10),
+    const { player } = await api('/api/players', {
+      method: 'POST',
+      body: {
+        firstName: data.firstName,
+        apelido: data.apelido || '',
+        avatar: data.avatar || { animal: 'frog', color: 'lime' },
+        birthYear: data.birthYear || null,
+        mayPlayInClass: data.mayPlayInClass !== false,
+        inviteCode: data.inviteCode || '',
+      },
     });
-    return fromPlayer(row);
+    familyIds?.add(player.id);
+    return fromPlayer(player);
   },
   async updatePlayer(id, patch) {
-    const current = await wix.items.get(C.players, id);
-    const row = await wix.items.update(C.players, { ...current, ...patch, _id: id });
-    return fromPlayer(row);
+    const { player } = await api('/api/players', { method: 'PATCH', body: { ...patch, id } });
+    return fromPlayer(player);
   },
   async deletePlayer(id) {
     // Full erasure (SPEC §3.3) runs on the server with the client secret so
@@ -132,12 +168,40 @@ export const wixRepo = {
     // inactive immediately and ask the server to finish.
     await this.updatePlayer(id, { active: false });
     await fetch('/api/players/' + encodeURIComponent(id), { method: 'DELETE', headers: await authHeaders() }).catch(() => {});
+    familyIds?.delete(id);
   },
   async listEvents(playerId) {
-    return (await all(wix.items.query(C.events).eq('playerId', playerId).ascending('occurredAt'))).map(fromEvent);
+    const [events, corda, attendance, patchAwards, coachEvents] = await Promise.all([
+      all(wix.items.query(C.events).eq('playerId', playerId).ascending('occurredAt')),
+      allOrEmpty(wix.items.query(C.cordaAwards).eq('playerId', playerId)),
+      allOrEmpty(wix.items.query(C.attendance).eq('playerId', playerId)),
+      allOrEmpty(wix.items.query(C.patchAwards).eq('playerId', playerId)),
+      allOrEmpty(wix.items.query(C.coachEvents).eq('playerId', playerId)),
+    ]);
+    return buildLedger({ events: events.map(fromEvent), corda, attendance, patchAwards, coachEvents });
+  },
+  /** Class mode (R15.4): the full ledger of a turma player from another family. */
+  async listClassEvents(playerId) {
+    if (await isFamilyPlayer(this, playerId)) return this.listEvents(playerId);
+    const data = await api('/api/coach/class/players/' + encodeURIComponent(playerId));
+    return data?.events || [];
   },
   async appendEvents(playerId, events) {
     if (!events?.length) return [];
+    if (!(await isFamilyPlayer(this, playerId))) {
+      let data;
+      try {
+        data = await api('/api/coach/class/events', { method: 'POST', body: { playerId, events } });
+      } catch (err) {
+        // A refusal (not your class, unticked "may play in class", player gone)
+        // will never succeed; drop it so one child cannot block the outbox.
+        // Network errors, 401 and 5xx throw and retry on the next flush.
+        if ([400, 403, 404].includes(err.status)) { console.warn('class events refused', err.status, playerId); return []; }
+        throw err;
+      }
+      const accepted = new Set(data?.accepted || []);
+      return events.filter((e) => accepted.has(e.clientEventId));
+    }
     const ids = events.map((e) => e.clientEventId).filter(Boolean);
     const existing = new Set();
     if (ids.length) {
@@ -156,13 +220,10 @@ export const wixRepo = {
     return fresh;
   },
   async updateAccount(patch) {
-    const session = await this.getSession();
-    const current = await wix.items.get(C.accounts, session.account.id);
-    const safe = { ...patch };
-    delete safe.role;
-    delete safe.memberId;
-    const row = await wix.items.update(C.accounts, { ...current, ...safe, _id: session.account.id, role: current.role, memberId: current.memberId });
-    return fromAccount(row);
+    // PATCH /api/account accepts displayName, phone and leaderboardOptIn only;
+    // anything else (role, programs, memberId) is rejected with a 400.
+    const { account } = await api('/api/account', { method: 'PATCH', body: patch });
+    return fromAccount(account);
   },
   async deleteAccount() {
     // WP6 implements DELETE /api/account (client secret: wipe players, ledger, member).

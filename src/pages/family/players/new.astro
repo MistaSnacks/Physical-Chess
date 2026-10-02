@@ -1,6 +1,7 @@
 ---
 // family/players/new.astro — create a player (SPEC §5.3). Kids never see
-// this screen; a guardian fills it in. Program is set by invite code.
+// this screen; a guardian fills it in. Program is set by invite code,
+// checked by the repo (never by a code list in the page, SPEC-v3 R15.12).
 import { ClientRouter } from 'astro:transitions';
 import Base from '../../../layouts/Base.astro';
 import Nav from '../../../directions/quest/Nav.astro';
@@ -42,22 +43,33 @@ import '../../../directions/quest/theme.css';
   <script>
     import '../../../directions/quest/motion.js';
     import { requireSession } from '../../../lib/auth-guard.js';
-    import { createPlayer, selectPlayer } from '../../../lib/actions.js';
+    import { createPlayer, selectPlayer, checkInvite } from '../../../lib/actions.js';
     import { requireGrownUp } from '../../../lib/grown-up-gate.js';
-    import { programByInvite } from '../../../content/programs.js';
 
+    const HINT = 'Ask your coach for the code on the class flyer. Leave blank if you train at home.';
+
+    // Invite codes never ship in the page (SPEC-v3 R15.12): the repo checks
+    // them (demo: placeholder table; Wix: POST /api/players/invite).
+    // Resolves to the program, null for no code, false for no match, or
+    // undefined when the check could not run (the server checks on save).
     function bindInvite(form) {
       const input = form.querySelector('[name=inviteCode]');
       const hint = form.querySelector('[data-program-hint]');
-      const paint = () => {
+      let seq = 0;
+      let timer = null;
+      const paint = async () => {
+        const mine = ++seq;
         const code = String(input.value || '').trim();
-        if (!code) { hint.textContent = 'Ask your coach for the code on the class flyer. Leave blank if you train at home.'; return null; }
-        const prog = programByInvite(code);
+        if (!code) { hint.textContent = HINT; return null; }
+        let prog;
+        try { prog = await checkInvite(code); } catch { prog = undefined; }
+        if (mine !== seq) return prog === undefined ? undefined : (prog || false);
         if (prog) { hint.textContent = `This places them in ${prog.name}.`; return prog; }
+        if (prog === undefined) { hint.textContent = 'We will check this code when you save.'; return undefined; }
         hint.textContent = 'That code does not match a class. Ask your coach.';
         return false;
       };
-      input.addEventListener('input', paint);
+      input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(paint, 250); });
       return paint;
     }
 
@@ -76,21 +88,21 @@ import '../../../directions/quest/theme.css';
         err.hidden = true;
         const fd = new FormData(form);
         const invite = String(fd.get('inviteCode') || '').trim();
-        const prog = resolve();
+        const prog = await resolve();
         if (invite && prog === false) { err.textContent = 'That invite code does not match a class.'; err.hidden = false; return; }
         try {
           const player = await createPlayer({
             firstName: String(fd.get('firstName')).trim(),
             apelido: String(fd.get('apelido') || '').trim(),
             avatar: { animal: fd.get('animal'), color: fd.get('color') },
-            program: prog ? prog.key : null,
+            inviteCode: invite,
             birthYear: fd.get('birthYear') ? Number(fd.get('birthYear')) : null,
             mayPlayInClass: form.mayPlayInClass.checked,
           });
           await selectPlayer(player.id);
           location.href = '/journey';
         } catch (ex) {
-          err.textContent = 'Could not add the player. Please try again.';
+          err.textContent = ex?.code === 'INVITE' ? 'That invite code does not match a class.' : 'Could not add the player. Please try again.';
           err.hidden = false;
           console.error(ex);
         }

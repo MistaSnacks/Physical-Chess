@@ -5,6 +5,8 @@ import { PROGRAMS, programByKey } from '../content/programs.js';
 import { CORDAS } from '../data/batizado.js';
 
 export const CLASS_MODE_KEY = 'pc.classMode';
+/** The turma player picked in Class mode (kept across reloads, SPEC-v3 R15.4). */
+export const CLASS_PLAYER_KEY = 'pc.classPlayer';
 export const READINESS_BUCKETS = [
   { key: '0-20', label: '0–20%', min: 0, max: 20 },
   { key: '21-40', label: '21–40%', min: 21, max: 40 },
@@ -189,8 +191,31 @@ export function readClassMode() {
 }
 
 export function writeClassMode(value) {
-  if (!value) sessionStorage.removeItem(CLASS_MODE_KEY);
-  else sessionStorage.setItem(CLASS_MODE_KEY, JSON.stringify(value));
+  if (!value) {
+    sessionStorage.removeItem(CLASS_MODE_KEY);
+    sessionStorage.removeItem(CLASS_PLAYER_KEY);
+    return;
+  }
+  sessionStorage.setItem(CLASS_MODE_KEY, JSON.stringify(value));
+  startClassSession();
+}
+
+/**
+ * Real mode only: ask the server to re-sign the session cookie with the
+ * 8-hour Class-mode cap (SPEC §2.4, D12, SPEC-v3 R15.3). Demo has no cookie.
+ * `keepalive` lets the request finish while the tablet navigates to /journey.
+ */
+export async function startClassSession() {
+  try {
+    const { IS_DEMO } = await import('./repo/index.js');
+    if (IS_DEMO) return { demo: true };
+    const res = await fetch('/api/session/class', { method: 'POST', credentials: 'same-origin', keepalive: true });
+    if (!res.ok) console.warn('class session not capped', res.status);
+    return res.ok ? res.json() : { ok: false, status: res.status };
+  } catch (err) {
+    console.warn('class session not capped', err);
+    return { ok: false };
+  }
 }
 
 export const NO_PROGRAMS_COPY =
