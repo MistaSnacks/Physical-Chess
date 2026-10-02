@@ -52,10 +52,11 @@ import '../directions/quest/theme.css';
     import { IS_DEMO } from '../lib/repo/index.js';
     import { signInDemo, loadSession } from '../lib/actions.js';
     import { authMessage, loginQueryMessage, recaptchaToken, fillRecaptchaField, continueAuth } from '../lib/auth-ui.js';
+    import { safeNext } from '../lib/server/policy.js'; // pure; same-origin paths only (SPEC-v3 R15.8)
 
     async function init() {
       const params = new URLSearchParams(location.search);
-      const next = params.get('next') || '/who';
+      const next = safeNext(params.get('next'), location.origin);
       const session = await loadSession();
       if (session) { location.replace(next); return; }
       if (IS_DEMO && params.get('demo') === '1') {

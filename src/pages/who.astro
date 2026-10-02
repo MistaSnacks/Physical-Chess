@@ -36,6 +36,7 @@ import '../directions/quest/theme.css';
     import { selectPlayer, snapshotsForSession } from '../lib/actions.js';
     import { playerCardEl } from '../lib/player-card.js';
     import { requireGrownUp } from '../lib/grown-up-gate.js';
+    import { safeNext } from '../lib/server/policy.js'; // pure; same-origin paths only (SPEC-v3 R15.8)
 
     async function init() {
       const s = await requireSession();
@@ -45,7 +46,7 @@ import '../directions/quest/theme.css';
       main.dataset.wp4Bound = '1';
       const grid = document.querySelector('[data-players]');
       const add = grid.querySelector('[data-add-player]');
-      const next = new URLSearchParams(location.search).get('next') || '/journey';
+      const next = safeNext(new URLSearchParams(location.search).get('next'), location.origin, '/journey');
       const cards = await snapshotsForSession();
       grid.querySelectorAll('[data-player]').forEach((n) => n.remove());
       const empty = document.querySelector('[data-empty]');

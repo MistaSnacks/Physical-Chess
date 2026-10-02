@@ -48,6 +48,7 @@ import '../directions/quest/theme.css';
     import '../directions/quest/motion.js';
     import { IS_DEMO } from '../lib/repo/index.js';
     import { authMessage, readVerifyState, clearVerifyState, continueAuth } from '../lib/auth-ui.js';
+    import { safeNext } from '../lib/server/policy.js'; // pure; same-origin paths only (SPEC-v3 R15.8)
 
     async function init() {
       document.querySelector('[data-demo-card]').hidden = !IS_DEMO;
@@ -58,7 +59,7 @@ import '../directions/quest/theme.css';
         const err = form.querySelector('[data-error]');
         err.hidden = true;
         const saved = readVerifyState() || {};
-        const next = new URLSearchParams(location.search).get('next') || saved.next || '/who';
+        const next = safeNext(new URLSearchParams(location.search).get('next') || saved.next, location.origin);
         const submit = form.querySelector('[type=submit]');
         submit.disabled = true;
         try {
