@@ -11,7 +11,7 @@ import Hud from '../components/quest/Hud.astro';
 import LevelUp from '../components/quest/LevelUp.astro';
 import PatchUnlock from '../components/quest/PatchUnlock.astro';
 import { MODULES } from '../content/modules.js';
-import { wix, yt } from '../data/media.js';
+import { wix, yt, credit } from '../data/media.js';
 import { MODULE_STOPS, GATE_PROGRESS, DESKTOP_TRAIL, MOBILE_TRAIL, lessonTrailItems } from '../lib/map.js';
 
 import '../directions/quest/tokens.css';
@@ -126,7 +126,7 @@ const GATE = '<svg width="60" height="60" viewBox="0 0 24 24"><path d="M6 3h12l2
           <span class="quest-latest__eyebrow">LATEST FROM THE RODA</span>
           <span class="quest-latest__title" id="journey-latest-title">Brooklyn in motion</span>
         </div>
-        <YouTube id={yt('acb2024')} title="Abadá Capoeira Brooklyn 2024" />
+        <YouTube id={yt('acb2024')} title="Abadá Capoeira Brooklyn 2024" credit={credit('acb2024')} />
       </article>
       </div>
 

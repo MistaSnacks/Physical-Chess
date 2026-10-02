@@ -1,0 +1,312 @@
+/* === WP10: copy, credits, classes page (SPEC-v3 R10.1-R10.4) ===
+   Own file, never appended to theme.css. Footer.astro imports it, and pages
+   import Footer before theme.css, so overrides of theme rules use two or more
+   classes to win regardless of bundle order. */
+
+/* ---- Hero H1 (R10.1): two sentences, one per line ---- */
+.quest-hero__title.quest-hero__title--welcome {
+  text-wrap: balance;
+}
+.quest-hero__title--welcome .quest-hero__title-line {
+  display: block;
+  margin-top: 0.12em;
+  color: var(--quest-mango);
+}
+
+/* ---- Age line links (R10.4): home hero, footer, contact ---- */
+.quest-hero__age .quest-age-link,
+.quest-footer__contact .quest-age-link,
+.quest-screen__sub .quest-age-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--quest-lime);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  border-radius: 6px;
+}
+.quest-hero__age .quest-age-link:hover,
+.quest-footer__contact .quest-age-link:hover,
+.quest-screen__sub .quest-age-link:hover {
+  color: var(--quest-cream);
+}
+.quest-hero__age .quest-age-link:focus-visible,
+.quest-footer__contact .quest-age-link:focus-visible,
+.quest-screen__sub .quest-age-link:focus-visible {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+}
+.quest-age-link .quest-age-link__arrow {
+  flex: none;
+  transition: transform 0.2s var(--quest-ease);
+}
+.quest-age-link:hover .quest-age-link__arrow {
+  transform: translateX(3px);
+}
+
+/* ---- /classes ---- */
+.quest-screen--public .quest-classes__hero {
+  max-width: 100%;
+  aspect-ratio: 2 / 1;
+  margin: 0 0 44px;
+}
+
+.quest-classes__section {
+  margin: 0 0 52px;
+}
+.quest-classes__section .quest-section__title {
+  margin-bottom: 20px;
+}
+
+.quest-classes__lede {
+  max-width: 60ch;
+  margin: -8px 0 20px;
+  color: var(--quest-muted);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.quest-classes__tbc {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 2px dashed var(--quest-mango);
+  border-radius: var(--quest-radius-pill);
+  color: var(--quest-mango);
+  font: 800 11px/1 var(--quest-font-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Quick facts */
+.quest-classes__facts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+.quest-classes__fact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 20px;
+  border: 3px solid var(--quest-leaf-border);
+  border-radius: var(--quest-radius-md);
+  background: var(--quest-deep-leaf);
+}
+.quest-classes__fact-label {
+  color: var(--quest-mango);
+  font: 800 12px/1.2 var(--quest-font-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.quest-classes__fact-value {
+  color: var(--quest-cream);
+  font-family: var(--quest-font-display);
+  font-size: 26px;
+  line-height: 1.1;
+}
+.quest-classes__fact-note {
+  color: var(--quest-muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.quest-classes__fact[data-fact='ages'] .quest-classes__fact-value {
+  color: var(--quest-lime);
+}
+
+/* What a class is like */
+.quest-classes__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+.quest-classes__grid > .quest-card.quest-classes__card {
+  margin: 0;
+  min-width: 0;
+  padding: 22px;
+  border-radius: var(--quest-radius-md);
+}
+.quest-classes__card .quest-card__title {
+  font-size: 22px;
+}
+.quest-classes__copy {
+  margin: 0;
+  color: var(--quest-muted);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.quest-classes__copy strong {
+  color: var(--quest-mango);
+  font-weight: 800;
+}
+.quest-classes__wear.quest-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 20px 22px;
+  border-radius: var(--quest-radius-md);
+  background: transparent;
+}
+.quest-classes__wear-title {
+  margin: 0;
+  color: var(--quest-cream);
+  font: 800 13px/1.2 var(--quest-font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.quest-classes__link,
+.quest-classes__reach a {
+  color: var(--quest-lime);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.quest-classes__link:hover,
+.quest-classes__reach a:hover {
+  color: var(--quest-cream);
+}
+
+/* Programs */
+.quest-classes__programs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.quest-classes__program {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name tbc'
+    'day tbc';
+  align-items: center;
+  gap: 4px 12px;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 3px solid var(--quest-leaf-border);
+  border-radius: var(--quest-radius-md);
+  background: var(--quest-deep-leaf);
+}
+.quest-classes__program-name {
+  grid-area: name;
+  color: var(--quest-cream);
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.quest-classes__program-day {
+  grid-area: day;
+  color: var(--quest-muted);
+  font-size: 15px;
+}
+.quest-classes__program .quest-classes__tbc {
+  grid-area: tbc;
+  align-self: center;
+}
+
+/* How to join + form */
+.quest-classes__join {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.quest-classes__join-copy {
+  min-width: 0;
+}
+.quest-classes__steps {
+  display: grid;
+  gap: 16px;
+  margin: 0 0 20px;
+  counter-reset: none;
+}
+.quest-classes__step {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.quest-classes__step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--quest-lime);
+  color: var(--quest-ink);
+  font-family: var(--quest-font-display);
+  font-size: 20px;
+  line-height: 1;
+}
+.quest-classes__step-text {
+  display: grid;
+  gap: 2px;
+  color: var(--quest-muted);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.quest-classes__step-text strong {
+  color: var(--quest-cream);
+  font-size: 17px;
+}
+.quest-classes__reach {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+}
+.quest-classes__reach a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  overflow-wrap: anywhere;
+}
+.quest-classes__form.quest-card {
+  min-width: 0;
+  margin: 0;
+  padding: 22px 20px;
+}
+.quest-classes__form .quest-classes__form-sub {
+  margin: 0 0 18px;
+}
+.quest-classes__form .quest-field__input {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .quest-classes__facts,
+  .quest-classes__grid,
+  .quest-classes__programs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .quest-classes__facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .quest-classes__join {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 40px;
+  }
+  .quest-classes__form.quest-card {
+    padding: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-age-link .quest-age-link__arrow {
+    transition: none;
+  }
+  .quest-age-link:hover .quest-age-link__arrow {
+    transform: none;
+  }
+}

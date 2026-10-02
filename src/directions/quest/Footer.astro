@@ -1,6 +1,7 @@
 ---
 // Footer.astro — Roda Quest footer with the ACE contact info and a public sitemap.
 import { CONTACT } from '../../data/batizado.js';
+import './wp10-classes.css';
 
 const GROUPS = [
   {
@@ -8,6 +9,7 @@ const GROUPS = [
     links: [
       { href: '/', label: 'Home' },
       { href: '/about', label: 'About' },
+      { href: '/classes', label: 'Classes' },
       { href: '/shop', label: 'Shop' },
     ],
   },
@@ -46,12 +48,12 @@ const GROUPS = [
     <div class="quest-footer__brand">Physical Chess &middot; Roda Quest</div>
     <div class="quest-footer__note">
       A program of ACE / Abad&aacute; Capoeira Brooklyn.
-      <span class="quest-footer__credit">Video: SoChlo Productions</span>
+      <span class="quest-footer__credit">Video credits appear with each video</span>
     </div>
   </div>
   <div class="quest-footer__contact">
     <strong>Train with ACE</strong>
-    <span>{CONTACT.ageLine}</span>
+    <a class="quest-age-link quest-age-link--footer" href="/classes">{CONTACT.ageLine}</a>
     <a href={`tel:${CONTACT.phone.replace(/[^0-9+]/g, '')}`}>{CONTACT.phone}</a>
     <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
   </div>

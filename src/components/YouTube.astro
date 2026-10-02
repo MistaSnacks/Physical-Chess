@@ -10,6 +10,7 @@
 //   muted     — boolean, default false (YouTube requires muted for autoplay)
 //   loop      — boolean, default false
 //   controls  — boolean, default true
+//   credit    — on-screen credit line; pass credit(key) from data/media.js
 
 interface Props {
   id: string;
@@ -18,6 +19,7 @@ interface Props {
   muted?: boolean;
   loop?: boolean;
   controls?: boolean;
+  credit: string;
   class?: string;
 }
 
@@ -28,6 +30,7 @@ const {
   muted = false,
   loop = false,
   controls = true,
+  credit,
   class: className,
 } = Astro.props;
 
@@ -57,7 +60,7 @@ const src = `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
       allowfullscreen
     ></iframe>
   </div>
-  <p class="quest-video-credit">Video: SoChlo Productions</p>
+  {credit && <p class="quest-video-credit">{credit}</p>}
 </div>
 
 <style>
