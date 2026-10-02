@@ -1,6 +1,7 @@
 // site.js — public-page copy for WP5 (SPEC §5.1). Shape is WP5's
 // (ABOUT.mission, THE_ACE.kicker, CORDAS_PAGE.paragraphs, SHOP.fields object).
 // Wording folded in from WP1 where it was richer. Draft until ACE reviews.
+import { mestreById, educatorsLabel } from './mestres.js';
 
 export const ABOUT = {
   reviewNeeded: true,
@@ -31,43 +32,20 @@ export const ABADA = {
   ],
 };
 
-export const EDUCATORS = [
-  {
-    name: 'Pernilongo',
-    title: 'Mestre',
-    portraitKey: 'mestrePernilongo',
-    bio: 'Mestre Pernilongo teaches with ACE in Brooklyn. Full bio pending ACE review.',
+// Names and titles come from the Mestre registry (SPEC-v3 WP13, R13.1);
+// `educatorsName` keeps today's text until D5.
+function educator(id) {
+  const m = mestreById(id);
+  return {
+    name: m.educatorsName,
+    title: m.title,
+    portraitKey: m.portraitKey,
+    bio: `${educatorsLabel(m)} teaches with ACE in Brooklyn. Full bio pending ACE review.`,
     reviewNeeded: true,
-  },
-  {
-    name: 'Marcia',
-    title: 'Mestra',
-    portraitKey: 'mestraMarciaBerimbau',
-    bio: 'Mestra Marcia teaches with ACE in Brooklyn. Full bio pending ACE review.',
-    reviewNeeded: true,
-  },
-  {
-    name: 'Edna Lima',
-    title: 'Mestra',
-    portraitKey: 'mestraEdnaLima',
-    bio: 'Mestra Edna Lima teaches with ACE in Brooklyn. Full bio pending ACE review.',
-    reviewNeeded: true,
-  },
-  {
-    name: 'Cobra',
-    title: 'Mestre',
-    portraitKey: 'mestreCobra',
-    bio: 'Mestre Cobra teaches with ACE in Brooklyn. Full bio pending ACE review.',
-    reviewNeeded: true,
-  },
-  {
-    name: 'Yara',
-    title: 'Mestranda',
-    portraitKey: 'mestrandaYara',
-    bio: 'Mestranda Yara teaches with ACE in Brooklyn. Full bio pending ACE review.',
-    reviewNeeded: true,
-  },
-];
+  };
+}
+
+export const EDUCATORS = ['pernilongo', 'cigarra', 'edna-lima', 'cobra', 'yara'].map(educator);
 
 export const FAQ = [
   {

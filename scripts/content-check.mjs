@@ -6,6 +6,7 @@ import { MODULES } from '../src/content/modules.js';
 import { GLOSSARY } from '../src/content/glossary.js';
 import { BIRA } from '../src/content/bira.js';
 import { EDUCATORS, FAQ, ABOUT, THE_ACE, ABADA, CORDAS_PAGE, SHOP } from '../src/content/site.js';
+import { MESTRES, POPUP_MESTRES } from '../src/content/mestres.js';
 import { PHOTOS, YOUTUBE, WIX_VIDEOS } from '../src/data/media.js';
 
 const errors = [];
@@ -145,6 +146,26 @@ else {
     if (!e.name || !e.title || !e.portraitKey || !e.bio) fail(`EDUCATORS[${i}]: need name, title, portraitKey, bio`);
     mediaPhoto(e.portraitKey, `EDUCATORS ${e.name}`);
   });
+}
+// Mestre registry (SPEC-v3 WP13): 15 pop-up names, each with a title and an
+// order; unique ids; a real portrait key or the placeholder flag.
+{
+  const seenIds = new Set();
+  for (const m of MESTRES) {
+    const w = `mestres ${m.id || '(missing id)'}`;
+    if (!m.id) fail(`${w}: missing id`);
+    else if (seenIds.has(m.id)) fail(`${w}: duplicate id`);
+    else seenIds.add(m.id);
+    if (!m.name || !m.title || !m.educatorsName) fail(`${w}: need name, title, educatorsName`);
+    if (typeof m.order !== 'number') fail(`${w}: need a numeric order`);
+    if (typeof m.popup !== 'boolean') fail(`${w}: popup must be boolean`);
+    if (typeof m.fact !== 'string') fail(`${w}: fact must be a string (empty until ACE approves)`);
+    if (m.portraitKey) mediaPhoto(m.portraitKey, w);
+    else if (m.portraitPlaceholder !== true) fail(`${w}: no portraitKey and no portraitPlaceholder flag`);
+  }
+  if (POPUP_MESTRES.length !== 15) fail(`mestres: ${POPUP_MESTRES.length} pop-up names (need 15)`);
+  const orders = POPUP_MESTRES.map((m) => m.order).join(',');
+  if (orders !== Array.from({ length: 15 }, (_, i) => i + 1).join(',')) fail(`mestres: pop-up orders must be 1-15 (got ${orders})`);
 }
 if (!Array.isArray(FAQ) || FAQ.length !== 8) fail(`site.FAQ: ${FAQ?.length} items (need 8)`);
 if (!CORDAS_PAGE?.ladder?.length && !CORDAS_PAGE?.paragraphs?.length) fail('site.CORDAS_PAGE missing ladder or paragraphs');
