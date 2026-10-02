@@ -1,26 +1,21 @@
 // POST (and GET for Vercel cron) /api/jobs/recompute
-// Nightly snapshot + leaderboard rebuild. Guarded by EXPORT_SECRET or the
-// Vercel cron header. 501 without WIX_CLIENT_SECRET.
+// Nightly snapshot + leaderboard rebuild. 501 without WIX_CLIENT_SECRET.
+// R15.7: Vercel Cron sends `Authorization: Bearer ${CRON_SECRET}` once
+// CRON_SECRET is set in the project env; manual runs may use EXPORT_SECRET
+// (bearer or x-export-secret). The x-vercel-cron header proves nothing (any
+// client can send it) and is no longer trusted. See cronAuthorized().
 //
 // vercel.json cron: "30 7 * * *" is 07:30 UTC, which is 03:30 America/New_York
 // during EDT (Batizado season) and 02:30 during EST. Vercel cron is UTC-only.
 import { json } from '../../../lib/server/session.js';
 import { missingSecret, demoResponse } from '../../../lib/server/demo-guard.js';
+import { cronAuthorized } from '../../../lib/server/policy.js';
 import { recomputeAll } from '../../../lib/server/lms.js';
 export const prerender = false;
 
-function authorized(request) {
-  if (request.headers.get('x-vercel-cron') === '1') return true;
-  const secret = process.env.EXPORT_SECRET || '';
-  if (!secret) return false;
-  const auth = request.headers.get('authorization') || '';
-  const header = request.headers.get('x-export-secret') || '';
-  return auth === `Bearer ${secret}` || header === secret;
-}
-
 async function run(request) {
   if (missingSecret()) return demoResponse();
-  if (!authorized(request)) return json({ error: 'Not allowed.' }, { status: 401 });
+  if (!cronAuthorized(request.headers, process.env)) return json({ error: 'Not allowed.' }, { status: 401 });
   try {
     return json(await recomputeAll());
   } catch (err) {

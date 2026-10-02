@@ -15,6 +15,7 @@ export const C = {
   patchAwards: 'lms-patch-awards',
   cordaAwards: 'lms-corda-awards',
   attendance: 'lms-attendance',
+  coachEvents: 'lms-coach-events',
   leaderboard: 'lms-leaderboard',
   programs: 'lms-programs',
 };
@@ -189,6 +190,9 @@ export function fromEventRow(r) {
     occurredAt: parseDate(r.occurredAt) || r.occurredAt,
     source: r.source || 'app',
     _id: r._id || r.id,
+    // Who wrote the row (Wix system field). buildLedger() uses it to drop
+    // rows another member wrote into this child's ledger, then strips it.
+    _owner: r._owner || null,
   };
 }
 

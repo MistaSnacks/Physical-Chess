@@ -7,9 +7,8 @@ const unb64 = (s) => Buffer.from(s, 'base64url');
 
 export const COOKIE = 'pc_session';
 export const PKCE_COOKIE = 'pc_pkce';
-const DAY = 86400;
-export const GUARDIAN_MAX_AGE = 180 * DAY;
-export const COACH_MAX_AGE = 1 * DAY;
+// Lifetimes (D12) and the cookie rules live in policy.js (pure, tested).
+export { GUARDIAN_MAX_AGE, COACH_MAX_AGE, CLASS_MAX_AGE, sessionMaxAge, classExpired, classSessionPayload } from './policy.js';
 
 async function key() {
   const secret = process.env.SESSION_COOKIE_SECRET || '';
@@ -70,14 +69,19 @@ export async function adminToken() {
   return (await res.json()).access_token;
 }
 
+/** The Wix member behind a member access token (Get My Member, FULL fieldset). */
+export async function memberFromAccessToken(token) {
+  if (!token) return null;
+  const res = await fetch('https://www.wixapis.com/members/v1/members/my?fieldsets=FULL', { headers: { Authorization: token } });
+  if (!res.ok) return null;
+  return (await res.json()).member || null;
+}
+
 /** Who is calling? Verifies the bearer member token with Wix. */
 export async function memberFromBearer(request) {
   const auth = request.headers.get('authorization') || '';
   const token = auth.replace(/^Bearer\s+/i, '');
-  if (!token) return null;
-  const res = await fetch('https://www.wixapis.com/members/v1/members/my', { headers: { Authorization: token } });
-  if (!res.ok) return null;
-  return (await res.json()).member || null;
+  return memberFromAccessToken(token);
 }
 
 export const json = (data, init = {}) => new Response(JSON.stringify(data), { ...init, headers: { 'Content-Type': 'application/json', ...(init.headers || {}) } });
