@@ -2,6 +2,7 @@
 // content-check.mjs — fail the build if curriculum content is incomplete
 // or points at media keys that do not exist.
 import { LESSONS } from '../src/content/lessons.js';
+import { quizProblems, kindOf } from '../src/lib/quiz.js';
 import { MODULES } from '../src/content/modules.js';
 import { GLOSSARY } from '../src/content/glossary.js';
 import { BIRA } from '../src/content/bira.js';
@@ -103,15 +104,16 @@ for (const l of LESSONS) {
   }
 
   if (l.type === 'quiz') {
+    // SPEC-v3 R11.3: kinds multipleChoice (default), matching, fillBlank. Every
+    // question needs an answer (correctIndex, pairs or accepted); the rules
+    // live in src/lib/quiz.js so the importer checks the same way.
     if (!Array.isArray(l.quiz) || l.quiz.length < 1) fail(`${where}: quiz needs questions`);
     else {
+      for (const p of quizProblems(l.quiz)) fail(`${where} ${p}`);
       l.quiz.forEach((q, i) => {
-        const qw = `${where} q${i + 1}`;
-        if (!q.id) fail(`${qw}: missing id`);
-        if (!q.prompt) fail(`${qw}: missing prompt`);
-        if (!Array.isArray(q.choices) || q.choices.length < 2) fail(`${qw}: needs choices`);
-        if (typeof q.correctIndex !== 'number' || q.correctIndex < 0 || q.correctIndex >= q.choices.length) fail(`${qw}: correctIndex out of range`);
-        mediaPhoto(q.photoKey, qw);
+        mediaPhoto(q.photoKey, `${where} q${i + 1}`);
+        // Until D6 (R11.5) Quiz.astro renders multiple choice only; the new kinds live in test fixtures.
+        if (kindOf(q) !== 'multipleChoice') fail(`${where} q${i + 1}: Quiz.astro can't show "${kindOf(q)}" questions yet (waits for D6)`);
       });
     }
   }
