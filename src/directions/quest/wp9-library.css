@@ -4,7 +4,10 @@
    Mobile 390 first. Motion: transform/opacity only, off under reduced motion. */
 
 /* ---------- Shared bits ---------- */
+/* .quest-page is a flex column: without a width, a margin-auto main
+   shrinks to its content on short entries (video, quiz). */
 .quest-lib {
+  width: 100%;
   --lib-video: var(--quest-hibiscus);
   --lib-reading: var(--quest-mango);
   --lib-drill: var(--quest-lime);
@@ -462,6 +465,12 @@ a.quest-instrument-card:focus-visible {
   }
   .quest-lib-video {
     max-width: 960px;
+  }
+  .quest-lib-reading,
+  .quest-lib-quiz,
+  .quest-lib-drill,
+  .quest-lib-word {
+    max-width: 860px;
   }
 }
 
