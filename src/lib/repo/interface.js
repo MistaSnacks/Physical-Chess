@@ -16,11 +16,14 @@
 //   deletePlayer(id)                 → void
 //   listEvents(playerId)             → Event[]
 //   appendEvents(playerId, events)   → Event[] (accepted; duplicates by clientEventId dropped)
-//   updateAccount(patch)             → Account
+//   updateAccount(patch)             → Account   (displayName, phone, leaderboardOptIn only in Wix mode)
+//   checkInvite(code)                → { key, name } | null (SPEC-v3 R15.12; codes never ship in content)
+// createPlayer/updatePlayer take `inviteCode` (and `leaveProgram` on update);
+// the program is set only from a valid code, never from a `program` field.
 // localRepo adds: signInDemo()
-// wixRepo adds:   login(email, password), register(...), completeRedirect(), ...
+// wixRepo adds:   listClassEvents(playerId) for Class mode across families (R15.4)
 
-export const REPO_METHODS = ['getSession', 'signOut', 'createPlayer', 'updatePlayer', 'deletePlayer', 'listEvents', 'appendEvents', 'updateAccount'];
+export const REPO_METHODS = ['getSession', 'signOut', 'createPlayer', 'updatePlayer', 'deletePlayer', 'listEvents', 'appendEvents', 'updateAccount', 'checkInvite'];
 
 export function assertRepo(repo, name) {
   for (const m of REPO_METHODS) {

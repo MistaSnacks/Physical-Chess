@@ -2,8 +2,43 @@
 // Same promises as wixRepo so screens cannot tell the difference.
 import { DEMO_ACCOUNT, DEMO_PLAYERS, demoEvents } from './demoSeed.js';
 import { makeEvent, EVENT } from '../game/events.js';
+import { matchInvite } from './invite.js';
+import { programByKey } from '../../content/programs.js';
 
 const KEY = 'pc.demo.v1';
+
+/**
+ * Demo-only placeholder invite codes (SPEC-v3 R15.12). These four words are
+ * already public, so they are retired as real codes: real codes are new,
+ * non-dictionary, and live only in the admin-read lms-programs collection.
+ */
+export const DEMO_INVITE_CODES = [
+  { key: 'bushwick', inviteCode: 'BUSHWICK' },
+  { key: 'berkeley-carroll', inviteCode: 'BERKELEY' },
+  { key: 'prospect', inviteCode: 'PROSPECT' },
+  { key: 'brooklyn-open', inviteCode: 'RODA' },
+];
+
+function inviteError() {
+  const err = new Error('That invite code does not match a class.');
+  err.code = 'INVITE';
+  return err;
+}
+
+/**
+ * Same rule as POST/PATCH /api/players: the program only ever comes from a
+ * valid invite code (or leaveProgram), never from a `program` field.
+ */
+function programChange({ inviteCode, leaveProgram } = {}) {
+  const code = String(inviteCode || '').trim();
+  if (code) {
+    const key = matchInvite(code, DEMO_INVITE_CODES);
+    if (!key) throw inviteError();
+    return { program: key };
+  }
+  if (leaveProgram === true) return { program: null };
+  return {};
+}
 
 function load() {
   try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; }
@@ -32,9 +67,17 @@ export const localRepo = {
   },
   async signOut() { const d = db(); d.signedIn = false; save(d); },
 
+  async checkInvite(code) {
+    const key = matchInvite(code, DEMO_INVITE_CODES);
+    const prog = key ? programByKey(key) : null;
+    return prog ? { key: prog.key, name: prog.name } : null;
+  },
+
   async createPlayer(data) {
     const d = db();
-    const player = { id: uid('player'), accountId: d.account.id, active: true, mayPlayInClass: true, startedAt: new Date().toISOString().slice(0, 10), avatar: { animal: 'frog', color: 'lime' }, ...data };
+    const { inviteCode, leaveProgram, program: _ignored, ...fields } = data || {};
+    const placed = programChange({ inviteCode });
+    const player = { id: uid('player'), accountId: d.account.id, active: true, mayPlayInClass: true, startedAt: new Date().toISOString().slice(0, 10), avatar: { animal: 'frog', color: 'lime' }, ...fields, program: placed.program || null };
     d.players.push(player);
     d.events.push(makeEvent({ playerId: player.id, accountId: d.account.id, type: EVENT.PLAYER_CREATED, payload: {} }));
     save(d);
@@ -44,7 +87,8 @@ export const localRepo = {
     const d = db();
     const i = d.players.findIndex((p) => p.id === id);
     if (i === -1) throw new Error('player not found');
-    d.players[i] = { ...d.players[i], ...patch, id };
+    const { inviteCode, leaveProgram, program: _ignored, ...fields } = patch || {};
+    d.players[i] = { ...d.players[i], ...fields, ...programChange({ inviteCode, leaveProgram }), id };
     save(d);
     return d.players[i];
   },

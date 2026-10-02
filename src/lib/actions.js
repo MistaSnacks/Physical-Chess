@@ -7,6 +7,7 @@ import { makeEvent, withAllowedXp, derivePlayer, sideEffects, startsNewStreakWee
 
 const ACTIVE_KEY = 'pc.activePlayer';
 const OUTBOX_KEY = 'pc.outbox';
+const CLASS_PLAYER_KEY = 'pc.classPlayer'; // same key as coach.js CLASS_PLAYER_KEY
 
 function readActivePlayerId() {
   try {
@@ -37,9 +38,22 @@ export async function loadSession() {
   if (!session) return null;
   const wanted = readActivePlayerId();
   const player = session.players.find((p) => p.id === wanted) || null;
+  const classPlayer = player ? null : readClassPlayer(wanted);
   if (player) await selectPlayer(player.id);
+  else if (classPlayer) await selectClassPlayer(classPlayer);
   else store.set({ ready: true });
   return session;
+}
+
+/** Class mode (SPEC-v3 R15.4): the picked turma player survives a reload while Class mode is on. */
+function readClassPlayer(id) {
+  try {
+    if (!id || !sessionStorage.getItem('pc.classMode')) return null;
+    const p = JSON.parse(sessionStorage.getItem(CLASS_PLAYER_KEY));
+    return p && p.id === id ? p : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function selectPlayer(id) {
@@ -243,11 +257,21 @@ export async function recordDesafio(payload = {}) {
 export async function selectClassPlayer(player) {
   const repo = await getRepo();
   writeActivePlayerId(player.id);
+  const { id, accountId, firstName, apelido, avatar, program, mayPlayInClass } = player;
+  try { sessionStorage.setItem(CLASS_PLAYER_KEY, JSON.stringify({ id, accountId, firstName, apelido, avatar, program, mayPlayInClass })); } catch { /* ignore */ }
   await flushOutbox();
-  const events = await repo.listEvents(player.id);
+  // Real mode reads another family's ledger through the coach-scoped route
+  // (wixRepo.listClassEvents, R15.4); demo reads the shared local ledger.
+  const events = repo.listClassEvents ? await repo.listClassEvents(player.id) : await repo.listEvents(player.id);
   const snapshot = derivePlayer(events);
   store.set({ activePlayerId: player.id, player, events, snapshot, ready: true });
   return snapshot;
+}
+
+/** Which class an invite code places a player in: { key, name } | null (SPEC-v3 R15.12). */
+export async function checkInvite(code) {
+  const repo = await getRepo();
+  return repo.checkInvite(code);
 }
 
 window.addEventListener('online', () => flushOutbox());
