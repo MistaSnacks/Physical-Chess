@@ -175,11 +175,8 @@ function initQuizReactions() {
 
   const hearts = Array.from(document.querySelectorAll('[data-quest-heart]'));
   const progressSegs = Array.from(document.querySelectorAll('[data-quest-progress-seg]'));
-  const xpTotalEl = document.querySelector('[data-quest-xp-total]');
-  const mascotTarget = document.querySelector('[data-quest-xp-target]');
   const flashEl = document.querySelector('.quest-flash');
   const winBanner = document.querySelector('[data-quest-win]');
-  let xpEarned = 0;
   let heartsLost = 0;
 
   function updateProgress(index, state) {
@@ -206,8 +203,6 @@ function initQuizReactions() {
   quizRoot.addEventListener('quiz:correct', (e) => {
     const detail = e.detail || {};
     updateProgress(detail.index, 'answered');
-    xpEarned += 50;
-    if (xpTotalEl) xpTotalEl.textContent = `+${xpEarned} XP`;
 
     const choiceEl = quizRoot.querySelector(
       `[data-question-index="${detail.index}"] [data-quiz-choice][data-selected="true"]`
@@ -215,31 +210,6 @@ function initQuizReactions() {
     if (choiceEl && !reduced()) {
       choiceEl.classList.add('quest-correct-bounce');
       setTimeout(() => choiceEl.classList.remove('quest-correct-bounce'), 650);
-    }
-
-    if (reduced() || !mascotTarget) return;
-
-    // Fly a "+50 XP" chip from the chosen answer toward the mascot's XP chip.
-    const originRect = (choiceEl || quizRoot).getBoundingClientRect();
-    const targetRect = mascotTarget.getBoundingClientRect();
-
-    const chip = document.createElement('div');
-    chip.className = 'quest-xp-chip';
-    chip.textContent = '+50 XP';
-    chip.style.left = `${originRect.left + originRect.width / 2 - 50}px`;
-    chip.style.top = `${originRect.top}px`;
-    const flyX = targetRect.left + targetRect.width / 2 - (originRect.left + originRect.width / 2);
-    const flyY = targetRect.top - originRect.top;
-    chip.style.setProperty('--fly-x', `${flyX}px`);
-    chip.style.setProperty('--fly-y', `${flyY}px`);
-    document.body.appendChild(chip);
-    requestAnimationFrame(() => chip.classList.add('is-flying'));
-    setTimeout(() => chip.remove(), 950);
-
-    if (mascotTarget) {
-      mascotTarget.classList.remove('quest-pulse');
-      void mascotTarget.offsetWidth;
-      mascotTarget.classList.add('quest-pulse');
     }
   });
 

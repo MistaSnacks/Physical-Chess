@@ -14,7 +14,7 @@ function met(rule, s) {
 
 function progressOf(rule, s) {
   switch (rule.type) {
-    case 'moduleCleared': return s.modules[rule.moduleId]?.percent ?? 0;
+    case 'moduleCleared': return s.modules[rule.moduleId]?.cleared ? 100 : (s.modules[rule.moduleId]?.percent ?? 0);
     case 'quizScore': return Math.min(100, Math.round(((s.lessons[rule.lessonId]?.bestScore ?? 0) / rule.minPercent) * 100));
     case 'lessonDone': return s.lessons[rule.lessonId]?.status === 'done' ? 100 : 0;
     case 'practice': return Math.min(100, Math.round(((Math.min(s.practices, rule.logged) + Math.min(s.practicesConfirmed, rule.confirmed)) / (rule.logged + rule.confirmed)) * 100));

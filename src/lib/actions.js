@@ -3,7 +3,7 @@
 // outbox first (SPEC §3.2), applied optimistically, then flushed.
 import { store } from './store.js';
 import { getRepo, IS_DEMO } from './repo/index.js';
-import { makeEvent, derivePlayer, sideEffects, startsNewStreakWeek, isoWeek, EVENT } from './game/index.js';
+import { makeEvent, withAllowedXp, derivePlayer, sideEffects, startsNewStreakWeek, isoWeek, EVENT, LEARNER_EVENTS } from './game/index.js';
 
 const ACTIVE_KEY = 'pc.activePlayer';
 const OUTBOX_KEY = 'pc.outbox';
@@ -72,12 +72,16 @@ export async function recordEvent(type, { moduleId = null, lessonId = null, payl
   let source = 'app';
   try { if (sessionStorage.getItem('pc.classMode')) source = 'class'; } catch { /* ignore */ }
   const base = { playerId: s.player.id, accountId: s.player.accountId };
-  const event = makeEvent({ ...base, type, moduleId, lessonId, payload, occurredAt: now, source });
+  // XP the first time only (SPEC §3.1): repeats record an event with 0 XP.
+  const event = withAllowedXp(makeEvent({ ...base, type, moduleId, lessonId, payload, occurredAt: now, source }), s.events);
   const before = s.snapshot || derivePlayer(s.events);
-  const newWeek = event.xp > 0 && startsNewStreakWeek(s.events, now);
+  const newWeek = LEARNER_EVENTS.has(type) && startsNewStreakWeek(s.events, now);
   let events = [...s.events, event];
   let after = derivePlayer(events, { now });
-  const extra = sideEffects(before, after, event, { newStreakWeek: newWeek, week: isoWeek(now) }).map((e) => makeEvent({ ...base, ...e, occurredAt: now, source: 'system' }));
+  const extra = [];
+  for (const fx of sideEffects(before, after, event, { newStreakWeek: newWeek, week: isoWeek(now) })) {
+    extra.push(withAllowedXp(makeEvent({ ...base, ...fx, occurredAt: now, source: 'system' }), [...events, ...extra]));
+  }
   if (extra.length) { events = [...events, ...extra]; after = derivePlayer(events, { now }); }
   store.set({ events, snapshot: after });
 

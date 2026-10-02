@@ -1,5 +1,7 @@
 // streaks.js — weekly "roda weeks" streak (SPEC §4.3). Pure. Weeks are ISO
 // weeks in America/New_York.
+import { LEARNER_EVENTS } from './events.js';
+
 const TZ = 'America/New_York';
 
 /** 'YYYY-MM-DD' calendar date in America/New_York. */
@@ -41,12 +43,13 @@ function weekStart(key) {
 
 /**
  * { weeks, activeThisWeek, lastActiveWeek, weeksList } for a player from the
- * weeks in which they earned XP. A streak survives if every week back from
+ * weeks in which they did a learner activity (LEARNER_EVENTS), whatever XP it
+ * earned. A streak survives if every week back from
  * this week (or last week, if this week is not yet active) is present.
  */
 export function weekStreak(events, now = new Date()) {
   const weeks = new Set();
-  for (const e of events) if ((e.xp || 0) > 0) weeks.add(isoWeek(e.occurredAt));
+  for (const e of events) if (LEARNER_EVENTS.has(e.type)) weeks.add(isoWeek(e.occurredAt));
   const thisWeek = isoWeek(now);
   const sorted = [...weeks].sort();
   const lastActiveWeek = sorted[sorted.length - 1] || null;
@@ -68,8 +71,8 @@ function prevWeek(key) {
   return isoWeek(new Date(weekStart(key) - 7 * 86400000 + 12 * 3600000));
 }
 
-/** True when a new XP event at `now` should also mint a `streak.week` bonus. */
+/** True when a learner event at `now` should also mint a `streak.week` bonus. */
 export function startsNewStreakWeek(events, now = new Date()) {
   const thisWeek = isoWeek(now);
-  return !events.some((e) => (e.xp || 0) > 0 && isoWeek(e.occurredAt) === thisWeek);
+  return !events.some((e) => LEARNER_EVENTS.has(e.type) && isoWeek(e.occurredAt) === thisWeek);
 }

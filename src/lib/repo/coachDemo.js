@@ -4,7 +4,7 @@
 // family accounts live alongside.
 import { DEMO_ACCOUNT, DEMO_PLAYERS, demoEvents } from './demoSeed.js';
 import { readLocalDb, writeLocalDb, localRepo } from './localRepo.js';
-import { makeEvent, EVENT, derivePlayer } from '../game/index.js';
+import { makeEvent, EVENT, derivePlayer, scoreLedger } from '../game/index.js';
 import { PROGRAMS } from '../../content/programs.js';
 import {
   overviewFromRoster, buildLeaderboard, toCsv, PLAYER_CSV_HEADERS, EVENT_CSV_HEADERS,
@@ -112,7 +112,8 @@ function extraEvents() {
     ev('nino-g', { ...P, type: EVENT.VIDEO_DONE, moduleId: 'movements', lessonId: 'ginga-basics', occurredAt: daysAgo(1) }),
     ev('nino-s', { ...P, type: EVENT.STREAK_WEEK, payload: { week: 1 }, occurredAt: daysAgo(1) }),
   );
-  return out;
+  // First-time XP only, same as recordEvent (SPEC-v3 R8.2).
+  return scoreLedger(out);
 }
 
 function loadMeta() {

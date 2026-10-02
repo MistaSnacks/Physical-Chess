@@ -234,6 +234,16 @@ const level = Number(await page.textContent('[data-bind="level.level"]'));
 if (!(xp2 > xp1)) fail(`XP did not increase (${xp1} → ${xp2})`);
 if (!(level >= 4)) fail(`expected Maya level ≥ 4 after music clear, got ${level}`);
 
+// SPEC-v3 R8.1: replaying a finished quiz earns no XP, says so, and flies no chip.
+await completeQuiz('/learn/music/music-quiz');
+const replayEarned = ((await page.textContent('[data-earned]')) || '').trim();
+if (replayEarned !== 'Stars only go up.') fail('quiz replay should earn 0 XP, showed: ' + replayEarned);
+if (await page.locator('.quest-xp-chip').count()) fail('quiz replay flew a +XP chip');
+await page.goto(`${base}/journey`);
+await page.waitForFunction(() => document.querySelector('[data-bind="xp"]')?.textContent !== '');
+const xpReplay = Number(await page.textContent('[data-bind="xp"]'));
+if (xpReplay !== xp2) fail(`quiz replay changed XP (${xp2} → ${xpReplay})`);
+
 await completeDesafio();
 await shot('desafio');
 

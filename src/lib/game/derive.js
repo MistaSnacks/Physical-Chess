@@ -45,7 +45,10 @@ export function derivePlayer(events, opts = {}) {
     s.lastAt = e.occurredAt;
   }
 
-  // Per-module progress + locking
+  // Per-module progress + locking. A clear is sticky (SPEC-v3 R8.4): once a
+  // module.cleared event exists, adding lessons later never re-locks the next
+  // module or takes back a patch or readiness item.
+  const clearedBefore = new Set(ledger.filter((e) => e.type === EVENT.MODULE_CLEARED).map((e) => e.moduleId));
   const modules = {};
   for (const m of MODULES) {
     const ls = LESSONS.filter((l) => l.moduleId === m.id);
@@ -58,7 +61,7 @@ export function derivePlayer(events, opts = {}) {
       percent: ls.length ? Math.round((done.length / ls.length) * 100) : 0,
       stars,
       maxStars: ls.length * 3,
-      cleared: ls.length > 0 && done.length === ls.length,
+      cleared: clearedBefore.has(m.id) || (ls.length > 0 && done.length === ls.length),
       locked: false,
       lockedReason: null,
     };

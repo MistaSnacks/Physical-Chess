@@ -1,6 +1,7 @@
 // demoSeed.js — the "Demo Family" (SPEC §2.2): Maya "Gatinha" mid-journey
 // (the showcase state) and Leo "Tubarão" brand new. Pure data.
 import { makeEvent, EVENT } from '../game/events.js';
+import { scoreLedger } from '../game/xp-rules.js';
 
 export const DEMO_ACCOUNT = {
   id: 'acct-demo',
@@ -24,7 +25,7 @@ const daysAgo = (n, h = 17) => { const d = new Date(); d.setDate(d.getDate() - n
 export function demoEvents() {
   const P = { playerId: 'player-maya', accountId: 'acct-demo' };
   const fixed = (id, rest) => makeEvent({ ...P, clientEventId: `demo-${id}`, ...rest });
-  return [
+  return scoreLedger([
     fixed('created', { type: EVENT.PLAYER_CREATED, payload: {}, occurredAt: daysAgo(27) }),
     fixed('w1-ginga', { type: EVENT.VIDEO_DONE, moduleId: 'movements', lessonId: 'ginga-basics', occurredAt: daysAgo(24) }),
     fixed('w1-streak', { type: EVENT.STREAK_WEEK, payload: { week: 1 }, occurredAt: daysAgo(24) }),
@@ -39,5 +40,5 @@ export function demoEvents() {
     fixed('w4-q1', { type: EVENT.QUIZ_ANSWERED, moduleId: 'music', lessonId: 'music-quiz', payload: { questionId: 'q1', correct: true }, occurredAt: daysAgo(1) }),
     fixed('w4-glossary-axe', { type: EVENT.GLOSSARY_MASTERED, payload: { word: 'Axé' }, occurredAt: daysAgo(1) }),
     fixed('w4-glossary-roda', { type: EVENT.GLOSSARY_MASTERED, payload: { word: 'Roda' }, occurredAt: daysAgo(1) }),
-  ];
+  ]);
 }

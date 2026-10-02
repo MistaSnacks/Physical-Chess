@@ -52,6 +52,16 @@ export function starsFor(type, payload = {}) {
   }
 }
 
+/**
+ * Things a kid (or a grown-up confirming their practice) actually did. A
+ * streak week counts if it holds any of these, whatever XP they earned
+ * (SPEC-v3 R8.3). Bonuses, patches and coach events don't count a week.
+ */
+export const LEARNER_EVENTS = new Set([
+  EVENT.VIDEO_DONE, EVENT.READING_DONE, EVENT.DRILL_DONE, EVENT.QUIZ_ANSWERED, EVENT.QUIZ_DONE,
+  EVENT.DESAFIO_DONE, EVENT.PRACTICE_CONFIRMED, EVENT.GLOSSARY_MASTERED,
+]);
+
 /** Which event types mark a lesson as done. */
 export const LESSON_DONE_TYPES = new Set([EVENT.VIDEO_DONE, EVENT.READING_DONE, EVENT.DRILL_DONE, EVENT.QUIZ_DONE]);
 

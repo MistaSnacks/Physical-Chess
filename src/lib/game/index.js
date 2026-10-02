@@ -4,3 +4,4 @@ export { isoWeek, weekStreak, startsNewStreakWeek, nyDate, nyMonth } from './str
 export { derivePlayer, sideEffects } from './derive.js';
 export { earnedPatches, ruleMet } from './patches.js';
 export { readiness } from './readiness.js';
+export { allowedXp, withAllowedXp, scoreLedger } from './xp-rules.js';
