@@ -30,14 +30,14 @@ function emit(name, detail) {
   document.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
 }
 
-export async function loadSession() {
+export async function loadSession({ select = true } = {}) {
   const repo = await getRepo();
   const session = await repo.getSession();
   store.set({ session, isDemo: IS_DEMO, ready: !session });
   if (!session) return null;
   const wanted = readActivePlayerId();
   const player = session.players.find((p) => p.id === wanted) || null;
-  if (player) await selectPlayer(player.id);
+  if (player && select) await selectPlayer(player.id);
   else store.set({ ready: true });
   return session;
 }

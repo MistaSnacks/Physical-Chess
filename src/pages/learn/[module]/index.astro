@@ -7,10 +7,11 @@ import { ClientRouter } from 'astro:transitions';
 import Base from '../../../layouts/Base.astro';
 import Nav from '../../../directions/quest/Nav.astro';
 import Footer from '../../../directions/quest/Footer.astro';
-import { MODULES, LESSONS, INSTRUMENTS, GLOSSARY } from '../../../content/index.js';
+import { MODULES, LESSONS, INSTRUMENTS, INSTRUMENT_LESSON, GLOSSARY, lessonById } from '../../../content/index.js';
 import { PHOTOS, wix } from '../../../data/media.js';
 import '../../../directions/quest/tokens.css';
 import '../../../directions/quest/theme.css';
+import '../../../directions/quest/wp9-library.css';
 
 export function getStaticPaths() {
   return MODULES.map((m) => ({ params: { module: m.id }, props: { mod: m } }));
@@ -42,6 +43,12 @@ function fig(key) {
 
 const navActive = mod.id === 'graduation' ? 'batizado' : mod.id === 'culture' ? 'music' : mod.id;
 const glossaryTeaser = GLOSSARY.slice(0, 6);
+// Field guide cards open the lesson that teaches each instrument (SPEC-v3
+// R10.5). Locks still apply: the lesson page enforces them.
+const instrumentCards = INSTRUMENTS.map((inst) => {
+  const target = lessonById(INSTRUMENT_LESSON[inst.id]);
+  return { ...inst, lesson: target, href: target ? `/learn/${target.moduleId}/${target.id}` : null };
+});
 ---
 
 <Base title={`${mod.title} — Physical Chess`} direction="quest">
@@ -135,15 +142,21 @@ const glossaryTeaser = GLOSSARY.slice(0, 6);
             <p class="quest-section__eyebrow" data-quest-enter>Music · Field guide</p>
             <h2 class="quest-section__title" data-quest-enter>Meet the roda's rhythm section.</h2>
             <div class="quest-instruments">
-              {INSTRUMENTS.map((inst) => (
-                <article class="quest-instrument-card" data-quest-enter>
+              {instrumentCards.map((inst) => (
+                <a class="quest-instrument-card" href={inst.href} data-instrument={inst.id} data-instrument-lesson={inst.lesson?.id} data-lesson-link data-quest-enter>
                   <div class="quest-instrument-card__photo">
                     <img src={wix(inst.photoKey, 480, 360)} alt={PHOTOS[inst.photoKey]?.caption || inst.name} loading="lazy" />
                     <span class="quest-instrument-card__level">Rhythm find</span>
                   </div>
                   <span class="quest-instrument-card__name">{inst.name}</span>
                   <p class="quest-instrument-card__blurb">{inst.blurb}</p>
-                </article>
+                  {inst.lesson && (
+                    <span class="quest-instrument-card__cue">
+                      Lesson: {inst.lesson.title}
+                      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  )}
+                </a>
               ))}
             </div>
           </section>

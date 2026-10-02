@@ -1,0 +1,30 @@
+---
+// LibraryRow.astro — one tappable row in the instructor library (WP9).
+// Page links open the public page itself; every other entry opens its
+// library page. The browser-side search draws the same markup (see
+// rowHtml in src/pages/coach/library/index.astro).
+import { KIND_ICON, CHEVRON, EXTERNAL } from '../../lib/library-icons.js';
+import { metaLabel, placeLabel } from '../../lib/library.js';
+
+interface Props {
+  entry: { id: string; kind: string; title: string; href: string; external: boolean };
+  /** Add the module · group line (search results, cross-links). */
+  showPlace?: boolean;
+}
+
+const { entry, showPlace = false } = Astro.props;
+const place = showPlace ? placeLabel(entry) : '';
+const meta = [metaLabel(entry), place].filter(Boolean).join(' · ');
+const go = entry.external ? EXTERNAL : CHEVRON;
+---
+
+<li class="quest-lib-item">
+  <a class="quest-lib-row" href={entry.href} data-lib-entry={entry.id} data-kind={entry.kind}>
+    <span class="quest-lib-row__icon" set:html={KIND_ICON[entry.kind] || ''} />
+    <span class="quest-lib-row__body">
+      <span class="quest-lib-row__title">{entry.title}</span>
+      <span class="quest-lib-row__meta">{meta}</span>
+    </span>
+    <span class="quest-lib-row__go" set:html={go} />
+  </a>
+</li>

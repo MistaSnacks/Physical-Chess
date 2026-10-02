@@ -80,7 +80,10 @@ function markPageA11y() {
 function boot() {
   if (!booted) { booted = true; store.subscribe(paint); }
   markPageA11y();
-  if (!store.get().ready) loadSession().catch(() => paint(store.get()));
+  // Staff pages (the instructor library) never select a child: selecting
+  // would flush the outbox and swap the active player (SPEC-v3 R9.5).
+  const select = !document.body.hasAttribute('data-staff');
+  if (!store.get().ready) loadSession({ select }).catch(() => paint(store.get()));
   else paint(store.get());
 }
 document.addEventListener('astro:page-load', boot);

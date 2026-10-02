@@ -1,0 +1,291 @@
+---
+// coach/library/[type]/[slug].astro — one instructor-library entry
+// (SPEC-v3 R9.4). Layout by type:
+//   lesson video    YouTube.astro (or <video controls> for a Wix file)
+//   lesson reading  Reading.astro without the glossary, plus the check with its answer marked
+//   lesson drill    the step list, no timer, no self-rating
+//   lesson quiz     every question with its answer marked (not Quiz.astro)
+//   glossary        word, say (speak button), meaning, example
+//   instrument      photo, blurb, link to its lesson via INSTRUMENT_LESSON
+//   yt / wix video  the player, plus the lessons that use it
+// Page links have no entry page: they open the public page directly.
+// Staff page (noindex). No script here touches player state (R9.5), and
+// like the index it carries no <ClientRouter /> so every visit is a fresh
+// page (see the note in ../index.astro).
+import Base from '../../../../layouts/Base.astro';
+import Nav from '../../../../directions/quest/Nav.astro';
+import Footer from '../../../../directions/quest/Footer.astro';
+import YouTube from '../../../../components/YouTube.astro';
+import Reading from '../../../../components/quest/Reading.astro';
+import ReadAloud from '../../../../components/quest/ReadAloud.astro';
+import LibraryRow from '../../../../components/quest/LibraryRow.astro';
+import {
+  CATALOG, KIND_LABEL, detailEntries, entryById, placeLabel, metaLabel,
+  lessonsForVideo, lessonForInstrument, glossaryForWord, LIBRARY_BASE,
+} from '../../../../lib/library.js';
+import { BACK, CHECK } from '../../../../lib/library-icons.js';
+import { PHOTOS, wix, yt, video as wixVideo } from '../../../../data/media.js';
+import '../../../../directions/quest/tokens.css';
+import '../../../../directions/quest/theme.css';
+import '../../../../directions/quest/wp9-library.css';
+
+export function getStaticPaths() {
+  return detailEntries().map((e) => ({ params: { type: e.type, slug: e.slug }, props: { id: e.id } }));
+}
+
+const entry = entryById(Astro.props.id);
+const src = entry.source;
+const lesson = entry.type === 'lesson' ? src : null;
+const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+function photo(key, w, h) {
+  return key && PHOTOS[key] ? { src: wix(key, w, h), caption: PHOTOS[key].caption } : null;
+}
+
+const badge = KIND_LABEL[entry.kind];
+const place = placeLabel(entry);
+const facts = [place, entry.type === 'lesson' ? `${src.minutes} min` : '', entry.type === 'wix' ? metaLabel(entry).split(' · ')[1] : '']
+  .filter(Boolean).join(' · ');
+const summary = lesson ? lesson.summary : '';
+
+// Lesson video: YouTube key or a Wix file.
+const lessonYt = lesson?.type === 'video' && lesson.videoKey ? yt(lesson.videoKey) : '';
+const lessonFile = lesson?.type === 'video' && !lesson.videoKey && lesson.wixVideoKey ? wixVideo(lesson.wixVideoKey) : null;
+const lessonClip = lesson?.videoKey ? entryById(`yt:${lesson.videoKey}`) : lesson?.wixVideoKey ? entryById(`wix:${lesson.wixVideoKey}`) : null;
+
+// Reading lesson with the 12-word glossary: link the word entries instead.
+const glossaryWords = lesson?.glossary ? CATALOG.filter((e) => e.type === 'glossary') : [];
+
+// Drill facts.
+const drill = lesson?.type === 'drill' ? lesson.drill : null;
+const drillTime = drill ? `${Math.floor(drill.seconds / 60)}:${String(drill.seconds % 60).padStart(2, '0')}` : '';
+
+// Glossary: the lesson that teaches the words.
+const wordLesson = entry.type === 'glossary' ? CATALOG.find((e) => e.type === 'lesson' && e.source.glossary) : null;
+
+// Instrument: photo, its lesson (R10.5 map) and the word with the same spelling.
+const instPhoto = entry.type === 'instrument' ? photo(src.photoKey, 1200, 900) : null;
+const instLesson = entry.type === 'instrument' ? lessonForInstrument(src.id) : null;
+const instLessonEntry = instLesson ? entryById(`lesson:${instLesson.id}`) : null;
+const instWord = entry.type === 'instrument' ? glossaryForWord(src.name) : null;
+
+// Videos: the lessons that play this clip.
+const usedIn = entry.type === 'yt' ? lessonsForVideo(entry.slug).map((l) => entryById(`lesson:${l.id}`)) : [];
+
+// More in the same module group (lessons, words, instruments).
+const siblings = entry.moduleId
+  ? CATALOG.filter((e) => e.id !== entry.id && e.moduleId === entry.moduleId && e.group === entry.group)
+  : [];
+const siblingRows = siblings.filter((e) => e.type !== 'glossary');
+const siblingWords = siblings.filter((e) => e.type === 'glossary');
+const groupTitle = place.split(' · ')[1] || place;
+---
+
+<Base title={`${entry.title} · Library · Physical Chess`} description={`Instructor library: ${entry.title}.`} direction="quest" staff>
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main id="main" class="quest-screen quest-screen--wide quest-coach-screen quest-lib quest-lib-entry" data-library-entry={entry.id} data-kind={entry.kind}>
+      <a class="quest-lib-back" href={LIBRARY_BASE} data-lib-back>
+        <span set:html={BACK} />
+        Library
+      </a>
+
+      <header class="quest-lib-head" data-quest-enter>
+        <div class="quest-lib-head__tags">
+          <span class="quest-lesson__type quest-lib-badge">{badge}</span>
+          {entry.reviewNeeded && <span class="quest-lib-draft">Draft copy</span>}
+        </div>
+        <h1 class="quest-screen__title" data-lib-title>{entry.title}</h1>
+        {facts && <p class="quest-lib-head__facts">{facts}</p>}
+        {summary && <p class="quest-screen__sub quest-lib-head__summary">{summary}</p>}
+      </header>
+
+      <section class="quest-lesson__stage quest-lib-stage" aria-label={`${badge}: ${entry.title}`} data-quest-enter>
+        {lesson?.type === 'video' && (
+          <div class="quest-lib-video">
+            {lessonYt && <YouTube id={lessonYt} title={lesson.title} class="quest-video-frame" />}
+            {lessonFile && (
+              <div class="quest-video-frame">
+                <video src={lessonFile.mp4} poster={lessonFile.poster} controls playsinline preload="metadata"></video>
+              </div>
+            )}
+            {lessonClip && (
+              <p class="quest-lib-note">Also listed under Videos: <a href={lessonClip.href}>{lessonClip.title}</a></p>
+            )}
+          </div>
+        )}
+
+        {lesson?.type === 'reading' && (
+          <div class="quest-lib-reading">
+            <Reading body={lesson.body} photoKey={lesson.photoKey} glossary={false} />
+            {lesson.check && (
+              <div class="quest-check quest-lib-answer" data-lib-check>
+                <div class="quest-check__top">
+                  <p class="quest-check__eyebrow">Check question</p>
+                </div>
+                <p class="quest-check__prompt">{lesson.check.prompt}</p>
+                <ol class="quest-lib-choices">
+                  {lesson.check.choices.map((c, i) => (
+                    <li class:list={['quest-lib-choice', i === lesson.check.correctIndex && 'is-answer']} data-answer={i === lesson.check.correctIndex ? 'true' : undefined}>
+                      <span class="quest-choice-letter">{LETTERS[i]}</span>
+                      <span class="quest-lib-choice__text">{c}</span>
+                      {i === lesson.check.correctIndex && <span class="quest-lib-choice__tag"><span set:html={CHECK} />Answer</span>}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {glossaryWords.length > 0 && (
+              <div class="quest-lib-subsection">
+                <h2 class="quest-lib-subsection__title">The twelve words</h2>
+                <p class="quest-lib-note">Each word has its own page with a speak button.</p>
+                <ul class="quest-lib-words">
+                  {glossaryWords.map((e) => <li><a class="quest-lib-word-chip" href={e.href} data-lib-entry={e.id}>{e.title}</a></li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {drill && (
+          <div class="quest-lib-drill">
+            <p class="quest-lib-facts">
+              <span class="quest-lib-fact"><strong>{drillTime}</strong> on the timer</span>
+              {drill.metronomeBpm && <span class="quest-lib-fact"><strong>{drill.metronomeBpm}</strong> beats a minute</span>}
+              <span class="quest-lib-fact"><strong>{drill.steps.length}</strong> steps</span>
+            </p>
+            <ol class="quest-steps quest-lib-steps">
+              {drill.steps.map((s) => {
+                const p = photo(s.photoKey, 320, 240);
+                return (
+                  <li data-lib-step>
+                    <span class="quest-lib-step__text">{s.text}</span>
+                    {p && <img class="quest-lib-step__photo" src={p.src} alt={p.caption} width="160" height="120" loading="lazy" />}
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        )}
+
+        {lesson?.type === 'quiz' && (
+          <ol class="quest-lib-quiz">
+            {lesson.quiz.map((q, n) => {
+              const p = photo(q.photoKey, 960, 540);
+              return (
+                <li class="quest-check quest-lib-answer" data-lib-question={q.id}>
+                  <div class="quest-check__top">
+                    <p class="quest-check__eyebrow">Question {n + 1} of {lesson.quiz.length}</p>
+                  </div>
+                  {p && <img class="quest-lib-quiz__photo" src={p.src} alt={p.caption} loading="lazy" width="960" height="540" />}
+                  <p class="quest-check__prompt">{q.prompt}</p>
+                  <ol class="quest-lib-choices">
+                    {q.choices.map((c, i) => (
+                      <li class:list={['quest-lib-choice', i === q.correctIndex && 'is-answer']} data-answer={i === q.correctIndex ? 'true' : undefined}>
+                        <span class="quest-choice-letter">{LETTERS[i]}</span>
+                        <span class="quest-lib-choice__text">{c}</span>
+                        {i === q.correctIndex && <span class="quest-lib-choice__tag"><span set:html={CHECK} />Answer</span>}
+                      </li>
+                    ))}
+                  </ol>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+
+        {entry.type === 'glossary' && (
+          <div class="quest-lib-word" data-readaloud-root>
+            <div class="quest-lib-word__say">
+              <div>
+                <p class="quest-lib-label">Say it</p>
+                <p class="quest-lib-word__said" lang="pt-BR">{src.say}</p>
+              </div>
+              <ReadAloud text={src.say} lang="pt-BR" label="Hear it" />
+            </div>
+            <dl class="quest-lib-defs">
+              <div>
+                <dt class="quest-lib-label">Meaning</dt>
+                <dd>{src.meaning}</dd>
+              </div>
+              <div>
+                <dt class="quest-lib-label">Example</dt>
+                <dd>{src.example}</dd>
+              </div>
+            </dl>
+            {wordLesson && (
+              <p class="quest-lib-note">From the lesson <a href={wordLesson.href}>{wordLesson.title}</a>.</p>
+            )}
+          </div>
+        )}
+
+        {entry.type === 'instrument' && (
+          <div class="quest-lib-instrument">
+            {instPhoto && (
+              <figure class="quest-lib-photo">
+                <img src={instPhoto.src} alt={instPhoto.caption} width="1200" height="900" loading="lazy" />
+              </figure>
+            )}
+            <div class="quest-lib-instrument__copy">
+              <p class="quest-lib-blurb">{src.blurb}</p>
+              <div class="quest-btn-row">
+                {instLessonEntry && (
+                  <a class="quest-btn quest-btn--lime" href={instLessonEntry.href} data-lib-instrument-lesson={instLesson.id}>Lesson: {instLesson.title}</a>
+                )}
+                {instWord && <a class="quest-btn quest-btn--ghost" href={instWord.href}>Word: {instWord.title}</a>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {entry.type === 'yt' && (
+          <div class="quest-lib-video">
+            <YouTube id={src.id} title={src.title} class="quest-video-frame" />
+          </div>
+        )}
+
+        {entry.type === 'wix' && (
+          <div class="quest-lib-video">
+            <div class="quest-video-frame">
+              <video src={src.mp4} poster={src.poster} controls playsinline preload="metadata"></video>
+            </div>
+          </div>
+        )}
+
+        {usedIn.length > 0 && (
+          <div class="quest-lib-subsection">
+            <h2 class="quest-lib-subsection__title">Used in {usedIn.length === 1 ? 'this lesson' : 'these lessons'}</h2>
+            <ul class="quest-lib-list">
+              {usedIn.map((e) => <LibraryRow entry={e} showPlace />)}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      {siblings.length > 0 && (
+        <section class="quest-card quest-lib-section quest-lib-more" aria-labelledby="lib-more-title" data-quest-enter>
+          <p class="quest-coach-kicker">{place.split(' · ')[0]}</p>
+          <h2 class="quest-card__title" id="lib-more-title">More in {groupTitle}</h2>
+          {siblingRows.length > 0 && (
+            <ul class="quest-lib-list">
+              {siblingRows.map((e) => <LibraryRow entry={e} />)}
+            </ul>
+          )}
+          {siblingWords.length > 0 && (
+            <ul class="quest-lib-words">
+              {siblingWords.map((e) => <li><a class="quest-lib-word-chip" href={e.href} data-lib-entry={e.id}>{e.title}</a></li>)}
+            </ul>
+          )}
+        </section>
+      )}
+    </main>
+    <Footer />
+  </div>
+</Base>
+
+<script>
+  // Entrance motion only. No actions.js, no store: library pages never write
+  // events, select a child, flush the outbox or clear the player (R9.5).
+  import '../../../../directions/quest/motion.js';
+</script>

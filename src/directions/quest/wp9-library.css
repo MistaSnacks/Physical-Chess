@@ -1,0 +1,493 @@
+/* === WP9: instructor library + Field guide card links ===
+   Own file per SPEC-v3 (never appended to theme.css). Imported after
+   theme.css by /coach/library/** and the module hub (Field guide cards).
+   Mobile 390 first. Motion: transform/opacity only, off under reduced motion. */
+
+/* ---------- Shared bits ---------- */
+.quest-lib {
+  --lib-video: var(--quest-hibiscus);
+  --lib-reading: var(--quest-mango);
+  --lib-drill: var(--quest-lime);
+  --lib-quiz: var(--quest-cream);
+  --lib-word: var(--quest-lime);
+  --lib-instrument: var(--quest-mango);
+  --lib-clip: var(--quest-hibiscus);
+  --lib-page: var(--quest-muted);
+}
+.quest-lib-label {
+  margin: 0 0 4px;
+  color: var(--quest-mango);
+  font: 800 12px/1.2 var(--quest-font-label);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.quest-lib-note {
+  margin: 14px 0 0;
+  color: var(--quest-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.quest-lib-note a,
+.quest-lib-defs a {
+  color: var(--quest-lime);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Search ---------- */
+.quest-lib-search {
+  margin-bottom: 20px;
+  padding: 20px;
+}
+.quest-lib-search__form {
+  display: grid;
+  gap: 8px;
+}
+.quest-lib-search__box {
+  position: relative;
+}
+.quest-lib-search__icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--quest-muted);
+  pointer-events: none;
+}
+.quest-lib-search__icon svg { display: block; }
+.quest-lib-search__input {
+  width: 100%;
+  min-height: 56px;
+  padding-left: 48px;
+  font-size: 18px;
+}
+.quest-lib-search__input::placeholder { color: var(--quest-muted-2); opacity: 1; }
+.quest-lib-search .quest-field__hint { margin: 0; }
+.quest-lib-results {
+  margin-top: 16px;
+}
+.quest-lib-results__count {
+  margin: 0 0 10px;
+  color: var(--quest-cream);
+  font: 800 14px/1.4 var(--quest-font-label);
+}
+
+/* ---------- Rows ---------- */
+.quest-lib-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.quest-lib-item { min-width: 0; }
+.quest-lib-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 12px 10px 10px;
+  border-radius: 16px;
+  background: var(--quest-palm-shadow);
+  border: 3px solid transparent;
+  color: var(--quest-cream);
+  text-decoration: none;
+  transition: transform .16s var(--quest-ease), border-color .16s var(--quest-ease);
+}
+.quest-lib-row:hover {
+  transform: translateY(-2px);
+  border-color: var(--quest-mango);
+}
+.quest-lib-row:focus-visible {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 2px;
+}
+.quest-lib-row__icon {
+  flex: 0 0 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--quest-deep-leaf);
+  color: var(--lib-kind, var(--quest-cream));
+}
+.quest-lib-row__icon svg { display: block; }
+.quest-lib-row[data-kind='video'] { --lib-kind: var(--lib-video); }
+.quest-lib-row[data-kind='reading'] { --lib-kind: var(--lib-reading); }
+.quest-lib-row[data-kind='drill'] { --lib-kind: var(--lib-drill); }
+.quest-lib-row[data-kind='quiz'] { --lib-kind: var(--lib-quiz); }
+.quest-lib-row[data-kind='word'] { --lib-kind: var(--lib-word); }
+.quest-lib-row[data-kind='instrument'] { --lib-kind: var(--lib-instrument); }
+.quest-lib-row[data-kind='clip'] { --lib-kind: var(--lib-clip); }
+.quest-lib-row[data-kind='page'] { --lib-kind: var(--lib-page); }
+.quest-lib-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.quest-lib-row__title {
+  font: 800 17px/1.25 var(--quest-font-body);
+  overflow-wrap: anywhere;
+}
+.quest-lib-row__meta {
+  color: var(--quest-muted);
+  font: 700 13px/1.3 var(--quest-font-label);
+}
+.quest-lib-row__go {
+  flex: 0 0 auto;
+  color: var(--quest-muted-2);
+}
+.quest-lib-row__go svg { display: block; }
+.quest-lib-row:hover .quest-lib-row__go { color: var(--quest-mango); }
+
+/* ---------- Word chips ---------- */
+.quest-lib-words {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.quest-lib-word-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: var(--quest-radius-pill);
+  background: var(--quest-palm-shadow);
+  border: 3px solid var(--quest-leaf-border);
+  color: var(--quest-lime);
+  font: 400 18px/1 var(--quest-font-display);
+  text-decoration: none;
+  transition: transform .16s var(--quest-ease), border-color .16s var(--quest-ease);
+}
+.quest-lib-word-chip:hover {
+  transform: translateY(-2px);
+  border-color: var(--quest-lime);
+}
+.quest-lib-word-chip:focus-visible {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 2px;
+}
+
+/* ---------- Browse ---------- */
+.quest-lib-jumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+.quest-lib-jump {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: var(--quest-radius-pill);
+  background: var(--quest-deep-leaf);
+  border: 3px solid var(--quest-leaf-border);
+  color: var(--quest-cream);
+  font: 800 13px/1 var(--quest-font-label);
+  letter-spacing: .04em;
+  text-decoration: none;
+}
+.quest-lib-jump:hover { border-color: var(--quest-mango); }
+.quest-lib-jump:focus-visible { outline: 3px solid var(--quest-lime); outline-offset: 2px; }
+.quest-lib-section {
+  scroll-margin-top: 16px;
+}
+.quest-coach-screen .quest-lib-section + .quest-lib-section { margin-top: 20px; }
+.quest-lib-group + .quest-lib-group { margin-top: 22px; }
+.quest-lib-group__title {
+  margin: 0 0 10px;
+  color: var(--quest-cream);
+  font: 900 14px/1.2 var(--quest-font-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.quest-lib-group__sub {
+  margin: 14px 0 8px;
+  color: var(--quest-muted);
+  font: 800 12px/1.2 var(--quest-font-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.quest-lib-total {
+  margin: 20px 0 0;
+  color: var(--quest-muted);
+  font: 700 13px/1.4 var(--quest-font-label);
+}
+
+/* ---------- Entry page ---------- */
+.quest-lib-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin: 0 0 12px;
+  padding: 6px 14px 6px 8px;
+  border-radius: var(--quest-radius-pill);
+  border: 3px solid var(--quest-leaf-border);
+  color: var(--quest-cream);
+  font: 800 14px/1 var(--quest-font-label);
+  text-decoration: none;
+}
+.quest-lib-back svg { display: block; }
+.quest-lib-back:hover { border-color: var(--quest-mango); }
+.quest-lib-back:focus-visible { outline: 3px solid var(--quest-lime); outline-offset: 2px; }
+.quest-lib-head { margin-bottom: 20px; }
+.quest-lib-head__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.quest-lib-head__tags .quest-lesson__type { margin-bottom: 0; }
+.quest-lib-draft {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: var(--quest-radius-pill);
+  border: 2px dashed var(--quest-muted-2);
+  color: var(--quest-muted);
+  font: 800 11px/1 var(--quest-font-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.quest-lib-head .quest-screen__title { overflow-wrap: anywhere; }
+.quest-lib-head__facts {
+  margin: 0 0 10px;
+  color: var(--quest-mango);
+  font: 800 14px/1.4 var(--quest-font-label);
+}
+.quest-lib-head__summary { margin-bottom: 0; }
+.quest-lib-stage { padding: 20px; }
+.quest-lib-stage > * + * { margin-top: 20px; }
+.quest-lib-subsection { margin-top: 24px; }
+.quest-lib-subsection__title {
+  margin: 0 0 10px;
+  font-family: var(--quest-font-display);
+  font-size: 22px;
+  color: var(--quest-cream);
+}
+.quest-lib-more { margin-top: 20px; }
+.quest-lib-more .quest-card__title { margin-bottom: 14px; }
+.quest-lib-more .quest-lib-list + .quest-lib-words { margin-top: 14px; }
+
+/* Answers marked (reading check + quiz) */
+.quest-lib-quiz {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.quest-lib-quiz > .quest-check { margin-top: 0; }
+.quest-lib-quiz__photo {
+  width: 100%;
+  height: auto;
+  margin: 0 0 12px;
+  border-radius: 14px;
+}
+.quest-lib-choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.quest-lib-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 14px;
+  background: var(--quest-deep-leaf);
+  border: 3px solid var(--quest-leaf-border);
+  color: var(--quest-cream);
+  font-weight: 700;
+}
+.quest-lib-choice__text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.quest-lib-choice.is-answer {
+  border-color: var(--quest-lime);
+  background: rgba(185, 242, 107, .12);
+}
+.quest-lib-choice.is-answer .quest-choice-letter {
+  background: var(--quest-lime);
+  color: var(--quest-ink);
+}
+.quest-lib-choice__tag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: var(--quest-radius-pill);
+  background: var(--quest-lime);
+  color: var(--quest-ink);
+  font: 900 11px/1 var(--quest-font-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.quest-lib-choice__tag svg { width: 14px; height: 14px; display: block; }
+
+/* Drill */
+.quest-lib-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+.quest-lib-fact {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--quest-radius-pill);
+  background: var(--quest-palm-shadow);
+  color: var(--quest-muted);
+  font: 700 14px/1.2 var(--quest-font-label);
+}
+.quest-lib-fact strong { color: var(--quest-lime); font-size: 16px; }
+.quest-lib-steps { margin: 16px 0 0; }
+.quest-lib-steps li { align-items: center; font-size: 17px; line-height: 1.45; }
+.quest-lib-step__text { flex: 1 1 auto; min-width: 0; }
+.quest-lib-step__photo {
+  flex: 0 0 auto;
+  width: 88px;
+  height: 66px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* Glossary word */
+.quest-lib-word__say {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--quest-palm-shadow);
+}
+.quest-lib-word__said {
+  margin: 0;
+  font-family: var(--quest-font-display);
+  font-size: 34px;
+  line-height: 1.1;
+  color: var(--quest-lime);
+}
+.quest-lib-defs {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0 0;
+}
+.quest-lib-defs dd {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--quest-cream);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+/* Instrument */
+.quest-lib-instrument {
+  display: grid;
+  gap: 18px;
+}
+.quest-lib-photo {
+  margin: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 4px solid var(--quest-ink);
+}
+.quest-lib-photo img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.quest-lib-blurb {
+  margin: 0;
+  max-width: 55ch;
+  color: var(--quest-cream);
+  font-size: 19px;
+  line-height: 1.55;
+}
+.quest-lib-instrument .quest-btn-row { margin-top: 18px; }
+
+/* Video */
+.quest-lib-video .yt-with-credit { margin: 0; }
+
+/* ---------- Field guide cards link to their lessons (R10.5) ---------- */
+a.quest-instrument-card {
+  color: inherit;
+  text-decoration: none;
+}
+a.quest-instrument-card:focus-visible {
+  outline: 3px solid var(--quest-lime);
+  outline-offset: 3px;
+  border-color: var(--quest-mango);
+}
+.quest-instrument-card__cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 4px;
+  color: var(--quest-lime);
+  font: 800 13px/1.3 var(--quest-font-label);
+}
+.quest-instrument-card__cue svg { flex: 0 0 auto; display: block; }
+
+/* ---------- Wider screens ---------- */
+@media (min-width: 900px) {
+  .quest-lib-section .quest-lib-list,
+  .quest-lib-list--results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .quest-lib-search { padding: 24px; }
+  .quest-lib-stage { padding: 28px; }
+  .quest-lib-instrument {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 28px;
+  }
+  .quest-lib-video {
+    max-width: 960px;
+  }
+}
+
+@media (max-width: 680px) {
+  .quest-lib-search,
+  .quest-lib-section {
+    padding: 18px 14px;
+    border-radius: 24px;
+  }
+  .quest-lib-stage {
+    padding: 16px 14px;
+    border-radius: 24px;
+  }
+  .quest-lib-head .quest-screen__title { font-size: 34px; }
+  .quest-lib-steps li { padding: 12px; gap: 10px; }
+  .quest-lib-step__photo { width: 72px; height: 54px; }
+  .quest-lib-quiz > .quest-check,
+  .quest-lib-answer { padding: 14px; }
+  .quest-lib-answer .quest-check__prompt { font-size: 21px; }
+  .quest-lib-choice { gap: 10px; }
+  .quest-lib-word__said { font-size: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-lib-row,
+  .quest-lib-word-chip { transition: none; }
+  .quest-lib-row:hover,
+  .quest-lib-word-chip:hover { transform: none; }
+}
