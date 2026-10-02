@@ -2,6 +2,7 @@
 
 Owner: Camren (SoChlo Productions) for ACE / Abadá Capoeira Brooklyn (physicalchess.org).
 Written 2026-09-03. Status: **draft for Camren's review** before any build agent starts.
+**Amended by `SPEC-v3.md` (2026-10-01, the client's notes of 2026-09-30: WP8-WP16). Read it alongside this file; where they conflict, v3 wins.**
 Supersedes the showcase spec (`docs/SHOWCASE-SPEC-v1.md`). The client chose **Roda Quest**; this document turns the Quest showcase into the real, end-to-end LMS.
 
 Repo: `/Users/admin/physical-chess-app` (cloned from the showcase, Quest promoted to the root routes, other directions removed; the showcase itself stays live at physical-chess-showcase.vercel.app, tag `showcase-v1`).
