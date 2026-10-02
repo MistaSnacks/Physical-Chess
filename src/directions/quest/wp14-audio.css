@@ -1,0 +1,96 @@
+/* === WP14: audio clip player (SPEC-v3 R14.4) ===
+   Styles for src/components/AudioClip.astro. Bundled only on pages that use
+   the component (none yet). */
+
+.audio-clip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  padding: 8px 18px 8px 8px;
+  border: var(--quest-border-thin) solid var(--quest-leaf-border);
+  border-radius: var(--quest-radius-pill);
+  background: var(--quest-deep-leaf);
+  color: var(--quest-cream);
+  font-family: var(--quest-font-label);
+}
+
+.audio-clip__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--quest-lime);
+  color: var(--quest-ink);
+  box-shadow: 0 4px 0 var(--quest-lime-shadow);
+  cursor: pointer;
+  transition: transform 0.15s var(--quest-ease), box-shadow 0.15s var(--quest-ease);
+}
+.audio-clip__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--quest-lime-shadow);
+}
+.audio-clip__btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--quest-lime-shadow);
+}
+.audio-clip__btn:focus-visible {
+  outline: 3px solid var(--quest-mango);
+  outline-offset: 3px;
+}
+
+.audio-clip__icon--pause,
+.audio-clip[data-state='playing'] .audio-clip__icon--play {
+  display: none;
+}
+.audio-clip[data-state='playing'] .audio-clip__icon--pause {
+  display: block;
+}
+
+.audio-clip__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.audio-clip__label {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.audio-clip__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  color: var(--quest-muted);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.audio-clip__meta [data-audio-time]:empty {
+  display: none;
+}
+.audio-clip__status {
+  color: var(--quest-mango);
+  font-size: 13px;
+  font-weight: 700;
+}
+.audio-clip__status:empty {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-clip__btn {
+    transition: none;
+  }
+  .audio-clip__btn:hover,
+  .audio-clip__btn:active {
+    transform: none;
+  }
+}

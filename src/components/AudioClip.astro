@@ -1,0 +1,115 @@
+---
+// AudioClip.astro — a small accessible audio player (SPEC-v3 WP14 R14.4).
+// One play/pause button with a visible label and the clip length. No autoplay,
+// and preload="none", so nothing downloads until someone presses play. Only one
+// clip plays at a time, and a clip stops when the page changes.
+// Audio files live in Wix Media (SPEC-v3 §2), never in git. Not used on any
+// page yet.
+//
+// Props:
+//   src      — audio URL (Wix Media mp3/m4a)
+//   label    — what the clip is, shown next to the button and read with it
+//   seconds  — optional clip length, shown before the file loads
+//   credit   — optional credit line, e.g. "Audio: ACE"
+//   lang     — optional language of the label, e.g. "pt-BR" for a song title
+import '../directions/quest/wp14-audio.css';
+
+interface Props {
+  src: string;
+  label: string;
+  seconds?: number;
+  credit?: string;
+  lang?: string;
+  class?: string;
+}
+
+const { src, label, seconds, credit, lang, class: className } = Astro.props;
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+---
+
+<div class:list={['audio-clip', className]} data-audio-clip data-state="paused" data-label={label}>
+  <button type="button" class="audio-clip__btn" data-audio-toggle aria-label={`Play: ${label}`}>
+    <svg class="audio-clip__icon audio-clip__icon--play" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 4.5v15l12.5-7.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+    </svg>
+    <svg class="audio-clip__icon audio-clip__icon--pause" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="6" y="4.5" width="4" height="15" rx="1.5" fill="currentColor" />
+      <rect x="14" y="4.5" width="4" height="15" rx="1.5" fill="currentColor" />
+    </svg>
+  </button>
+  <span class="audio-clip__text">
+    <span class="audio-clip__label" lang={lang}>{label}</span>
+    <span class="audio-clip__meta">
+      <span data-audio-time>{seconds ? clock(seconds) : ''}</span>{credit && <span class="audio-clip__credit">{credit}</span>}
+    </span>
+    <span class="audio-clip__status" role="status" data-audio-status></span>
+  </span>
+  <audio src={src} preload="none" data-audio></audio>
+</div>
+
+<script>
+  const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+  function allAudio(): HTMLAudioElement[] {
+    return Array.from(document.querySelectorAll<HTMLAudioElement>('[data-audio-clip] audio'));
+  }
+
+  function bind(root: HTMLElement) {
+    if (root.dataset.bound === 'true') return;
+    root.dataset.bound = 'true';
+    const btn = root.querySelector<HTMLButtonElement>('[data-audio-toggle]')!;
+    const audio = root.querySelector<HTMLAudioElement>('audio')!;
+    const time = root.querySelector<HTMLElement>('[data-audio-time]')!;
+    const status = root.querySelector<HTMLElement>('[data-audio-status]')!;
+    const label = root.dataset.label || 'audio clip';
+
+    const paint = (state: 'playing' | 'paused' | 'error') => {
+      root.dataset.state = state;
+      btn.setAttribute('aria-label', `${state === 'playing' ? 'Pause' : 'Play'}: ${label}`);
+    };
+    const tick = () => {
+      const total = Number.isFinite(audio.duration) ? audio.duration : 0;
+      if (!total && !audio.currentTime) return; // keep the `seconds` hint
+      time.textContent = total ? `${clock(audio.currentTime)} / ${clock(total)}` : clock(audio.currentTime);
+    };
+
+    btn.addEventListener('click', () => {
+      if (!audio.paused) {
+        audio.pause();
+        return;
+      }
+      for (const other of allAudio()) if (other !== audio) other.pause();
+      status.textContent = '';
+      root.dataset.state = 'paused';
+      audio.play().catch(() => {
+        paint('error');
+        status.textContent = 'This clip cannot play right now.';
+      });
+    });
+    audio.addEventListener('play', () => paint('playing'));
+    // A failed load also fires pause; keep the error showing until the next press.
+    audio.addEventListener('pause', () => {
+      if (root.dataset.state !== 'error') paint('paused');
+    });
+    audio.addEventListener('ended', () => {
+      audio.currentTime = 0;
+      paint('paused');
+      tick();
+    });
+    audio.addEventListener('timeupdate', tick);
+    audio.addEventListener('loadedmetadata', tick);
+    audio.addEventListener('error', () => {
+      paint('error');
+      status.textContent = 'This clip cannot play right now.';
+    });
+  }
+
+  function init() {
+    document.querySelectorAll<HTMLElement>('[data-audio-clip]').forEach(bind);
+  }
+
+  // Stop every clip before a client-side page change.
+  document.addEventListener('astro:before-swap', () => allAudio().forEach((a) => a.pause()));
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>
