@@ -16,8 +16,13 @@ import { MODULE_STOPS, GATE_PROGRESS, DESKTOP_TRAIL, MOBILE_TRAIL, lessonTrailIt
 
 import '../directions/quest/tokens.css';
 import '../directions/quest/theme.css';
+import '../directions/quest/wp14-collage.css';
 
 const allLessons = lessonTrailItems();
+// SPEC-v3 WP14 R14.2: decorative collage behind the map. ABADÁ action photos
+// (kicks, aús, rodas) from PHOTOS via wix(). No captions or names are shown;
+// releases must be confirmed before these are swapped for final picks.
+const COLLAGE = ['classPhoto2022b', 'groupFoto2019', 'classPhoto2021b', 'kidsParents', 'heroWorkshop', 'batizado2019b'];
 const CHECK = '<svg width="46" height="46" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#0B2E24" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const LOCK = '<svg width="40" height="40" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="#7FA894" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="#7FA894" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const GATE = '<svg width="60" height="60" viewBox="0 0 24 24"><path d="M6 3h12l2 7-8 11L4 10z" fill="none" stroke="#0B2E24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10h16M9 3l3 7 3-7M9 10l3 11 3-11" fill="none" stroke="#0B2E24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -53,6 +58,11 @@ const GATE = '<svg width="60" height="60" viewBox="0 0 24 24"><path d="M6 3h12l2
       </div>
 
       <div class="quest-map-body">
+      <div class="quest-collage" aria-hidden="true">
+        {COLLAGE.map((key) => (
+          <img class="quest-collage__tile" src={wix(key, 480, 360)} alt="" width="480" height="360" loading="lazy" decoding="async" fetchpriority="low" />
+        ))}
+      </div>
       <div class="quest-map-left">
       <Hud />
 

@@ -1,0 +1,76 @@
+/* === WP14: journey collage (SPEC-v3 R14.2) ===
+   A static, decorative layer of ABADÁ action photos behind the map on
+   /journey. It sits inside .quest-map-body (a stacking context) at
+   z-index -1, so the HUD, the map, its labels and every card paint above it.
+   Scrim: each tile is drawn at 26% opacity, so the page background behind it
+   (palm shadow, or the lighter stage light) covers the photo at 74%. A flat
+   overlay box would show its edges against the stage-light circles.
+   Contrast: every label and HUD line in the map body sits on its own opaque
+   chip or card, so the layer leaves text contrast unchanged (measured at 390
+   and 1440). Bare cream text over the brightest tile pixel would still be
+   5.9:1, but bare mango or muted text would not: give new text here a chip.
+   No animation, no pointer events, aria-hidden in the markup.
+   Mobile first: the base rules are the stacked (<= 900px) map. */
+
+/* Below 901px the map wrap has 20px side padding; reach past it so tiles
+   bleed off the screen edge instead of being cut at the padding line. The
+   wrap and the page clip overflow-x, so nothing scrolls sideways. */
+.quest-collage {
+  position: absolute;
+  inset: 0 -20px;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Where the stacked map starts inside .quest-map-body (below the HUD and
+     Next up): ~644-673px on phones. */
+  --map-top: 650px;
+}
+
+.quest-collage__tile {
+  position: absolute;
+  left: var(--x);
+  /* Fixed offsets, never a percentage of the layer's height: the layer grows
+     while the HUD paints, and %-tops would move the tiles (layout shift). */
+  top: calc(var(--map-top) + var(--y));
+  width: var(--w);
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 5px solid var(--quest-cream);
+  border-radius: 18px;
+  background: var(--quest-deep-leaf);
+  rotate: var(--r);
+  opacity: 0.26;
+}
+
+/* Phone and tablet: five tiles down the vertical trail, alternating sides
+   and bleeding off the edges (clipped, so nothing scrolls sideways). */
+.quest-collage__tile:nth-child(1) { --x: -14%; --y: 30px; --w: 60%; --r: -6deg; }
+.quest-collage__tile:nth-child(2) { --x: 52%; --y: 220px; --w: 60%; --r: 6deg; }
+.quest-collage__tile:nth-child(3) { --x: -12%; --y: 425px; --w: 62%; --r: -5deg; }
+.quest-collage__tile:nth-child(4) { --x: 50%; --y: 630px; --w: 58%; --r: 5deg; }
+.quest-collage__tile:nth-child(5) { --x: -10%; --y: 840px; --w: 60%; --r: -7deg; }
+.quest-collage__tile:nth-child(n + 6) { display: none; }
+
+/* Tablet portrait: the trail is wider, so the tiles stay smaller. */
+@media (min-width: 601px) and (max-width: 900px) {
+  .quest-collage { --map-top: 760px; }
+  .quest-collage .quest-collage__tile { width: 40%; }
+}
+
+/* Desktop: six tiles scattered around the trail, right of the HUD. */
+@media (min-width: 901px) {
+  .quest-collage { inset: 0; --map-top: 0px; }
+  .quest-collage__tile:nth-child(n) { display: block; }
+  .quest-collage__tile:nth-child(1) { --x: 31%; --y: 10px; --w: clamp(170px, 17.5vw, 260px); --r: -6deg; }
+  .quest-collage__tile:nth-child(2) { --x: 52%; --y: 116px; --w: clamp(160px, 16vw, 240px); --r: 5deg; }
+  .quest-collage__tile:nth-child(3) { --x: 74%; --y: 388px; --w: clamp(170px, 18vw, 270px); --r: -4deg; }
+  .quest-collage__tile:nth-child(4) { --x: 33%; --y: 504px; --w: clamp(170px, 16.5vw, 250px); --r: 4deg; }
+  .quest-collage__tile:nth-child(5) { --x: 56%; --y: 620px; --w: clamp(170px, 17.5vw, 260px); --r: -7deg; }
+  .quest-collage__tile:nth-child(6) { --x: 80%; --y: 718px; --w: clamp(160px, 16vw, 240px); --r: 6deg; }
+}
+
+@media print {
+  .quest-collage { display: none; }
+}

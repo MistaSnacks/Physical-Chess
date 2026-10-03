@@ -6,8 +6,12 @@
 // See SPEC.md §4.1 / §4.2 for the confirmed base set, and
 // wix-images-inventory.json at the repo root for the full Media Manager
 // listing this file's curated additions were pulled from.
+import { mestreById, educatorsLabel } from '../content/mestres.js';
 
 const WIX_MEDIA_BASE = 'https://static.wixstatic.com/media/';
+
+// Mestre captions read names from the registry (SPEC-v3 WP13, R13.1).
+const mestreCaption = (id) => educatorsLabel(mestreById(id));
 
 // ---------------------------------------------------------------------
 // Photos — { file } is the bare Wix filename (no /v1/fill/ suffix, so
@@ -121,27 +125,27 @@ export const PHOTOS = {
   mestrePernilongo: {
     file: '473014_3401328370b04f2bb2dd99c78eea11df~mv2.webp',
     focus: 'face',
-    caption: 'Mestre Pernilongo',
+    caption: mestreCaption('pernilongo'),
   },
   mestraMarciaBerimbau: {
     file: '473014_49fa715f9fef4bc7826032cf796b9a4a~mv2.jpg',
     focus: 'face',
-    caption: 'Mestra Marcia on the berimbau',
+    caption: `${mestreCaption('cigarra')} on the berimbau`,
   },
   mestraEdnaLima: {
     file: '473014_45bd6c2e77aa4c8c9c2a989d8c9aeed2~mv2.jpg',
     focus: 'face',
-    caption: 'Mestra Edna Lima',
+    caption: mestreCaption('edna-lima'),
   },
   mestreCobra: {
     file: '473014_a2f584a24fd04c5d91f21d957e8437a2~mv2.jpg',
     focus: 'face',
-    caption: 'Mestre Cobra',
+    caption: mestreCaption('cobra'),
   },
   mestrandaYara: {
     file: '473014_c856e8d81639422181a4e300b888dc7c~mv2.jpg',
     focus: 'face',
-    caption: 'Mestranda Yara',
+    caption: mestreCaption('yara'),
   },
 
   // Real class photos (WhatsApp uploads from ACE classes, 2021-2022)
