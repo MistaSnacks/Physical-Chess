@@ -1,11 +1,12 @@
 ---
 // CoachNav.astro — subnav shared by every /coach and /admin screen.
 interface Props {
-  active?: 'overview' | 'attendance' | 'class' | 'export' | 'goal' | 'roles' | 'player';
+  active?: 'overview' | 'library' | 'attendance' | 'class' | 'export' | 'goal' | 'roles' | 'player';
 }
 const { active } = Astro.props;
 const links = [
   { id: 'overview', href: '/coach', label: 'Overview' },
+  { id: 'library', href: '/coach/library', label: 'Library' },
   { id: 'attendance', href: '/coach/attendance', label: 'Attendance' },
   { id: 'class', href: '/coach/class', label: 'Class mode' },
   { id: 'export', href: '/coach/export', label: 'Export' },

@@ -1,0 +1,217 @@
+---
+// coach/library/index.astro — the instructor library (SPEC-v3 WP9, R9.1-R9.6).
+// Browse every lesson, word, instrument, video and page by module and group,
+// or search titles. Static, staff (noindex), ungated in v1 (D11), and never
+// touches player progress: no events, no child selected, no outbox flush.
+//
+// No <ClientRouter /> on library pages, on purpose: Astro's router then does
+// a full page load whenever anyone navigates here. Pages keep their
+// `astro:page-load` listeners alive across router navigations, and some
+// (e.g. /coach) call requireSession() from them, which would select the
+// remembered child and flush the outbox on a library page. A fresh page
+// leaves only nav.js, which loads the session with { select: false }.
+import Base from '../../../layouts/Base.astro';
+import Nav from '../../../directions/quest/Nav.astro';
+import Footer from '../../../directions/quest/Footer.astro';
+import CoachNav from '../../../components/quest/CoachNav.astro';
+import LibraryRow from '../../../components/quest/LibraryRow.astro';
+import { browseTree, searchIndex, CATALOG } from '../../../lib/library.js';
+import { SEARCH } from '../../../lib/library-icons.js';
+import '../../../directions/quest/tokens.css';
+import '../../../directions/quest/theme.css';
+import '../../../directions/quest/wp9-library.css';
+
+const { modules, videos, pages } = browseTree();
+const index = searchIndex();
+const count = (list) => list.reduce((n, g) => n + g.entries.length, 0);
+const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+const jumps = [
+  ...modules.map((m) => ({ href: `#lib-${m.id}`, label: m.title })),
+  { href: '#lib-videos', label: 'Videos' },
+  { href: '#lib-pages', label: 'Pages' },
+];
+---
+
+<Base title="Library · Coach · Physical Chess" description="Instructor library: every lesson, word, instrument, video and page." direction="quest" staff>
+  <div class="quest-page">
+    <div class="quest-stagelight quest-stagelight--a" aria-hidden="true"></div>
+    <Nav active="coach" />
+    <main id="main" class="quest-screen quest-screen--wide quest-coach-screen quest-lib" data-library>
+      <p class="quest-screen__eyebrow" data-quest-enter>Coach</p>
+      <h1 class="quest-screen__title" data-quest-enter>Library</h1>
+      <p class="quest-screen__sub" data-quest-enter>
+        Pull up any lesson, video, word or page in class. Nothing here changes a player's progress.
+      </p>
+      <CoachNav active="library" />
+
+      <section class="quest-card quest-lib-search" aria-labelledby="lib-search-label" data-quest-enter>
+        <form class="quest-lib-search__form" role="search" action="/coach/library" method="get" data-lib-form>
+          <label class="quest-field__label" id="lib-search-label" for="lib-q">Search the library</label>
+          <div class="quest-lib-search__box">
+            <span class="quest-lib-search__icon" set:html={SEARCH} />
+            <input
+              class="quest-field__input quest-lib-search__input"
+              id="lib-q"
+              name="q"
+              type="search"
+              inputmode="search"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="Try ginga, aú or berimbau"
+              aria-describedby="lib-search-hint"
+              aria-controls="lib-results"
+              data-lib-search
+            />
+          </div>
+          <p class="quest-field__hint" id="lib-search-hint">Searches titles, Portuguese words and instruments. Accents are optional.</p>
+        </form>
+        <div class="quest-lib-results" id="lib-results" data-lib-results-wrap hidden>
+          <p class="quest-lib-results__count" data-lib-count role="status" aria-live="polite"></p>
+          <ul class="quest-lib-list quest-lib-list--results" data-lib-results></ul>
+        </div>
+      </section>
+
+      <div class="quest-lib-browse" data-lib-browse>
+        <nav class="quest-lib-jumps" aria-label="Library sections" data-quest-enter>
+          {jumps.map((j) => <a class="quest-lib-jump" href={j.href}>{j.label}</a>)}
+        </nav>
+
+        {modules.map((m) => (
+          <section class="quest-card quest-lib-section" id={`lib-${m.id}`} aria-labelledby={`lib-${m.id}-title`} data-quest-enter>
+            <div class="quest-coach-section-heading">
+              <div>
+                <p class="quest-coach-kicker">Module</p>
+                <h2 class="quest-card__title" id={`lib-${m.id}-title`}>{m.title}</h2>
+              </div>
+              <p>{plural(count(m.groups), 'entry', 'entries')}</p>
+            </div>
+            {m.groups.map((g) => {
+              const rows = g.entries.filter((e) => e.type !== 'glossary');
+              const words = g.entries.filter((e) => e.type === 'glossary');
+              return (
+                <div class="quest-lib-group">
+                  <h3 class="quest-lib-group__title">{g.title}</h3>
+                  {rows.length > 0 && (
+                    <ul class="quest-lib-list">
+                      {rows.map((e) => <LibraryRow entry={e} />)}
+                    </ul>
+                  )}
+                  {words.length > 0 && (
+                    <>
+                      <p class="quest-lib-group__sub">Words</p>
+                      <ul class="quest-lib-words">
+                        {words.map((e) => (
+                          <li><a class="quest-lib-word-chip" href={e.href} data-lib-entry={e.id}>{e.title}</a></li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </section>
+        ))}
+
+        <section class="quest-card quest-lib-section" id="lib-videos" aria-labelledby="lib-videos-title" data-quest-enter>
+          <div class="quest-coach-section-heading">
+            <div>
+              <p class="quest-coach-kicker">Every video in the app</p>
+              <h2 class="quest-card__title" id="lib-videos-title">Videos</h2>
+            </div>
+            <p>{plural(videos.length, 'video')}</p>
+          </div>
+          <ul class="quest-lib-list">
+            {videos.map((e) => <LibraryRow entry={e} />)}
+          </ul>
+        </section>
+
+        <section class="quest-card quest-lib-section" id="lib-pages" aria-labelledby="lib-pages-title" data-quest-enter>
+          <div class="quest-coach-section-heading">
+            <div>
+              <p class="quest-coach-kicker">Public pages</p>
+              <h2 class="quest-card__title" id="lib-pages-title">Pages</h2>
+            </div>
+            <p>{plural(count(pages), 'page')}</p>
+          </div>
+          {pages.map((g) => (
+            <div class="quest-lib-group">
+              <h3 class="quest-lib-group__title">{g.title}</h3>
+              <ul class="quest-lib-list">
+                {g.entries.map((e) => <LibraryRow entry={e} />)}
+              </ul>
+            </div>
+          ))}
+        </section>
+        <p class="quest-lib-total">{plural(CATALOG.length, 'entry', 'entries')} in the library.</p>
+      </div>
+    </main>
+    <Footer />
+  </div>
+
+  <script is:inline type="application/json" data-lib-index set:html={JSON.stringify(index).replace(/</g, '\\u003c')} />
+</Base>
+
+<script>
+  // Browser-side search over the JSON index above. Read-only: this script
+  // never imports actions.js or the store (SPEC-v3 R9.5).
+  import '../../../directions/quest/motion.js';
+  import { searchEntries } from '../../../lib/library-search.js';
+  import { KIND_ICON, CHEVRON, EXTERNAL } from '../../../lib/library-icons.js';
+
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function rowHtml(e) {
+    const meta = [e.meta, e.place].filter(Boolean).join(' · ');
+    return `<li class="quest-lib-item"><a class="quest-lib-row" href="${esc(e.href)}" data-lib-entry="${esc(e.id)}" data-kind="${esc(e.kind)}">`
+      + `<span class="quest-lib-row__icon">${KIND_ICON[e.kind] || ''}</span>`
+      + `<span class="quest-lib-row__body"><span class="quest-lib-row__title">${esc(e.title)}</span><span class="quest-lib-row__meta">${esc(meta)}</span></span>`
+      + `<span class="quest-lib-row__go">${e.external ? EXTERNAL : CHEVRON}</span></a></li>`;
+  }
+
+  function init() {
+    const root = document.querySelector('[data-library]');
+    if (!root || root.dataset.init === '1') return;
+    root.dataset.init = '1';
+    const index = JSON.parse(document.querySelector('[data-lib-index]')?.textContent || '[]');
+    const input = root.querySelector('[data-lib-search]');
+    const form = root.querySelector('[data-lib-form]');
+    const wrap = root.querySelector('[data-lib-results-wrap]');
+    const list = root.querySelector('[data-lib-results]');
+    const count = root.querySelector('[data-lib-count]');
+    const browse = root.querySelector('[data-lib-browse]');
+
+    const run = () => {
+      const q = input.value.trim();
+      const url = new URL(location.href);
+      if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+      history.replaceState(history.state, '', url);
+      if (!q) {
+        wrap.hidden = true;
+        browse.hidden = false;
+        list.innerHTML = '';
+        count.textContent = '';
+        return;
+      }
+      const hits = searchEntries(q, index);
+      wrap.hidden = false;
+      browse.hidden = true;
+      list.innerHTML = hits.map(rowHtml).join('');
+      count.textContent = hits.length
+        ? `${hits.length} ${hits.length === 1 ? 'match' : 'matches'} for “${q}”`
+        : `Nothing called “${q}” yet. Try a lesson title, a Portuguese word or an instrument.`;
+    };
+
+    input.addEventListener('input', run);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      run();
+      list.querySelector('a')?.focus();
+    });
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) { input.value = q; run(); }
+  }
+  init();
+</script>

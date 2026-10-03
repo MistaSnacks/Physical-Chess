@@ -16,3 +16,14 @@ export const INSTRUMENTS = [
   { id: 'atabaque', name: 'Atabaque', photoKey: 'jongoDrum', blurb: 'A tall hand drum that anchors the rhythm section alongside the berimbau.' },
   { id: 'agogo', name: 'Agogô', photoKey: 'puxadaDeRede', blurb: 'A double bell struck with a stick, adding a bright, ringing counter-rhythm.' },
 ];
+
+/**
+ * Instrument id → the lesson that teaches it (SPEC-v3 R9.2). The Music Field
+ * guide cards (R10.5) and the instructor library link through this map.
+ */
+export const INSTRUMENT_LESSON = {
+  berimbau: 'meet-the-berimbau',
+  pandeiro: 'pandeiro-atabaque',
+  atabaque: 'pandeiro-atabaque',
+  agogo: 'agogo-reco-reco',
+};

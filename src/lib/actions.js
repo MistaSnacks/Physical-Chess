@@ -31,15 +31,17 @@ function emit(name, detail) {
   document.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
 }
 
-export async function loadSession() {
+export async function loadSession({ select = true } = {}) {
   const repo = await getRepo();
   const session = await repo.getSession();
   store.set({ session, isDemo: IS_DEMO, ready: !session });
   if (!session) return null;
   const wanted = readActivePlayerId();
   const player = session.players.find((p) => p.id === wanted) || null;
-  const classPlayer = player ? null : readClassPlayer(wanted);
-  if (player) await selectPlayer(player.id);
+  // select: false (staff pages, SPEC-v3 R9.5) never selects a child, a
+  // family one or a Class-mode one, and never flushes the outbox.
+  const classPlayer = player || !select ? null : readClassPlayer(wanted);
+  if (player && select) await selectPlayer(player.id);
   else if (classPlayer) await selectClassPlayer(classPlayer);
   else store.set({ ready: true });
   return session;
