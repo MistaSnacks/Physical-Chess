@@ -15,13 +15,19 @@ function rand(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
+// One dialog at a time. Pages call init() twice on a direct load (once
+// directly, once on astro:page-load), so a second request shares the open
+// dialog instead of stacking another one with the same input id.
+let pending = null; // { promise, overlay }
+
 export function requireGrownUp() {
   if (isGrownUp()) return Promise.resolve(true);
-  return new Promise((resolve) => {
+  if (pending && pending.overlay.isConnected) return pending.promise;
+  const overlay = document.createElement('div');
+  const promise = new Promise((resolve) => {
     const a = rand(6, 9);
     const b = rand(4, 9);
     const previousFocus = document.activeElement;
-    const overlay = document.createElement('div');
     overlay.className = 'quest-grownup';
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
@@ -48,6 +54,7 @@ export function requireGrownUp() {
     const close = (ok) => {
       document.removeEventListener('keydown', onKeydown);
       overlay.remove();
+      pending = null;
       if (!ok && previousFocus instanceof HTMLElement) previousFocus.focus();
       resolve(ok);
     };
@@ -86,4 +93,6 @@ export function requireGrownUp() {
     document.addEventListener('keydown', onKeydown);
     input.focus();
   });
+  pending = { promise, overlay };
+  return promise;
 }
