@@ -80,7 +80,7 @@ export const BATIZADO_DATE_TBC = true;
 export const CONTACT = {
   phone: '917-776-8150',
   email: 'info@the-ace.org',
-  ageLine: 'Classes for 7–13 years of age',
+  ageLine: 'Classes for 7–14 years of age',
 };
 
 /** Index of a corda id within CORDAS, for rendering rank-track progress. */

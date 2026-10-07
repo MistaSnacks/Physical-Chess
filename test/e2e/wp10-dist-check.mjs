@@ -106,7 +106,7 @@ for (const file of pages) {
 ok(footers > 0, 'found no footers');
 
 // R10.4: the three age lines link to /classes.
-const ageLink = /<a class="quest-age-link[^"]*" href="\/classes">Classes for 7–13 years of age/;
+const ageLink = /<a class="quest-age-link[^"]*" href="\/classes">Classes for 7–14 years of age/;
 ok(ageLink.test((home.match(/<p class="quest-hero__age"[\s\S]*?<\/p>/) || [''])[0]), 'home hero age line does not link to /classes');
 ok(ageLink.test(footerOf(home)), 'footer age line does not link to /classes');
 const contact = page('about/contact');
@@ -121,7 +121,7 @@ const classes = page('classes');
 ok(!/\b(BUSHWICK|BERKELEY|PROSPECT|RODA)\b/.test(classes), '/classes HTML contains an invite code');
 ok(!/inviteCode/i.test(classes), '/classes HTML mentions inviteCode');
 ok(/data-classes-form/.test(classes), '/classes has no inquiry form');
-for (const s of ['What a class is like', 'Where ACE teaches', 'How to join', 'To be confirmed', 'Ask ACE', 'Classes for 7–13 years of age']) {
+for (const s of ['What a class is like', 'Where ACE teaches', 'How to join', 'To be confirmed', 'Ask ACE', 'Classes for 7–14 years of age']) {
   ok(classes.includes(s), `/classes lacks "${s}"`);
 }
 for (const f of ['ages', 'schedule', 'cost', 'uniform']) ok(classes.includes(`data-fact="${f}"`), `/classes lacks the ${f} fact`);

@@ -1,6 +1,6 @@
 // desafio.js — Desafio do Dia pool (SPEC §4.6). One item is chosen per
 // New York calendar date; a player may complete it once for 30 XP.
-// Copy is for ages 7–13 and flagged until ACE reviews it.
+// Copy is for ages 7–14 and flagged until ACE reviews it.
 
 export const DESAFIO_POOL = [
   // --- glossary flashcards ---

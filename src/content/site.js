@@ -6,7 +6,7 @@ import { mestreById, educatorsLabel } from './mestres.js';
 export const ABOUT = {
   reviewNeeded: true,
   mission: [
-    'Physical Chess is the member app for ACE, the Abadá Capoeira Experience in Brooklyn. Kids ages 7 to 13 learn capoeira as a game, a music, and a culture, not only as a workout.',
+    'Physical Chess is the member app for ACE, the Abadá Capoeira Experience in Brooklyn. Kids ages 7 to 14 learn capoeira as a game, a music, and a culture, not only as a workout.',
     'ACE runs in schools and in community classes. Grown-ups log in. Kids pick a player card and walk the map. The real **corda** still comes from a coach at **Batizado**. The app is how you practice between classes.',
   ],
 };
@@ -50,7 +50,7 @@ export const EDUCATORS = ['pernilongo', 'cigarra', 'edna-lima', 'cobra', 'yara']
 export const FAQ = [
   {
     q: 'What ages can join?',
-    a: 'Classes are for kids 7 to 13. Grown-ups who want to train should contact ACE about adult crews. If your child is younger, email info@the-ace.org and we will tell you what we can offer.',
+    a: 'Classes are for kids 7 to 14. Grown-ups who want to train should contact ACE about adult crews. If your child is younger, email info@the-ace.org and we will tell you what we can offer.',
     reviewNeeded: true,
   },
   {

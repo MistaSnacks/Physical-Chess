@@ -50,7 +50,7 @@ Every decision has a default, so building never waits. Items in the "Must wait" 
 |---|---|---|---|
 | D1 | What are the nine Cores: the levels kids see, the rope ladder, or a separate track? Does the top bar keep the corda? May a child reach Diamante? | **Option A:** the Cores replace the 12 level *displays* as practice colors. Every corda display stays (SPEC decision 6). Diamante is reachable. | Showing Cores, unlocking designs (WP12) |
 | D2 | Spellings | ABADÁ's: Ouro, Ametista, Camaleão, Canguru, Cascão, Piriquito Verde | Showing the names to real families |
-| D3 | Ages 7-13 or 7-14; class facts | Keep 7-13; the age line becomes a link | Changing the age; real schedule and prices |
+| D3 | Ages 7-13 or 7-14; class facts | **Decided 2026-10-07: 7-14**, as the client's note says (changed in all six places). The age line links to `/classes`. | Real schedule and prices |
 | D4 | How many designs? Redeemable? Public or gated? | Nine public printables, show-and-tell | Gated route, stamping, redemption |
 | D5 | Does "Mestres pop up" mean the Bira mascot? Titles (Bode, Cascão, Tigre; Camisa Roxa as Grão-Mestre); Cigarra's display name; does Yara stay? | Yes, the mascot. The client's titles. Educators stay a separate list. | Swapping Bira on screen |
 | D6 | New quiz formats, or reworded questions? The 4th bullet? May typed answers ignore accents? | New formats; suggest "Listen and identify"; accents fold only where ACE approves, per question | Matching and blank screens on live lessons |
